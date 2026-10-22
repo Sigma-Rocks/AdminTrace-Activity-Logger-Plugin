@@ -36,6 +36,39 @@ class Renderer {
 	}
 
 	/**
+	 * Profile image for the person who caused the event.
+	 *
+	 * @param array $row  Event row.
+	 * @param int   $size Image size in pixels.
+	 * @return string
+	 */
+	public static function avatar( array $row, $size = 36 ) {
+		if ( ! function_exists( 'get_avatar' ) ) {
+			return '';
+		}
+
+		$size    = max( 16, min( 96, (int) $size ) );
+		$user_id = isset( $row['user_id'] ) ? (int) $row['user_id'] : 0;
+		if ( $user_id < 1 && ! empty( $row['user_login'] ) && function_exists( 'get_user_by' ) ) {
+			$user = get_user_by( 'login', $row['user_login'] );
+			if ( $user instanceof \WP_User ) {
+				$user_id = (int) $user->ID;
+			}
+		}
+
+		$args = array(
+			'class'         => 'ah-avatar',
+			'force_display' => true,
+		);
+		if ( $user_id < 1 ) {
+			$args['force_default'] = true;
+			$user_id               = 'advance-history@invalid';
+		}
+
+		return get_avatar( $user_id, $size, '', '', $args );
+	}
+
+	/**
 	 * One timeline card.
 	 *
 	 * @param array $row  Event row.
@@ -55,7 +88,7 @@ class Renderer {
 		$id       = isset( $row['id'] ) ? (int) $row['id'] : 0;
 		?>
 		<article class="ah-event ah-severity-<?php echo esc_attr( $severity ); ?>" id="ah-event-<?php echo esc_attr( (string) $id ); ?>">
-			<div class="ah-event-mark" aria-hidden="true"></div>
+			<div class="ah-event-avatar" aria-hidden="true"><?php echo self::avatar( $row, empty( $args['compact'] ) ? 36 : 28 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_avatar() escapes. ?></div>
 			<div class="ah-event-body">
 				<header class="ah-event-top">
 					<?php if ( $args['checkbox'] && $id ) : ?>
@@ -66,6 +99,20 @@ class Renderer {
 					<?php endif; ?>
 					<span class="ah-pill"><?php echo esc_html( Vocabulary::category_label( $category ) ); ?></span>
 					<span class="ah-pill ah-pill-<?php echo esc_attr( $severity ); ?>"><?php echo esc_html( Vocabulary::severity_label( $severity ) ); ?></span>
+					<?php $repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1; ?>
+					<?php if ( $repeats > 1 ) : ?>
+						<span class="ah-pill ah-pill-repeat">
+							<?php
+							echo esc_html(
+								sprintf(
+									/* translators: %d: number of times this event happened. */
+									_n( '%d time', '%d times', $repeats, 'advance-history' ),
+									$repeats
+								)
+							);
+							?>
+						</span>
+					<?php endif; ?>
 					<?php if ( ! empty( $row['initiator'] ) && 'user' !== $row['initiator'] && ! empty( $row['user_id'] ) ) : ?>
 						<span class="ah-pill"><?php echo esc_html( Vocabulary::initiators()[ $row['initiator'] ] ?? $row['initiator'] ); ?></span>
 					<?php endif; ?>
@@ -122,10 +169,32 @@ class Renderer {
 	private static function details( array $row ) {
 		$context = isset( $row['context'] ) && is_array( $row['context'] ) ? $row['context'] : array();
 		$changes = isset( $context['changes'] ) && is_array( $context['changes'] ) ? $context['changes'] : array();
-		unset( $context['changes'] );
+		unset( $context['changes'], $context['repeat_count'], $context['repeat_times'], $context['first_gmt'], $context['last_gmt'] );
+		$repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1;
+		$times   = isset( $row['repeat_times'] ) && is_array( $row['repeat_times'] ) ? $row['repeat_times'] : array();
 		?>
 		<details class="ah-details">
 			<summary><?php esc_html_e( 'Details', 'advance-history' ); ?></summary>
+			<?php if ( $repeats > 1 ) : ?>
+				<p class="ah-event-meta">
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %d: number of repeated events. */
+							_n( 'Combined %d matching event.', 'Combined %d matching events.', $repeats, 'advance-history' ),
+							$repeats
+						)
+					);
+					?>
+				</p>
+				<?php if ( count( $times ) > 1 ) : ?>
+					<ul class="ah-repeat-times">
+						<?php foreach ( $times as $gmt ) : ?>
+							<li><time datetime="<?php echo esc_attr( Time::display( $gmt )['iso'] ); ?>"><?php echo esc_html( Time::display( $gmt )['local'] ); ?></time></li>
+						<?php endforeach; ?>
+					</ul>
+				<?php endif; ?>
+			<?php endif; ?>
 			<dl class="ah-facts">
 				<div>
 					<dt><?php esc_html_e( 'When', 'advance-history' ); ?></dt>

@@ -209,6 +209,11 @@ class Recorder {
 			'context'      => $encoded,
 		);
 
+		$absorbed = self::absorb( $row );
+		if ( $absorbed ) {
+			return $absorbed;
+		}
+
 		$inserted = self::insert( $row );
 		if ( ! $inserted ) {
 			return 0;
@@ -218,6 +223,76 @@ class Recorder {
 		do_action( 'advance_history_logged', $event_id, $row );
 
 		return $event_id;
+	}
+
+	/**
+	 * Fold a repeat into the latest matching row from the last 30 minutes.
+	 *
+	 * @param array $row Prepared database row.
+	 * @return int Existing event ID, or 0 when a new row is required.
+	 */
+	private static function absorb( array $row ) {
+		global $wpdb;
+
+		$created = strtotime( $row['created_gmt'] . ' UTC' );
+		if ( ! $created || abs( time() - $created ) > 120 ) {
+			return 0;
+		}
+
+		$table    = Installer::table();
+		$existing = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT id, context, created_gmt FROM {$table} WHERE blog_id = %d AND action = %s AND summary = %s AND user_id = %d AND object_type = %s AND object_id = %d ORDER BY id DESC LIMIT 1",
+				$row['blog_id'],
+				$row['action'],
+				$row['summary'],
+				$row['user_id'],
+				$row['object_type'],
+				$row['object_id']
+			),
+			ARRAY_A
+		);
+		if ( ! is_array( $existing ) ) {
+			return 0;
+		}
+
+		$context = json_decode( (string) $existing['context'], true );
+		if ( ! is_array( $context ) ) {
+			$context = array();
+		}
+		$first = isset( $context['first_gmt'] ) ? strtotime( $context['first_gmt'] . ' UTC' ) : strtotime( $existing['created_gmt'] . ' UTC' );
+		if ( ! $first || ( $created - $first ) > 1800 || ( $created - $first ) < 0 ) {
+			return 0;
+		}
+
+		$times   = isset( $context['repeat_times'] ) && is_array( $context['repeat_times'] ) ? $context['repeat_times'] : array( $existing['created_gmt'] );
+		$times[] = $row['created_gmt'];
+		$context['repeat_count'] = ( isset( $context['repeat_count'] ) ? (int) $context['repeat_count'] : 1 ) + 1;
+		$context['first_gmt']    = gmdate( 'Y-m-d H:i:s', $first );
+		$context['last_gmt']     = $row['created_gmt'];
+		$context['repeat_times'] = array_slice( $times, -12 );
+		$clean                   = Context::clean( $context );
+		$encoded                 = wp_json_encode( $clean );
+		if ( ! is_string( $encoded ) ) {
+			return 0;
+		}
+
+		$updated = $wpdb->update(
+			$table,
+			array(
+				'created_gmt' => $row['created_gmt'],
+				'ip_masked'   => $row['ip_masked'],
+				'context'     => $encoded,
+			),
+			array(
+				'id'      => (int) $existing['id'],
+				'blog_id' => (int) $row['blog_id'],
+			),
+			array( '%s', '%s', '%s' ),
+			array( '%d', '%d' )
+		);
+
+		return false === $updated ? 0 : (int) $existing['id'];
 	}
 
 	/**

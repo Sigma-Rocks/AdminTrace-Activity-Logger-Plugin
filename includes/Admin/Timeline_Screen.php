@@ -11,6 +11,7 @@ use SigmaRocks\AdvanceHistory\Capabilities;
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Settings;
 use SigmaRocks\AdvanceHistory\Support\Access;
+use SigmaRocks\AdvanceHistory\Support\Groups;
 use SigmaRocks\AdvanceHistory\Support\Text;
 use SigmaRocks\AdvanceHistory\Support\Vocabulary;
 
@@ -74,13 +75,14 @@ class Timeline_Screen {
 			echo '</div>';
 		}
 		self::filter_form( $filters, $manage );
-		if ( ! $result['rows'] ) {
+		$rows = Groups::collapse( $result['rows'] );
+		if ( ! $rows ) {
 			echo '<div class="ah-empty"><h2>' . esc_html__( 'Nothing recorded yet', 'advance-history' ) . '</h2><p>' . esc_html__( 'New changes will appear here. Existing posts and pages are noted once, when the plugin is activated.', 'advance-history' ) . '</p></div>';
 		} elseif ( 'table' === $filters['view'] ) {
-			self::table( $result['rows'], ! empty( $args['include_ip'] ) );
+			self::table( $rows, ! empty( $args['include_ip'] ) );
 		} else {
 			echo '<div class="ah-timeline">';
-			foreach ( $result['rows'] as $row ) {
+			foreach ( $rows as $row ) {
 				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ) );
 			}
 			echo '</div>';
@@ -319,8 +321,19 @@ class Timeline_Screen {
 			echo '<td><time datetime="' . esc_attr( $when['iso'] ) . '">' . esc_html( $when['primary'] ) . '</time></td>';
 			echo '<td>' . esc_html( Vocabulary::severity_label( $row['severity'] ) ) . '</td>';
 			echo '<td>' . esc_html( Vocabulary::category_label( $row['category'] ) ) . '</td>';
-			echo '<td><a href="' . esc_url( admin_url( 'admin.php?page=advance-history&event=' . (int) $row['id'] ) ) . '">' . esc_html( $row['summary'] ) . '</a></td>';
-			echo '<td>' . esc_html( Renderer::actor( $row ) ) . '</td>';
+			echo '<td><a href="' . esc_url( admin_url( 'admin.php?page=advance-history&event=' . (int) $row['id'] ) ) . '">' . esc_html( $row['summary'] ) . '</a>';
+			$repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1;
+			if ( $repeats > 1 ) {
+				echo ' <span class="ah-pill ah-pill-repeat">' . esc_html(
+					sprintf(
+						/* translators: %d: number of times this event happened. */
+						_n( '%d time', '%d times', $repeats, 'advance-history' ),
+						$repeats
+					)
+				) . '</span>';
+			}
+			echo '</td>';
+			echo '<td class="ah-actor-cell"><span class="ah-event-avatar" aria-hidden="true">' . Renderer::avatar( $row, 28 ) . '</span><span>' . esc_html( Renderer::actor( $row ) ) . '</span></td>';
 			echo '</tr>';
 		}
 		echo '</tbody></table>';

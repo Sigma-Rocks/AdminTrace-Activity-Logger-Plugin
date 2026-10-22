@@ -11,6 +11,7 @@ use SigmaRocks\AdvanceHistory\Capabilities;
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Settings;
 use SigmaRocks\AdvanceHistory\Support\Access;
+use SigmaRocks\AdvanceHistory\Support\Groups;
 use SigmaRocks\AdvanceHistory\Support\Vocabulary;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -44,7 +45,7 @@ class Dashboard_Widget {
 	 */
 	public static function render() {
 		$args   = Access::constrain( array( 'per_page' => 6, 'page' => 1 ) );
-		$rows   = Query::recent( 6, $args );
+		$rows   = Groups::collapse( Query::recent( 6, $args ) );
 		$scoped = ! current_user_can( Capabilities::MANAGE );
 		$stats  = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );
 		echo '<div class="ah-widget">';

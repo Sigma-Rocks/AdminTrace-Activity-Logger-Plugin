@@ -171,7 +171,7 @@
 .ah-timeline::before {
 	content: "";
 	position: absolute;
-	left: 18px;
+	left: 21px;
 	top: 8px;
 	bottom: 8px;
 	width: 2px;
@@ -180,31 +180,46 @@
 
 .ah-event {
 	display: grid;
-	grid-template-columns: 36px minmax(0, 1fr);
+	grid-template-columns: 44px minmax(0, 1fr);
 	gap: 8px;
 	position: relative;
 }
 
-.ah-event-mark {
-	width: 12px;
-	height: 12px;
-	margin: 18px 0 0 13px;
-	border-radius: 50%;
-	background: #1f6f8b;
-	box-shadow: 0 0 0 4px #fffcf7;
+.ah-event-avatar {
+	position: relative;
 	z-index: 1;
+	width: 36px;
+	height: 36px;
+	margin-top: 12px;
 }
 
-.ah-severity-notice .ah-event-mark {
-	background: #0c5c59;
+.ah-event-avatar .ah-avatar,
+.ah-actor-cell .ah-avatar {
+	display: block;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	box-shadow: 0 0 0 3px #f0f0f1;
+	object-fit: cover;
 }
 
-.ah-severity-warning .ah-event-mark {
-	background: #8a4b0f;
+.ah-actor-cell {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 }
 
-.ah-severity-critical .ah-event-mark {
-	background: #9d2c3a;
+.ah-actor-cell .ah-event-avatar {
+	width: 28px;
+	height: 28px;
+	margin: 0;
+	flex: 0 0 auto;
+}
+
+.ah-actor-cell .ah-avatar {
+	width: 28px;
+	height: 28px;
+	box-shadow: none;
 }
 
 .ah-event-body {
@@ -263,6 +278,15 @@
 .ah-pill-info {
 	background: #d9e7ee;
 	color: #16485c;
+}
+
+.ah-pill-repeat {
+	background: #efe7d8;
+	color: #1c2430;
+}
+
+.ah-repeat-times {
+	margin: 8px 0 0 1.2em;
 }
 
 .ah-event-summary {
@@ -608,7 +632,7 @@
 }
 
 .ah-timeline-compact::before {
-	left: 14px;
+	left: 21px;
 }
 
 .ah-wrap a:focus,
@@ -662,11 +686,12 @@
 	}
 
 	.ah-event {
-		grid-template-columns: 1fr;
+		grid-template-columns: 40px minmax(0, 1fr);
 	}
 
-	.ah-event-mark {
-		display: none;
+	.ah-event-avatar {
+		width: 32px;
+		height: 32px;
 	}
 }
 

@@ -17,12 +17,14 @@ require dirname( __DIR__ ) . '/includes/Support/Diff.php';
 require dirname( __DIR__ ) . '/includes/Support/Csv.php';
 require dirname( __DIR__ ) . '/includes/Support/Url.php';
 require dirname( __DIR__ ) . '/includes/Support/Context.php';
+require dirname( __DIR__ ) . '/includes/Support/Groups.php';
 require dirname( __DIR__ ) . '/includes/Settings.php';
 require dirname( __DIR__ ) . '/includes/Query.php';
 
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Settings;
 use SigmaRocks\AdvanceHistory\Support\Context;
+use SigmaRocks\AdvanceHistory\Support\Groups;
 use SigmaRocks\AdvanceHistory\Support\Csv;
 use SigmaRocks\AdvanceHistory\Support\Diff;
 use SigmaRocks\AdvanceHistory\Support\Ip;
@@ -155,6 +157,19 @@ ah_assert( 'abc123' === $settings['feed_token'], 'feed secret is preserved' );
 
 $order = Query::order_parts( 'created_gmt; DROP TABLE wp_users', 'DESC; DELETE' );
 ah_assert( 'created_gmt' === $order['column'] && 'DESC' === $order['direction'], 'ordering is whitelisted' );
+
+$grouped = Groups::collapse(
+	array(
+		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:08', 'context' => array() ),
+		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:05', 'context' => array() ),
+		array( 'summary' => 'Threshold reached', 'action' => 'security.login_threshold', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:05', 'context' => array() ),
+		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:10:19', 'context' => array() ),
+		array( 'summary' => 'Logged in as "ada".', 'action' => 'user.login', 'user_id' => 1, 'object_type' => 'user', 'object_id' => 1, 'created_gmt' => '2026-10-22 08:06:24', 'context' => array() ),
+	)
+);
+ah_assert( 3 === count( $grouped ), 'repeated events collapse into one row' );
+ah_assert( 3 === (int) $grouped[0]['repeat_count'], 'repeat count includes the whole window' );
+ah_assert( 1 === (int) $grouped[2]['repeat_count'], 'a different event stays on its own' );
 
 echo $failures ? "{$failures} failed\n" : "all smoke checks passed\n";
 exit( $failures ? 1 : 0 );

@@ -10,6 +10,7 @@ namespace SigmaRocks\AdvanceHistory\Admin;
 use SigmaRocks\AdvanceHistory\Capabilities;
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Support\Access;
+use SigmaRocks\AdvanceHistory\Support\Groups;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -66,7 +67,7 @@ class Post_Panel {
 				'page'        => 1,
 			)
 		);
-		$rows = Query::recent( 8, $args );
+		$rows = Groups::collapse( Query::recent( 8, $args ) );
 		echo '<div class="ah-widget">';
 		if ( ! $rows ) {
 			echo '<p>' . esc_html__( 'No journal entries for this item yet.', 'advance-history' ) . '</p>';

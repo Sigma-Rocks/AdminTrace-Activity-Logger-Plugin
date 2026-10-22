@@ -11,6 +11,7 @@ use SigmaRocks\AdvanceHistory\Capabilities;
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Settings;
 use SigmaRocks\AdvanceHistory\Support\Access;
+use SigmaRocks\AdvanceHistory\Support\Groups;
 use SigmaRocks\AdvanceHistory\Support\Text;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -51,7 +52,7 @@ class Admin_Bar {
 		);
 
 		$args = Access::constrain( array( 'per_page' => 5, 'page' => 1 ) );
-		$rows = Query::recent( 5, $args );
+		$rows = Groups::collapse( Query::recent( 8, $args ) );
 		if ( ! $rows ) {
 			$bar->add_node(
 				array(
@@ -63,13 +64,22 @@ class Admin_Bar {
 			return;
 		}
 
-		foreach ( $rows as $row ) {
-			$row = Access::present( $row, ! empty( $args['include_ip'] ) );
+		foreach ( array_slice( $rows, 0, 5 ) as $row ) {
+			$row   = Access::present( $row, ! empty( $args['include_ip'] ) );
+			$title = Text::plain( $row['summary'], 80 );
+			$count = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1;
+			if ( $count > 1 ) {
+				$title .= ' (' . sprintf(
+					/* translators: %d: number of times this event happened. */
+					_n( '%d time', '%d times', $count, 'advance-history' ),
+					$count
+				) . ')';
+			}
 			$bar->add_node(
 				array(
 					'id'     => 'advance-history-' . (int) $row['id'],
 					'parent' => 'advance-history',
-					'title'  => esc_html( Text::plain( $row['summary'], 80 ) ),
+					'title'  => esc_html( $title ),
 					'href'   => admin_url( 'admin.php?page=advance-history&event=' . (int) $row['id'] ),
 				)
 			);
