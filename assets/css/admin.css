@@ -1,5 +1,5 @@
 .ah-wrap {
-	max-width: 1120px;
+	max-width: none;
 }
 
 .ah-wrap h1 {
@@ -83,11 +83,26 @@
 }
 
 .ah-filters {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: 12px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
 	padding: 16px;
 	margin: 0 0 16px;
+}
+
+.ah-filter-grid,
+.ah-filter-bar {
+	display: grid;
+	gap: 12px 16px;
+	align-items: end;
+}
+
+.ah-filter-grid {
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.ah-filter-bar {
+	grid-template-columns: minmax(160px, 220px) minmax(160px, 220px) auto minmax(0, 1fr);
 }
 
 .ah-filters p,
@@ -103,7 +118,9 @@
 	margin-bottom: 4px;
 }
 
-.ah-filters input,
+.ah-filters input[type="search"],
+.ah-filters input[type="text"],
+.ah-filters input[type="date"],
 .ah-filters select,
 .ah-settings input[type="text"],
 .ah-settings input[type="email"],
@@ -116,6 +133,13 @@
 	max-width: 100%;
 }
 
+.ah-filters input[type="checkbox"] {
+	width: 1rem;
+	height: 1rem;
+	margin: 0 8px 0 0;
+	vertical-align: text-bottom;
+}
+
 .ah-filter-check label,
 .ah-settings .ah-role,
 .ah-note summary,
@@ -123,9 +147,17 @@
 	font-weight: 600;
 }
 
+.ah-filter-check label {
+	display: flex;
+	align-items: center;
+	min-height: 30px;
+	margin-bottom: 0;
+}
+
 .ah-filter-actions {
 	display: flex;
-	align-items: flex-end;
+	align-items: center;
+	justify-content: flex-end;
 	gap: 8px;
 }
 
@@ -245,6 +277,11 @@
 	color: #3d4a42;
 }
 
+.ah-event-top time {
+	margin-left: auto;
+	font-size: 12px;
+}
+
 .ah-event-meta {
 	margin: 0;
 }
@@ -301,10 +338,15 @@
 
 .ah-empty,
 .ah-note,
-.ah-panel,
 .ah-highlight {
 	padding: 16px;
 	margin: 0 0 16px;
+}
+
+.ah-panel {
+	padding: 0 0 8px;
+	margin: 0 0 20px;
+	overflow: hidden;
 }
 
 .ah-empty h2,
@@ -337,15 +379,220 @@
 	text-decoration: none;
 }
 
+.ah-settings {
+	max-width: none;
+}
+
+.ah-settings-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 20px;
+	align-items: start;
+	margin-bottom: 20px;
+}
+
+.ah-settings-grid > .ah-panel {
+	margin: 0;
+}
+
+.ah-panel-head {
+	padding: 18px 22px 0;
+}
+
+.ah-panel-head h2 {
+	margin: 0 0 4px;
+	font-size: 16px;
+}
+
+.ah-panel-head p,
+.ah-field .description,
+.ah-toggle .description,
+.ah-logger .description {
+	display: block;
+	margin: 4px 0 0;
+	color: #3d4a42;
+	font-weight: 400;
+}
+
+.ah-fields,
+.ah-toggles,
+.ah-logger-grid {
+	padding: 16px 22px 8px;
+}
+
+.ah-fields {
+	display: grid;
+	gap: 16px;
+}
+
+.ah-fields-2 {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ah-fields-3 {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ah-field {
+	min-width: 0;
+}
+
+.ah-settings fieldset {
+	border: 0;
+	margin: 0;
+	padding: 0;
+	min-width: 0;
+}
+
+.ah-toggles {
+	display: grid;
+}
+
+.ah-settings .ah-toggle {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	padding: 12px 0;
+	border-top: 1px solid #efe7d8;
+	font-weight: 500;
+}
+
+.ah-toggles .ah-toggle:first-child {
+	border-top: 0;
+	padding-top: 4px;
+}
+
+.ah-toggle input {
+	width: 1rem;
+	height: 1rem;
+	margin: 3px 0 0;
+	flex: 0 0 auto;
+}
+
+.ah-toggle strong {
+	display: block;
+}
+
+.ah-roles {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.ah-settings .ah-role {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 6px 10px;
+	border: 1px solid #e4dccb;
+	border-radius: 999px;
+	background: #fff;
+	font-weight: 500;
+}
+
+.ah-role input {
+	margin: 0;
+}
+
+.ah-logger-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	gap: 12px;
+	padding-bottom: 22px;
+}
+
+.ah-settings .ah-logger {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	margin: 0;
+	padding: 12px;
+	border: 1px solid #e4dccb;
+	border-radius: 12px;
+	background: #fff;
+	font-weight: 500;
+}
+
+.ah-logger input {
+	margin: 3px 0 0;
+	flex: 0 0 auto;
+}
+
+.ah-logger strong {
+	display: block;
+}
+
+.ah-savebar {
+	display: flex;
+	justify-content: flex-end;
+	margin: 4px 0 24px;
+}
+
+.ah-savebar .submit {
+	margin: 0;
+	padding: 0;
+}
+
+.ah-maintenance-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16px 24px;
+	align-items: center;
+	padding: 8px 22px 18px;
+}
+
+.ah-maintenance-row form {
+	margin: 0;
+}
+
+.ah-maintenance-row .submit {
+	margin: 0;
+	padding: 0;
+}
+
+.ah-danger {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 12px;
+	align-items: center;
+	margin-left: auto;
+	padding: 10px 12px;
+	border: 1px solid #e7c7cc;
+	border-radius: 12px;
+	background: #fff7f8;
+}
+
+.ah-danger .ah-toggle {
+	border: 0;
+	padding: 0;
+}
+
+.ah-segment {
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	border-radius: 10px;
+	background: #efe7d8;
+}
+
+.ah-segment .button {
+	margin: 0;
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+	color: #1c2430;
+}
+
+.ah-segment .button[aria-current="page"] {
+	background: #0c5c59;
+	color: #f6f3ec;
+}
+
 .ah-settings .description,
 .ah-panel .description {
 	color: #3d4a42;
-}
-
-.ah-role {
-	display: inline-block;
-	margin: 0 12px 8px 0;
-	font-weight: 400;
 }
 
 .ah-note textarea {
@@ -374,14 +621,38 @@
 	outline-offset: 2px;
 }
 
+@media (max-width: 1200px) {
+	.ah-settings-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
 @media (max-width: 782px) {
 	.ah-hero,
-	.ah-filter-actions,
 	.ah-bulk {
 		display: block;
 	}
 
-	.ah-hero-actions .button,
+	.ah-settings-grid,
+	.ah-fields-2,
+	.ah-fields-3 {
+		grid-template-columns: 1fr;
+	}
+
+	.ah-danger {
+		margin-left: 0;
+		width: 100%;
+	}
+
+	.ah-filter-bar {
+		grid-template-columns: 1fr;
+	}
+
+	.ah-filter-actions {
+		justify-content: flex-start;
+	}
+
+	.ah-hero-actions > .button,
 	.ah-filter-actions .button {
 		margin-top: 8px;
 	}

@@ -53,7 +53,6 @@ class Timeline_Screen {
 		$args     = Access::constrain( self::query_args( $filters ) );
 		$result   = Query::search( $args );
 		$manage   = current_user_can( Capabilities::MANAGE );
-		$can_del  = current_user_can( Capabilities::DELETE );
 		$scoped   = ! $manage;
 		$stats    = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );
 		$pages    = max( 1, (int) ceil( $result['total'] / $filters['per_page'] ) );
@@ -75,26 +74,18 @@ class Timeline_Screen {
 			echo '</div>';
 		}
 		self::filter_form( $filters, $manage );
-		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
-		wp_nonce_field( 'advance_history_delete' );
-		echo '<input type="hidden" name="action" value="advance_history_delete">';
-		if ( $can_del && $result['rows'] ) {
-			echo '<div class="ah-bulk"><label><input type="checkbox" data-ah-select-all> ' . esc_html__( 'Select all on this page', 'advance-history' ) . '</label>';
-			echo '<button class="button" type="submit">' . esc_html__( 'Delete selected', 'advance-history' ) . '</button></div>';
-		}
 		if ( ! $result['rows'] ) {
 			echo '<div class="ah-empty"><h2>' . esc_html__( 'Nothing recorded yet', 'advance-history' ) . '</h2><p>' . esc_html__( 'New changes will appear here. Existing posts and pages are noted once, when the plugin is activated.', 'advance-history' ) . '</p></div>';
 		} elseif ( 'table' === $filters['view'] ) {
-			self::table( $result['rows'], $can_del, ! empty( $args['include_ip'] ) );
+			self::table( $result['rows'], ! empty( $args['include_ip'] ) );
 		} else {
 			echo '<div class="ah-timeline">';
 			foreach ( $result['rows'] as $row ) {
-				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ), array( 'checkbox' => $can_del ) );
+				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ) );
 			}
 			echo '</div>';
 		}
 		self::pagination( $filters, $pages );
-		echo '</form>';
 		if ( $manage ) {
 			self::note_form();
 		}
@@ -187,8 +178,10 @@ class Timeline_Screen {
 					<a class="button" href="<?php echo esc_url( $export ); ?>"><?php esc_html_e( 'Export CSV', 'advance-history' ); ?></a>
 					<a class="button" href="<?php echo esc_url( add_query_arg( 'format', 'json', $export ) ); ?>"><?php esc_html_e( 'Export JSON', 'advance-history' ); ?></a>
 				<?php endif; ?>
-				<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'timeline' ) ); ?>" <?php echo 'timeline' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Timeline', 'advance-history' ); ?></a>
-				<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'table' ) ); ?>" <?php echo 'table' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Table', 'advance-history' ); ?></a>
+				<div class="ah-segment" role="group" aria-label="<?php esc_attr_e( 'Journal view', 'advance-history' ); ?>">
+					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'timeline' ) ); ?>" <?php echo 'timeline' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Timeline', 'advance-history' ); ?></a>
+					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'table' ) ); ?>" <?php echo 'table' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Table', 'advance-history' ); ?></a>
+				</div>
 			</div>
 		</header>
 		<?php
@@ -235,6 +228,7 @@ class Timeline_Screen {
 		<form class="ah-filters" method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
 			<input type="hidden" name="page" value="advance-history">
 			<input type="hidden" name="view" value="<?php echo esc_attr( $filters['view'] ); ?>">
+			<div class="ah-filter-grid">
 			<p>
 				<label for="ah-search"><?php esc_html_e( 'Search', 'advance-history' ); ?></label>
 				<input id="ah-search" type="search" name="s" value="<?php echo esc_attr( $filters['search'] ); ?>">
@@ -282,6 +276,8 @@ class Timeline_Screen {
 					?>
 				</p>
 			<?php endif; ?>
+			</div>
+			<div class="ah-filter-bar">
 			<p>
 				<label for="ah-after"><?php esc_html_e( 'From', 'advance-history' ); ?></label>
 				<input id="ah-after" type="date" name="after" value="<?php echo esc_attr( $filters['after'] ); ?>">
@@ -297,6 +293,7 @@ class Timeline_Screen {
 				<button class="button button-primary" type="submit"><?php esc_html_e( 'Apply filters', 'advance-history' ); ?></button>
 				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=advance-history' ) ); ?>"><?php esc_html_e( 'Reset', 'advance-history' ); ?></a>
 			</p>
+			</div>
 		</form>
 		<?php
 	}
@@ -305,14 +302,10 @@ class Timeline_Screen {
 	 * Compact table.
 	 *
 	 * @param array $rows Rows.
-	 * @param bool  $can_delete Whether checkboxes are shown.
 	 * @param bool  $include_ip Whether masked IPs are shown.
 	 */
-	private static function table( array $rows, $can_delete, $include_ip ) {
+	private static function table( array $rows, $include_ip ) {
 		echo '<table class="widefat striped ah-table"><thead><tr>';
-		if ( $can_delete ) {
-			echo '<td class="check-column"></td>';
-		}
 		echo '<th scope="col">' . esc_html__( 'When', 'advance-history' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Severity', 'advance-history' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Category', 'advance-history' ) . '</th>';
@@ -323,9 +316,6 @@ class Timeline_Screen {
 			$row  = Access::present( $row, $include_ip );
 			$when = \SigmaRocks\AdvanceHistory\Support\Time::display( $row['created_gmt'] );
 			echo '<tr>';
-			if ( $can_delete ) {
-				echo '<th scope="row" class="check-column"><input class="ah-event-check" type="checkbox" name="event_ids[]" value="' . esc_attr( (string) $row['id'] ) . '"></th>';
-			}
 			echo '<td><time datetime="' . esc_attr( $when['iso'] ) . '">' . esc_html( $when['primary'] ) . '</time></td>';
 			echo '<td>' . esc_html( Vocabulary::severity_label( $row['severity'] ) ) . '</td>';
 			echo '<td>' . esc_html( Vocabulary::category_label( $row['category'] ) ) . '</td>';

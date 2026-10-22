@@ -41,22 +41,24 @@ class Assets {
 			return;
 		}
 
+		$style = AH_PATH . 'assets/css/admin.css';
 		wp_enqueue_style(
 			'advance-history-admin',
 			AH_URL . 'assets/css/admin.css',
 			array(),
-			AH_VERSION
+			file_exists( $style ) ? (string) filemtime( $style ) : AH_VERSION
 		);
 
 		if ( ! $ours ) {
 			return;
 		}
 
+		$script = AH_PATH . 'assets/js/admin.js';
 		wp_enqueue_script(
 			'advance-history-admin',
 			AH_URL . 'assets/js/admin.js',
 			array(),
-			AH_VERSION,
+			file_exists( $script ) ? (string) filemtime( $script ) : AH_VERSION,
 			true
 		);
 		wp_localize_script(
