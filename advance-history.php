@@ -12,7 +12,6 @@
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: advance-history
  * Domain Path: /languages
- * Update URI: https://sigmarocks.com
  *
  * @package AdvanceHistory
  */

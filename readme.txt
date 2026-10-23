@@ -16,7 +16,7 @@ Advance History records important changes on a WordPress site: content, accounts
 
 There is no paid tier. Search, filters, export, retention, email digests, and the WooCommerce recorder are all included.
 
-The journal stores a short description of each change. It does not store passwords, application passwords, API keys, or the full text of a post. Network addresses are masked unless you turn them off. Advance History does not look addresses up with an outside service and does not phone home.
+The journal stores a short description of each change. A post edit can include a short line-by-line preview of what changed, not a copy of the whole post. It does not store passwords, application passwords, or API keys. Network addresses are masked unless you turn them off. Advance History does not look addresses up with an outside service and does not phone home.
 
 == Installation ==
 

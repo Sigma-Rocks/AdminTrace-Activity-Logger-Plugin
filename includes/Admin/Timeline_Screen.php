@@ -91,7 +91,7 @@ class Timeline_Screen {
 		if ( $manage ) {
 			self::note_form();
 		}
-		echo '<p class="ah-credit"><a href="https://sigmarocks.com" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Advance History by Sigma Rocks', 'advance-history' ) . '</a></p>';
+		echo '<p class="ah-credit"><a href="' . esc_url( 'https://sigmarocks.com' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Advance History by Sigma Rocks', 'advance-history' ) . '</a></p>';
 		echo '</div>';
 	}
 
