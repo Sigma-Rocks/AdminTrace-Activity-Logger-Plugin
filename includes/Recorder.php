@@ -256,18 +256,23 @@ class Recorder {
 			return 0;
 		}
 
-		$context = json_decode( (string) $existing['context'], true );
-		if ( ! is_array( $context ) ) {
-			$context = array();
+		$previous = json_decode( (string) $existing['context'], true );
+		if ( ! is_array( $previous ) ) {
+			$previous = array();
 		}
-		$first = isset( $context['first_gmt'] ) ? strtotime( $context['first_gmt'] . ' UTC' ) : strtotime( $existing['created_gmt'] . ' UTC' );
+		$incoming = json_decode( (string) $row['context'], true );
+		if ( ! is_array( $incoming ) ) {
+			$incoming = array();
+		}
+		$first = isset( $previous['first_gmt'] ) ? strtotime( $previous['first_gmt'] . ' UTC' ) : strtotime( $existing['created_gmt'] . ' UTC' );
 		if ( ! $first || ( $created - $first ) > 1800 || ( $created - $first ) < 0 ) {
 			return 0;
 		}
 
-		$times   = isset( $context['repeat_times'] ) && is_array( $context['repeat_times'] ) ? $context['repeat_times'] : array( $existing['created_gmt'] );
+		$times   = isset( $previous['repeat_times'] ) && is_array( $previous['repeat_times'] ) ? $previous['repeat_times'] : array( $existing['created_gmt'] );
 		$times[] = $row['created_gmt'];
-		$context['repeat_count'] = ( isset( $context['repeat_count'] ) ? (int) $context['repeat_count'] : 1 ) + 1;
+		$context = $incoming;
+		$context['repeat_count'] = ( isset( $previous['repeat_count'] ) ? (int) $previous['repeat_count'] : 1 ) + 1;
 		$context['first_gmt']    = gmdate( 'Y-m-d H:i:s', $first );
 		$context['last_gmt']     = $row['created_gmt'];
 		$context['repeat_times'] = array_slice( $times, -12 );

@@ -125,6 +125,25 @@ ah_assert( true === $diff['changed'], 'text change is detected' );
 ah_assert( in_array( 'green', $diff['added'], true ), 'added word is listed' );
 ah_assert( in_array( 'brown', $diff['removed'], true ), 'removed word is listed' );
 
+$hunks = Diff::hunks( "alpha\nkeep\nremove me\nkeep end", "alpha\nkeep\nadd me\nkeep end" );
+ah_assert( in_array( 'del: remove me', $hunks, true ), 'removed line is marked' );
+ah_assert( in_array( 'add: add me', $hunks, true ), 'added line is marked' );
+ah_assert( in_array( 'ctx: keep', $hunks, true ), 'nearby line is kept' );
+ah_assert( array() === Diff::hunks( '<p>Same</p>', '<p>Same</p>' ), 'identical content has no diff' );
+$markup = Diff::hunks( '<p>Hello brown</p>', '<p>Hello green</p>' );
+ah_assert( in_array( 'del: Hello brown', $markup, true ) && in_array( 'add: Hello green', $markup, true ), 'paragraph markup diffs as text' );
+$stored = Context::clean(
+	array(
+		'changes' => array(
+			array(
+				'field' => 'Content',
+				'lines' => $hunks,
+			),
+		),
+	)
+);
+ah_assert( isset( $stored['changes'][0]['lines'] ) && in_array( 'add: add me', $stored['changes'][0]['lines'], true ), 'line diff survives context cleanup' );
+
 ah_assert( "'=1+1" === Csv::cell( '=1+1' ), 'CSV formulas are neutralized' );
 ah_assert( 'safe' === Csv::cell( 'safe' ), 'plain CSV cells stay plain' );
 

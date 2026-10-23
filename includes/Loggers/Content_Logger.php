@@ -141,25 +141,27 @@ class Content_Logger extends Logger {
 		}
 
 		if ( (string) $before->post_content !== (string) $after->post_content ) {
-			$diff = Diff::summarize( $before->post_content, $after->post_content );
-			$this->change(
-				$after->ID,
-				array(
-					'field'   => __( 'Content', 'advance-history' ),
-					'from'    => sprintf(
-						/* translators: %d: character count. */
-						__( '%d characters', 'advance-history' ),
-						(int) $diff['before_chars']
-					),
-					'to'      => sprintf(
-						/* translators: %d: character count. */
-						__( '%d characters', 'advance-history' ),
-						(int) $diff['after_chars']
-					),
-					'added'   => $diff['added'],
-					'removed' => $diff['removed'],
-				)
+			$diff  = Diff::summarize( $before->post_content, $after->post_content );
+			$lines = Diff::hunks( $before->post_content, $after->post_content );
+			$change = array(
+				'field'   => __( 'Content', 'advance-history' ),
+				'from'    => sprintf(
+					/* translators: %d: character count. */
+					__( '%d characters', 'advance-history' ),
+					(int) $diff['before_chars']
+				),
+				'to'      => sprintf(
+					/* translators: %d: character count. */
+					__( '%d characters', 'advance-history' ),
+					(int) $diff['after_chars']
+				),
+				'added'   => $diff['added'],
+				'removed' => $diff['removed'],
 			);
+			if ( $lines ) {
+				$change['lines'] = $lines;
+			}
+			$this->change( $after->ID, $change );
 		}
 	}
 
