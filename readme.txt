@@ -46,6 +46,12 @@ Yes, by default. There is a setting to keep the journal instead. Deactivation do
 
 Only if you save an email recipient or an HTTPS webhook. Both are off until you turn them on. The private RSS feed is also off until you enable it.
 
+== Screenshots ==
+
+1. The activity journal, with search, filters, and a post edit shown as added and removed lines.
+2. Settings for how long events are kept, who can read them, and optional email or webhook alerts.
+3. The same journal as a table, including the account that made each change.
+
 == Changelog ==
 
 = 1.0.0 =
