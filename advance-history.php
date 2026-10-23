@@ -1,7 +1,6 @@
 <?php
 /**
  * Plugin Name: Advance History
- * Plugin URI: https://sigmarocks.com
  * Description: A readable activity journal for WordPress. See who changed content, users, plugins, orders, and settings.
  * Version: 1.0.0
  * Requires at least: 6.2
