@@ -24,7 +24,7 @@ class Text {
 	 * @return string
 	 */
 	public static function plain( $text, $limit = 500 ) {
-		$text = html_entity_decode( strip_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
+		$text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
 		$text = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text );
 		$text = preg_replace( '/\s+/u', ' ', (string) $text );
 		$text = trim( (string) $text );

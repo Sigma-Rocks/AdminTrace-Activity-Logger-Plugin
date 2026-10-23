@@ -333,7 +333,7 @@ class Timeline_Screen {
 				) . '</span>';
 			}
 			echo '</td>';
-			echo '<td class="ah-actor-cell"><span class="ah-event-avatar" aria-hidden="true">' . Renderer::avatar( $row, 28 ) . '</span><span>' . esc_html( Renderer::actor( $row ) ) . '</span></td>';
+			echo '<td class="ah-actor-cell"><span class="ah-event-avatar" aria-hidden="true">' . wp_kses_post( Renderer::avatar( $row, 28 ) ) . '</span><span>' . esc_html( Renderer::actor( $row ) ) . '</span></td>';
 			echo '</tr>';
 		}
 		echo '</tbody></table>';

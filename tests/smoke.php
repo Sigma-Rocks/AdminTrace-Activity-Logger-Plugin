@@ -11,6 +11,30 @@ if ( 'cli' !== PHP_SAPI ) {
 
 define( 'ABSPATH', __DIR__ );
 
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	/**
+	 * Test stub for the WordPress tag stripper.
+	 *
+	 * @param string $text Text.
+	 * @return string
+	 */
+	function wp_strip_all_tags( $text ) {
+		return strip_tags( (string) $text );
+	}
+}
+if ( ! function_exists( 'wp_parse_url' ) ) {
+	/**
+	 * Test stub for the WordPress URL parser.
+	 *
+	 * @param string $url URL.
+	 * @param int    $component Component.
+	 * @return mixed
+	 */
+	function wp_parse_url( $url, $component = -1 ) {
+		return parse_url( (string) $url, $component );
+	}
+}
+
 require dirname( __DIR__ ) . '/includes/Support/Text.php';
 require dirname( __DIR__ ) . '/includes/Support/Ip.php';
 require dirname( __DIR__ ) . '/includes/Support/Diff.php';

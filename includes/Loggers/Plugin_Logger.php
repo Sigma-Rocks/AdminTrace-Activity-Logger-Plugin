@@ -62,7 +62,14 @@ class Plugin_Logger extends Logger {
 	 * @param bool   $network Network-wide.
 	 */
 	public function on_activated( $plugin, $network = false ) {
-		$this->log_plugin( $plugin, 'plugin.activated', __( 'Activated the plugin "%1$s" (%2$s).', 'advance-history' ), 'notice', $network );
+		$this->log_plugin(
+			$plugin,
+			'plugin.activated',
+			/* translators: 1: plugin name, 2: version. */
+			__( 'Activated the plugin "%1$s" (%2$s).', 'advance-history' ),
+			'notice',
+			$network
+		);
 	}
 
 	/**
@@ -72,7 +79,14 @@ class Plugin_Logger extends Logger {
 	 * @param bool   $network Network-wide.
 	 */
 	public function on_deactivated( $plugin, $network = false ) {
-		$this->log_plugin( $plugin, 'plugin.deactivated', __( 'Deactivated the plugin "%1$s" (%2$s).', 'advance-history' ), 'notice', $network );
+		$this->log_plugin(
+			$plugin,
+			'plugin.deactivated',
+			/* translators: 1: plugin name, 2: version. */
+			__( 'Deactivated the plugin "%1$s" (%2$s).', 'advance-history' ),
+			'notice',
+			$network
+		);
 	}
 
 	/**
@@ -121,10 +135,16 @@ class Plugin_Logger extends Logger {
 			$files = array( (string) $upgrader->result['destination_name'] );
 		}
 		foreach ( $files as $file ) {
-			$pattern = ( 'install' === $action )
-				? __( 'Installed the plugin "%1$s" (%2$s).', 'advance-history' )
-				: __( 'Updated the plugin "%1$s" (%2$s).', 'advance-history' );
-			$this->log_plugin( $file, 'install' === $action ? 'plugin.installed' : 'plugin.updated', $pattern, 'notice', false );
+			if ( 'install' === $action ) {
+				/* translators: 1: plugin name, 2: version. */
+				$pattern = __( 'Installed the plugin "%1$s" (%2$s).', 'advance-history' );
+				$event   = 'plugin.installed';
+			} else {
+				/* translators: 1: plugin name, 2: version. */
+				$pattern = __( 'Updated the plugin "%1$s" (%2$s).', 'advance-history' );
+				$event   = 'plugin.updated';
+			}
+			$this->log_plugin( $file, $event, $pattern, 'notice', false );
 		}
 	}
 

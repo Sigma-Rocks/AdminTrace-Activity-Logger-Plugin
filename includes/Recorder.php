@@ -239,10 +239,10 @@ class Recorder {
 			return 0;
 		}
 
-		$table    = Installer::table();
 		$existing = $wpdb->get_row(
 			$wpdb->prepare(
-				"SELECT id, context, created_gmt FROM {$table} WHERE blog_id = %d AND action = %s AND summary = %s AND user_id = %d AND object_type = %s AND object_id = %d ORDER BY id DESC LIMIT 1",
+				'SELECT id, context, created_gmt FROM %i WHERE blog_id = %d AND action = %s AND summary = %s AND user_id = %d AND object_type = %s AND object_id = %d ORDER BY id DESC LIMIT 1',
+				Installer::table(),
 				$row['blog_id'],
 				$row['action'],
 				$row['summary'],

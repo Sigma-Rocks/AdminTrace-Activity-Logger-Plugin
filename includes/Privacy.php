@@ -147,10 +147,10 @@ class Privacy {
 		}
 
 		global $wpdb;
-		$table = Installer::table();
 		$wpdb->query(
 			$wpdb->prepare(
-				"DELETE FROM {$table} WHERE blog_id = %d AND (user_id = %d OR (user_id = 0 AND user_login = %s))",
+				'DELETE FROM %i WHERE blog_id = %d AND (user_id = %d OR (user_id = 0 AND user_login = %s))',
+				Installer::table(),
 				get_current_blog_id(),
 				(int) $user->ID,
 				$user->user_login

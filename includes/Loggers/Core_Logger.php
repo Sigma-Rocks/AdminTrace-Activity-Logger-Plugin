@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/**
- * Records core updates, translations, and available-update notices.
- */
+	/**
+	 * Records completed WordPress core updates, language packs, and automatic updates.
+	 */
 class Core_Logger extends Logger {
 
 	/**
@@ -42,7 +42,7 @@ class Core_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'WordPress core updates, language packs, and newly available updates.', 'advance-history' );
+		return __( 'Completed WordPress updates, language packs, and automatic updates.', 'advance-history' );
 	}
 
 	/**
@@ -52,9 +52,6 @@ class Core_Logger extends Logger {
 		$this->listen( '_core_updated_successfully', 'on_core_updated', 1 );
 		$this->listen( 'upgrader_process_complete', 'on_upgrader', 2 );
 		$this->listen( 'automatic_updates_complete', 'on_automatic', 1 );
-		$this->listen( 'set_site_transient_update_core', 'on_core_transient', 1 );
-		$this->listen( 'set_site_transient_update_plugins', 'on_plugin_transient', 1 );
-		$this->listen( 'set_site_transient_update_themes', 'on_theme_transient', 1 );
 	}
 
 	/**
@@ -148,120 +145,4 @@ class Core_Logger extends Logger {
 		);
 	}
 
-	/**
-	 * Core update availability changed.
-	 *
-	 * @param object $transient Update transient.
-	 */
-	public function on_core_transient( $transient ) {
-		$version = '';
-		if ( is_object( $transient ) && ! empty( $transient->updates ) && is_array( $transient->updates ) ) {
-			foreach ( $transient->updates as $update ) {
-				if ( is_object( $update ) && isset( $update->current ) && isset( $update->response ) && 'upgrade' === $update->response ) {
-					$version = (string) $update->current;
-					break;
-				}
-			}
-		}
-		$this->fingerprint(
-			'core',
-			$version,
-			'' !== $version
-				? sprintf(
-					/* translators: %s: WordPress version. */
-					__( 'WordPress %s is available.', 'advance-history' ),
-					Text::plain( $version, 20 )
-				)
-				: ''
-		);
-	}
-
-	/**
-	 * Plugin update list changed.
-	 *
-	 * @param object $transient Update transient.
-	 */
-	public function on_plugin_transient( $transient ) {
-		$names = array();
-		if ( is_object( $transient ) && ! empty( $transient->response ) && is_array( $transient->response ) ) {
-			foreach ( $transient->response as $file => $data ) {
-				$version = is_object( $data ) && isset( $data->new_version ) ? $data->new_version : '';
-				$names[] = wp_basename( (string) $file ) . '@' . $version;
-			}
-		}
-		sort( $names );
-		$shown = implode( ', ', array_slice( $names, 0, 12 ) );
-		$this->fingerprint(
-			'plugins',
-			implode( '|', $names ),
-			$names
-				? sprintf(
-					/* translators: 1: count, 2: plugin list. */
-					__( '%1$d plugin update(s) are available: %2$s.', 'advance-history' ),
-					count( $names ),
-					$shown
-				)
-				: ''
-		);
-	}
-
-	/**
-	 * Theme update list changed.
-	 *
-	 * @param object $transient Update transient.
-	 */
-	public function on_theme_transient( $transient ) {
-		$names = array();
-		if ( is_object( $transient ) && ! empty( $transient->response ) && is_array( $transient->response ) ) {
-			foreach ( $transient->response as $slug => $data ) {
-				$version = is_object( $data ) && isset( $data->new_version ) ? $data->new_version : '';
-				$names[] = sanitize_key( (string) $slug ) . '@' . $version;
-			}
-		}
-		sort( $names );
-		$this->fingerprint(
-			'themes',
-			implode( '|', $names ),
-			$names
-				? sprintf(
-					/* translators: %d: number of theme updates. */
-					__( '%d theme update(s) are available.', 'advance-history' ),
-					count( $names )
-				)
-				: ''
-		);
-	}
-
-	/**
-	 * Log when an update fingerprint changes.
-	 *
-	 * @param string $channel Channel name.
-	 * @param string $value   Fingerprint value.
-	 * @param string $summary Summary. Empty values are not logged.
-	 */
-	private function fingerprint( $channel, $value, $summary ) {
-		$stored = get_option( 'advance_history_update_fingerprint', array() );
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
-		}
-		$hash = md5( (string) $value );
-		if ( isset( $stored[ $channel ] ) && $stored[ $channel ] === $hash ) {
-			return;
-		}
-		$stored[ $channel ] = $hash;
-		update_option( 'advance_history_update_fingerprint', $stored, false );
-		if ( '' === $summary || '' === $value ) {
-			return;
-		}
-		$this->log(
-			array(
-				'summary'   => $summary,
-				'category'  => 'core',
-				'action'    => 'core.updates_available',
-				'severity'  => 'info',
-				'initiator' => 'cron',
-				'user_id'   => 0,
-			)
-		);
-	}
 }

@@ -61,11 +61,16 @@ class Retention {
 		}
 
 		$cutoff = gmdate( 'Y-m-d H:i:s', time() - ( $days * DAY_IN_SECONDS ) );
-		$table  = Installer::table();
 		$total  = 0;
 
 		for ( $loop = 0; $loop < 20; $loop++ ) {
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE created_gmt < %s LIMIT 2000", $cutoff ) );
+			$wpdb->query(
+				$wpdb->prepare(
+					'DELETE FROM %i WHERE created_gmt < %s LIMIT 2000',
+					Installer::table(),
+					$cutoff
+				)
+			);
 			$deleted = (int) $wpdb->rows_affected;
 			$total  += $deleted;
 			if ( $deleted < 2000 ) {
@@ -84,8 +89,13 @@ class Retention {
 	 */
 	public static function delete_all() {
 		global $wpdb;
-		$table = Installer::table();
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE blog_id = %d", get_current_blog_id() ) );
+		$wpdb->query(
+			$wpdb->prepare(
+				'DELETE FROM %i WHERE blog_id = %d',
+				Installer::table(),
+				get_current_blog_id()
+			)
+		);
 		return (int) $wpdb->rows_affected;
 	}
 
@@ -104,10 +114,18 @@ class Retention {
 			return 0;
 		}
 
-		$table        = Installer::table();
-		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
-		$params       = array_merge( array( get_current_blog_id() ), $ids );
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE blog_id = %d AND id IN ({$placeholders})", $params ) );
-		return (int) $wpdb->rows_affected;
+		$deleted = 0;
+		foreach ( $ids as $id ) {
+			$wpdb->query(
+				$wpdb->prepare(
+					'DELETE FROM %i WHERE blog_id = %d AND id = %d',
+					Installer::table(),
+					get_current_blog_id(),
+					$id
+				)
+			);
+			$deleted += (int) $wpdb->rows_affected;
+		}
+		return $deleted;
 	}
 }

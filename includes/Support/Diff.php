@@ -123,7 +123,7 @@ class Diff {
 		$text = (string) $html;
 		$text = preg_replace( '/<\s*br\s*\/?\s*>/i', "\n", $text );
 		$text = preg_replace( '/<\/(p|div|h[1-6]|li|tr|blockquote|pre|figcaption)>/i', "\n", $text );
-		$text = html_entity_decode( strip_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
+		$text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
 		$text = str_replace( array( "\r\n", "\r" ), "\n", (string) $text );
 		$parts = explode( "\n", $text );
 		$lines = array();
@@ -391,7 +391,7 @@ class Diff {
 	 * @return string
 	 */
 	private static function normalize( $text ) {
-		$text = html_entity_decode( strip_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
+		$text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
 		$text = preg_replace( '/\s+/u', ' ', (string) $text );
 		return trim( (string) $text );
 	}

@@ -60,7 +60,13 @@ class Feed {
 
 		echo '<?xml version="1.0" encoding="' . esc_attr( get_option( 'blog_charset' ) ) . '"?>';
 		echo '<rss version="2.0"><channel>';
-		echo '<title>' . esc_html( sprintf( __( '%s activity', 'advance-history' ), wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ) ) ) . '</title>';
+		echo '<title>' . esc_html(
+			sprintf(
+				/* translators: %s: site name. */
+				__( '%s activity', 'advance-history' ),
+				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
+			)
+		) . '</title>';
 		echo '<link>' . esc_url( home_url( '/' ) ) . '</link>';
 		echo '<description>' . esc_html__( 'Recent activity recorded by Advance History.', 'advance-history' ) . '</description>';
 

@@ -66,7 +66,13 @@ class Menu_Logger extends Logger {
 	 * @param int $menu_id Menu ID.
 	 */
 	public function on_create( $menu_id ) {
-		$this->store( $menu_id, 'menu.created', __( 'Created the menu "%s".', 'advance-history' ), 'notice' );
+		$this->store(
+			$menu_id,
+			'menu.created',
+			/* translators: %s: menu name. */
+			__( 'Created the menu "%s".', 'advance-history' ),
+			'notice'
+		);
 	}
 
 	/**

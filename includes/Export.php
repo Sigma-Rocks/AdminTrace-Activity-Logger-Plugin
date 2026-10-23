@@ -78,7 +78,7 @@ class Export {
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		echo "\xEF\xBB\xBF";
-		$out = fopen( 'php://output', 'w' );
+		$out     = fopen( 'php://output', 'w' );
 		$headers = array( 'id', 'created_gmt', 'user_login', 'user_display', 'initiator', 'ip_masked', 'severity', 'category', 'action', 'object_type', 'object_id', 'object_title', 'summary', 'context' );
 		fputcsv( $out, $headers, ',', '"', '\\' );
 		foreach ( $rows as $row ) {
@@ -101,7 +101,6 @@ class Export {
 			);
 			fputcsv( $out, array_map( array( Csv::class, 'cell' ), $line ), ',', '"', '\\' );
 		}
-		fclose( $out );
 		exit;
 	}
 }

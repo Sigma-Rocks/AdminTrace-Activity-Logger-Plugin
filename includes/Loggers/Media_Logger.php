@@ -66,7 +66,13 @@ class Media_Logger extends Logger {
 	 * @param int $post_id Attachment ID.
 	 */
 	public function on_add( $post_id ) {
-		$this->log_media( $post_id, 'media.uploaded', __( 'Uploaded "%s".', 'advance-history' ), 'info' );
+		$this->log_media(
+			$post_id,
+			'media.uploaded',
+			/* translators: %s: attachment title. */
+			__( 'Uploaded "%s".', 'advance-history' ),
+			'info'
+		);
 	}
 
 	/**
@@ -75,7 +81,13 @@ class Media_Logger extends Logger {
 	 * @param int $post_id Attachment ID.
 	 */
 	public function on_edit( $post_id ) {
-		$this->log_media( $post_id, 'media.edited', __( 'Edited "%s".', 'advance-history' ), 'info' );
+		$this->log_media(
+			$post_id,
+			'media.edited',
+			/* translators: %s: attachment title. */
+			__( 'Edited "%s".', 'advance-history' ),
+			'info'
+		);
 	}
 
 	/**
@@ -84,7 +96,13 @@ class Media_Logger extends Logger {
 	 * @param int $post_id Attachment ID.
 	 */
 	public function on_delete( $post_id ) {
-		$this->log_media( $post_id, 'media.deleted', __( 'Deleted the file "%s".', 'advance-history' ), 'warning' );
+		$this->log_media(
+			$post_id,
+			'media.deleted',
+			/* translators: %s: attachment title. */
+			__( 'Deleted the file "%s".', 'advance-history' ),
+			'warning'
+		);
 	}
 
 	/**

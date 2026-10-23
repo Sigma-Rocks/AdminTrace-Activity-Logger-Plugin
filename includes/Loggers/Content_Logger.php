@@ -341,22 +341,54 @@ class Content_Logger extends Logger {
 			$label = $this->type_label( $post );
 			$title = $post->post_title;
 			if ( in_array( $from, array( '', 'new', 'auto-draft' ), true ) ) {
-				$action  = 'content.created';
-				$summary = ( 'publish' === $to )
-					? sprintf( __( 'Published %1$s "%2$s".', 'advance-history' ), $label, $title )
-					: sprintf( __( 'Created %1$s "%2$s".', 'advance-history' ), $label, $title );
+				$action = 'content.created';
+				if ( 'publish' === $to ) {
+					$summary = sprintf(
+						/* translators: 1: post type label, 2: title. */
+						__( 'Published %1$s "%2$s".', 'advance-history' ),
+						$label,
+						$title
+					);
+				} else {
+					$summary = sprintf(
+						/* translators: 1: post type label, 2: title. */
+						__( 'Created %1$s "%2$s".', 'advance-history' ),
+						$label,
+						$title
+					);
+				}
 			} elseif ( 'trash' === $to ) {
 				$action  = 'content.trashed';
-				$summary = sprintf( __( 'Moved %1$s "%2$s" to the trash.', 'advance-history' ), $label, $title );
+				$summary = sprintf(
+					/* translators: 1: post type label, 2: title. */
+					__( 'Moved %1$s "%2$s" to the trash.', 'advance-history' ),
+					$label,
+					$title
+				);
 			} elseif ( 'trash' === $from ) {
 				$action  = 'content.restored';
-				$summary = sprintf( __( 'Restored %1$s "%2$s".', 'advance-history' ), $label, $title );
+				$summary = sprintf(
+					/* translators: 1: post type label, 2: title. */
+					__( 'Restored %1$s "%2$s".', 'advance-history' ),
+					$label,
+					$title
+				);
 			} elseif ( 'publish' === $to && 'publish' !== $from ) {
 				$action  = 'content.published';
-				$summary = sprintf( __( 'Published %1$s "%2$s".', 'advance-history' ), $label, $title );
+				$summary = sprintf(
+					/* translators: 1: post type label, 2: title. */
+					__( 'Published %1$s "%2$s".', 'advance-history' ),
+					$label,
+					$title
+				);
 			} else {
 				$action  = 'content.updated';
-				$summary = sprintf( __( 'Updated %1$s "%2$s".', 'advance-history' ), $label, $title );
+				$summary = sprintf(
+					/* translators: 1: post type label, 2: title. */
+					__( 'Updated %1$s "%2$s".', 'advance-history' ),
+					$label,
+					$title
+				);
 			}
 
 			$severity = in_array( $action, array( 'content.trashed', 'content.deleted' ), true ) ? 'warning' : 'info';

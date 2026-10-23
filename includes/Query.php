@@ -34,8 +34,9 @@ class Query {
 			);
 		}
 
-		$built    = self::where( $args );
-		$table    = Installer::table();
+		$built    = self::filter_values( $args );
+		$table    = $built['table'];
+		$values   = $built['values'];
 		$order    = self::order_parts(
 			isset( $args['orderby'] ) ? $args['orderby'] : 'created_gmt',
 			isset( $args['order'] ) ? $args['order'] : 'DESC'
@@ -47,12 +48,23 @@ class Query {
 		$page     = min( 10000, $page );
 		$offset   = ( $page - 1 ) * $per_page;
 
-		$count_sql = "SELECT COUNT(*) FROM {$table} WHERE {$built['sql']}";
-		$total     = (int) $wpdb->get_var( $wpdb->prepare( $count_sql, $built['params'] ) );
+		$total = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND (%d = 0 OR id = %d) AND (%d = 0 OR category = %s) AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) AND (%d = 0 OR severity = %s) AND (%d = 0 OR action = %s) AND (%d = 0 OR initiator = %s) AND (%d = 0 OR logger = %s) AND (%d = 0 OR user_id = %d) AND (%d = 0 OR user_id <> %d) AND (%d = 0 OR object_type = %s) AND (%d = 0 OR object_id = %d) AND (%d = 0 OR created_gmt >= %s) AND (%d = 0 OR created_gmt <= %s) AND (%d = 0 OR (summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s))',
+				$table,
+				...$values
+			)
+		);
 
-		$list_sql = "SELECT * FROM {$table} WHERE {$built['sql']} ORDER BY {$order['column']} {$order['direction']} LIMIT %d OFFSET %d";
-		$params   = array_merge( $built['params'], array( $per_page, $offset ) );
-		$rows     = $wpdb->get_results( $wpdb->prepare( $list_sql, $params ), ARRAY_A );
+		$sort          = self::sort_flags( $order['column'], $order['direction'] );
+		$list_values   = array_merge( array( $table ), $values, $sort, array( $per_page, $offset ) );
+		$rows          = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT * FROM %i WHERE blog_id = %d AND (%d = 0 OR id = %d) AND (%d = 0 OR category = %s) AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) AND (%d = 0 OR severity = %s) AND (%d = 0 OR action = %s) AND (%d = 0 OR initiator = %s) AND (%d = 0 OR logger = %s) AND (%d = 0 OR user_id = %d) AND (%d = 0 OR user_id <> %d) AND (%d = 0 OR object_type = %s) AND (%d = 0 OR object_id = %d) AND (%d = 0 OR created_gmt >= %s) AND (%d = 0 OR created_gmt <= %s) AND (%d = 0 OR (summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s)) ORDER BY CASE WHEN %d = 1 THEN id END ASC, CASE WHEN %d = 1 THEN id END DESC, CASE WHEN %d = 1 THEN severity END ASC, CASE WHEN %d = 1 THEN severity END DESC, CASE WHEN %d = 1 THEN category END ASC, CASE WHEN %d = 1 THEN category END DESC, CASE WHEN %d = 1 THEN created_gmt END ASC, CASE WHEN %d = 1 THEN created_gmt END DESC LIMIT %d OFFSET %d',
+				...$list_values
+			),
+			ARRAY_A
+		);
 		if ( ! is_array( $rows ) ) {
 			$rows = array();
 		}
@@ -114,31 +126,42 @@ class Query {
 			return $cached;
 		}
 
-		$table  = Installer::table();
-		$blog   = get_current_blog_id();
-		$now         = time();
+		$table   = Installer::table();
+		$blog    = get_current_blog_id();
+		$now     = time();
 		$local_start = function_exists( 'current_time' ) ? current_time( 'Y-m-d 00:00:00' ) : gmdate( 'Y-m-d 00:00:00' );
 		$today       = function_exists( 'get_gmt_from_date' ) ? get_gmt_from_date( $local_start ) : gmdate( 'Y-m-d H:i:s', $now - ( $now % DAY_IN_SECONDS ) );
 		$week        = gmdate( 'Y-m-d H:i:s', $now - ( 7 * DAY_IN_SECONDS ) );
 		$dayago      = gmdate( 'Y-m-d H:i:s', $now - DAY_IN_SECONDS );
 
-		$scope_sql    = '';
-		$scope_params = array();
+		$scope_flag = 0;
+		$scope_cats = array( '', '', '', '', '', '', '', '' );
 		if ( $scoped ) {
+			$scope_flag = 1;
 			if ( ! $categories ) {
 				$categories = array( '__none__' );
 			}
-			$scope_sql    = ' AND category IN (' . implode( ',', array_fill( 0, count( $categories ), '%s' ) ) . ')';
-			$scope_params = array_values( $categories );
+			$clean = array();
+			foreach ( $categories as $category ) {
+				$key = Text::key( $category, 32, '' );
+				if ( '' !== $key ) {
+					$clean[] = $key;
+				}
+			}
+			if ( ! $clean ) {
+				$clean = array( '__none__' );
+			}
+			$scope_cats = array_pad( array_slice( $clean, 0, 8 ), 8, '' );
 		}
 
-		$today_count = self::count_since( $table, $blog, $today, $scope_sql, $scope_params );
-		$week_count  = self::count_since( $table, $blog, $week, $scope_sql, $scope_params );
+		$today_count = self::count_since( $table, $blog, $today, $scope_flag, $scope_cats );
+		$week_count  = self::count_since( $table, $blog, $week, $scope_flag, $scope_cats );
 		$failed      = 0;
 		if ( ! $scoped ) {
 			$failed = (int) $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT COUNT(*) FROM {$table} WHERE blog_id = %d AND created_gmt >= %s AND action = %s",
+					'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND created_gmt >= %s AND action = %s',
+					$table,
 					$blog,
 					$dayago,
 					'user.login_failed'
@@ -146,13 +169,43 @@ class Query {
 			);
 		}
 
-		$cat_sql    = "SELECT category, COUNT(*) AS total FROM {$table} WHERE blog_id = %d AND created_gmt >= %s {$scope_sql} GROUP BY category ORDER BY total DESC LIMIT 6";
-		$cat_params = array_merge( array( $blog, $week ), $scope_params );
-		$cats       = $wpdb->get_results( $wpdb->prepare( $cat_sql, $cat_params ), ARRAY_A );
+		$cats = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT category, COUNT(*) AS total FROM %i WHERE blog_id = %d AND created_gmt >= %s AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) GROUP BY category ORDER BY total DESC LIMIT 6',
+				$table,
+				$blog,
+				$week,
+				$scope_flag,
+				$scope_cats[0],
+				$scope_cats[1],
+				$scope_cats[2],
+				$scope_cats[3],
+				$scope_cats[4],
+				$scope_cats[5],
+				$scope_cats[6],
+				$scope_cats[7]
+			),
+			ARRAY_A
+		);
 
-		$user_sql    = "SELECT user_id, user_login, user_display, COUNT(*) AS total FROM {$table} WHERE blog_id = %d AND created_gmt >= %s AND user_id > 0 {$scope_sql} GROUP BY user_id, user_login, user_display ORDER BY total DESC LIMIT 5";
-		$user_params = array_merge( array( $blog, $week ), $scope_params );
-		$users       = $wpdb->get_results( $wpdb->prepare( $user_sql, $user_params ), ARRAY_A );
+		$users = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT user_id, user_login, user_display, COUNT(*) AS total FROM %i WHERE blog_id = %d AND created_gmt >= %s AND user_id > 0 AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) GROUP BY user_id, user_login, user_display ORDER BY total DESC LIMIT 5',
+				$table,
+				$blog,
+				$week,
+				$scope_flag,
+				$scope_cats[0],
+				$scope_cats[1],
+				$scope_cats[2],
+				$scope_cats[3],
+				$scope_cats[4],
+				$scope_cats[5],
+				$scope_cats[6],
+				$scope_cats[7]
+			),
+			ARRAY_A
+		);
 
 		$stats = array(
 			'today'          => $today_count,
@@ -188,126 +241,148 @@ class Query {
 	 * @param string $table Table name.
 	 * @param int    $blog Blog ID.
 	 * @param string $since GMT datetime.
-	 * @param string $scope_sql Extra SQL.
-	 * @param array  $scope_params Extra parameters.
+	 * @param int    $scope_flag Whether the category list applies.
+	 * @param array  $scope_cats Eight category slots.
 	 * @return int
 	 */
-	private static function count_since( $table, $blog, $since, $scope_sql, array $scope_params ) {
+	private static function count_since( $table, $blog, $since, $scope_flag, array $scope_cats ) {
 		global $wpdb;
-		$sql    = "SELECT COUNT(*) FROM {$table} WHERE blog_id = %d AND created_gmt >= %s {$scope_sql}";
-		$params = array_merge( array( $blog, $since ), $scope_params );
-		return (int) $wpdb->get_var( $wpdb->prepare( $sql, $params ) );
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND created_gmt >= %s AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s))',
+				$table,
+				$blog,
+				$since,
+				$scope_flag,
+				$scope_cats[0],
+				$scope_cats[1],
+				$scope_cats[2],
+				$scope_cats[3],
+				$scope_cats[4],
+				$scope_cats[5],
+				$scope_cats[6],
+				$scope_cats[7]
+			)
+		);
 	}
 
 	/**
-	 * Build a WHERE clause.
+	 * Placeholder values for the fixed event filter.
 	 *
 	 * @param array $args Query arguments.
-	 * @return array{sql:string,params:array}
+	 * @return array{table:string,values:array}
 	 */
-	private static function where( array $args ) {
+	private static function filter_values( array $args ) {
 		global $wpdb;
 
-		$sql    = array( 'blog_id = %d' );
-		$params = array( get_current_blog_id() );
-
-		if ( ! empty( $args['id'] ) ) {
-			$sql[]    = 'id = %d';
-			$params[] = absint( $args['id'] );
-		}
-
-		if ( ! empty( $args['category'] ) ) {
-			$sql[]    = 'category = %s';
-			$params[] = Text::key( $args['category'], 32, '' );
-		}
-
+		$id       = ! empty( $args['id'] ) ? absint( $args['id'] ) : 0;
+		$category = ! empty( $args['category'] ) ? Text::key( $args['category'], 32, '' ) : '';
+		$in       = array( '', '', '', '', '', '', '', '' );
+		$use_in   = 0;
 		if ( ! empty( $args['category_in'] ) && is_array( $args['category_in'] ) ) {
-			$cats = array();
+			$clean = array();
 			foreach ( $args['category_in'] as $cat ) {
 				$key = Text::key( $cat, 32, '' );
 				if ( '' !== $key ) {
-					$cats[] = $key;
+					$clean[] = $key;
 				}
 			}
-			if ( $cats ) {
-				$sql[]  = 'category IN (' . implode( ',', array_fill( 0, count( $cats ), '%s' ) ) . ')';
-				$params = array_merge( $params, $cats );
+			if ( $clean ) {
+				$use_in = 1;
+				$in     = array_pad( array_slice( $clean, 0, 8 ), 8, '' );
 			}
 		}
-
-		if ( ! empty( $args['severity'] ) ) {
-			$sql[]    = 'severity = %s';
-			$params[] = Text::key( $args['severity'], 16, 'info' );
+		$severity    = ! empty( $args['severity'] ) ? Text::key( $args['severity'], 16, 'info' ) : '';
+		$action      = ! empty( $args['action'] ) ? Text::key( $args['action'], 64, '' ) : '';
+		$initiator   = ! empty( $args['initiator'] ) ? Text::key( $args['initiator'], 20, '' ) : '';
+		$logger      = ! empty( $args['logger'] ) ? Text::key( $args['logger'], 32, '' ) : '';
+		$user_id     = ! empty( $args['user_id'] ) ? absint( $args['user_id'] ) : 0;
+		$exclude     = ! empty( $args['exclude_user_id'] ) ? absint( $args['exclude_user_id'] ) : 0;
+		$object_type = ! empty( $args['object_type'] ) ? Text::key( $args['object_type'], 32, '' ) : '';
+		$object_id   = ! empty( $args['object_id'] ) ? absint( $args['object_id'] ) : 0;
+		$after       = ! empty( $args['after'] ) ? self::date_bound( $args['after'], false ) : '';
+		$before      = ! empty( $args['before'] ) ? self::date_bound( $args['before'], true ) : '';
+		$after_on    = '' !== $after ? 1 : 0;
+		$before_on   = '' !== $before ? 1 : 0;
+		if ( ! $after_on ) {
+			$after = '1970-01-01 00:00:00';
 		}
-
-		if ( ! empty( $args['action'] ) ) {
-			$sql[]    = 'action = %s';
-			$params[] = Text::key( $args['action'], 64, '' );
+		if ( ! $before_on ) {
+			$before = '1970-01-01 00:00:00';
 		}
-
-		if ( ! empty( $args['initiator'] ) ) {
-			$sql[]    = 'initiator = %s';
-			$params[] = Text::key( $args['initiator'], 20, '' );
-		}
-
-		if ( ! empty( $args['logger'] ) ) {
-			$sql[]    = 'logger = %s';
-			$params[] = Text::key( $args['logger'], 32, '' );
-		}
-
-		if ( ! empty( $args['user_id'] ) ) {
-			$sql[]    = 'user_id = %d';
-			$params[] = absint( $args['user_id'] );
-		}
-
-		if ( ! empty( $args['exclude_user_id'] ) ) {
-			$sql[]    = 'user_id <> %d';
-			$params[] = absint( $args['exclude_user_id'] );
-		}
-
-		if ( ! empty( $args['object_type'] ) ) {
-			$sql[]    = 'object_type = %s';
-			$params[] = Text::key( $args['object_type'], 32, '' );
-		}
-
-		if ( ! empty( $args['object_id'] ) ) {
-			$sql[]    = 'object_id = %d';
-			$params[] = absint( $args['object_id'] );
-		}
-
-		if ( ! empty( $args['after'] ) ) {
-			$after = self::date_bound( $args['after'], false );
-			if ( $after ) {
-				$sql[]    = 'created_gmt >= %s';
-				$params[] = $after;
-			}
-		}
-
-		if ( ! empty( $args['before'] ) ) {
-			$before = self::date_bound( $args['before'], true );
-			if ( $before ) {
-				$sql[]    = 'created_gmt <= %s';
-				$params[] = $before;
-			}
-		}
-
-		if ( ! empty( $args['search'] ) ) {
-			$search = Text::plain( $args['search'], 120 );
-			if ( strlen( $search ) >= 2 ) {
-				$like     = '%' . $wpdb->esc_like( $search ) . '%';
-				$sql[]    = '(summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s)';
-				$params[] = $like;
-				$params[] = $like;
-				$params[] = $like;
-				$params[] = $like;
-				$params[] = $like;
-			}
-		}
+		$search      = ! empty( $args['search'] ) ? Text::plain( $args['search'], 120 ) : '';
+		$like        = ( strlen( $search ) >= 2 ) ? '%' . $wpdb->esc_like( $search ) . '%' : '';
 
 		return array(
-			'sql'    => implode( ' AND ', $sql ),
-			'params' => $params,
+			'table'  => Installer::table(),
+			'values' => array(
+				get_current_blog_id(),
+				$id ? 1 : 0,
+				$id,
+				'' !== $category ? 1 : 0,
+				$category,
+				$use_in,
+				$in[0],
+				$in[1],
+				$in[2],
+				$in[3],
+				$in[4],
+				$in[5],
+				$in[6],
+				$in[7],
+				'' !== $severity ? 1 : 0,
+				$severity,
+				'' !== $action ? 1 : 0,
+				$action,
+				'' !== $initiator ? 1 : 0,
+				$initiator,
+				'' !== $logger ? 1 : 0,
+				$logger,
+				$user_id ? 1 : 0,
+				$user_id,
+				$exclude ? 1 : 0,
+				$exclude,
+				'' !== $object_type ? 1 : 0,
+				$object_type,
+				$object_id ? 1 : 0,
+				$object_id,
+				$after_on,
+				$after,
+				$before_on,
+				$before,
+				'' !== $like ? 1 : 0,
+				$like,
+				$like,
+				$like,
+				$like,
+				$like,
+			),
 		);
+	}
+
+	/**
+	 * Eight sort switches. Exactly one is enabled.
+	 *
+	 * @param string $column Whitelisted column.
+	 * @param string $direction ASC or DESC.
+	 * @return array
+	 */
+	private static function sort_flags( $column, $direction ) {
+		$flags = array( 0, 0, 0, 0, 0, 0, 0, 0 );
+		$map   = array(
+			'id|ASC'           => 0,
+			'id|DESC'          => 1,
+			'severity|ASC'     => 2,
+			'severity|DESC'    => 3,
+			'category|ASC'     => 4,
+			'category|DESC'    => 5,
+			'created_gmt|ASC'  => 6,
+			'created_gmt|DESC' => 7,
+		);
+		$key   = $column . '|' . $direction;
+		$index = isset( $map[ $key ] ) ? $map[ $key ] : 7;
+		$flags[ $index ] = 1;
+		return $flags;
 	}
 
 	/**
