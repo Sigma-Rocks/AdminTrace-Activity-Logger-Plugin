@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Retention {
 
-	const HOOK = 'advance_history_prune';
+	const HOOK = 'srah_prune';
 
 	/**
 	 * Register the cron callback and make sure it is scheduled.
@@ -78,7 +78,7 @@ class Retention {
 			}
 		}
 
-		do_action( 'advance_history_pruned', $total, $days );
+		do_action( 'srah_pruned', $total, $days );
 		return $total;
 	}
 

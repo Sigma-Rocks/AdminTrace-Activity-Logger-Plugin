@@ -114,12 +114,12 @@ class Recorder {
 	private static function write( array $event ) {
 		global $wpdb;
 
-		$allowed = apply_filters( 'advance_history_should_log', true, $event );
+		$allowed = apply_filters( 'srah_should_log', true, $event );
 		if ( ! $allowed ) {
 			return 0;
 		}
 
-		$filtered = apply_filters( 'advance_history_event', $event );
+		$filtered = apply_filters( 'srah_event', $event );
 		if ( ! is_array( $filtered ) ) {
 			return 0;
 		}
@@ -220,7 +220,7 @@ class Recorder {
 		}
 
 		$event_id = (int) $wpdb->insert_id;
-		do_action( 'advance_history_logged', $event_id, $row );
+		do_action( 'srah_logged', $event_id, $row );
 
 		return $event_id;
 	}
@@ -319,7 +319,8 @@ class Recorder {
 			return true;
 		}
 
-		if ( self::$retried || false === stripos( (string) $wpdb->last_error, 'ah_events' ) ) {
+		$error = (string) $wpdb->last_error;
+		if ( self::$retried || ( false === stripos( $error, 'srah_events' ) && false === stripos( $error, 'ah_events' ) ) ) {
 			return false;
 		}
 

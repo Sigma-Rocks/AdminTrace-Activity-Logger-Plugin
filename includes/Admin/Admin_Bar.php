@@ -45,9 +45,9 @@ class Admin_Bar {
 
 		$bar->add_node(
 			array(
-				'id'    => 'advance-history',
-				'title' => esc_html__( 'Activity', 'advance-history' ),
-				'href'  => admin_url( 'admin.php?page=advance-history' ),
+				'id'    => 'admintrace-activity-logger',
+				'title' => esc_html__( 'AdminTrace', 'admintrace-activity-logger' ),
+				'href'  => admin_url( 'admin.php?page=admintrace-activity-logger' ),
 			)
 		);
 
@@ -56,9 +56,9 @@ class Admin_Bar {
 		if ( ! $rows ) {
 			$bar->add_node(
 				array(
-					'id'     => 'advance-history-empty',
-					'parent' => 'advance-history',
-					'title'  => esc_html__( 'No activity yet', 'advance-history' ),
+					'id'     => 'admintrace-activity-logger-empty',
+					'parent' => 'admintrace-activity-logger',
+					'title'  => esc_html__( 'No activity yet', 'admintrace-activity-logger' ),
 				)
 			);
 			return;
@@ -71,16 +71,16 @@ class Admin_Bar {
 			if ( $count > 1 ) {
 				$title .= ' (' . sprintf(
 					/* translators: %d: number of times this event happened. */
-					_n( '%d time', '%d times', $count, 'advance-history' ),
+					_n( '%d time', '%d times', $count, 'admintrace-activity-logger' ),
 					$count
 				) . ')';
 			}
 			$bar->add_node(
 				array(
-					'id'     => 'advance-history-' . (int) $row['id'],
-					'parent' => 'advance-history',
+					'id'     => 'admintrace-activity-logger-' . (int) $row['id'],
+					'parent' => 'admintrace-activity-logger',
 					'title'  => esc_html( $title ),
-					'href'   => admin_url( 'admin.php?page=advance-history&event=' . (int) $row['id'] ),
+					'href'   => admin_url( 'admin.php?page=admintrace-activity-logger&event=' . (int) $row['id'] ),
 				)
 			);
 		}

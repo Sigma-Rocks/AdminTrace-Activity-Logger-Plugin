@@ -40,8 +40,8 @@ class Post_Panel {
 			return;
 		}
 		add_meta_box(
-			'advance-history-post',
-			__( 'Advance History', 'advance-history' ),
+			'admintrace-activity-logger-post',
+			__( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ),
 			array( __CLASS__, 'render' ),
 			$screen->post_type,
 			'side',
@@ -56,7 +56,7 @@ class Post_Panel {
 	 */
 	public static function render( $post ) {
 		if ( ! $post instanceof \WP_Post || ! $post->ID ) {
-			echo '<p>' . esc_html__( 'Save this item to see its journal.', 'advance-history' ) . '</p>';
+			echo '<p>' . esc_html__( 'Save this item to see its journal.', 'admintrace-activity-logger' ) . '</p>';
 			return;
 		}
 		$args = Access::constrain(
@@ -68,11 +68,11 @@ class Post_Panel {
 			)
 		);
 		$rows = Groups::collapse( Query::recent( 8, $args ) );
-		echo '<div class="ah-widget">';
+		echo '<div class="srah-widget">';
 		if ( ! $rows ) {
-			echo '<p>' . esc_html__( 'No journal entries for this item yet.', 'advance-history' ) . '</p>';
+			echo '<p>' . esc_html__( 'No journal entries for this item yet.', 'admintrace-activity-logger' ) . '</p>';
 		} else {
-			echo '<div class="ah-timeline ah-timeline-compact">';
+			echo '<div class="srah-timeline srah-timeline-compact">';
 			foreach ( $rows as $row ) {
 				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ), array( 'compact' => true ) );
 			}

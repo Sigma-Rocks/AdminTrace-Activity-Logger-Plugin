@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Settings {
 
-	const OPTION = 'advance_history_settings';
+	const OPTION = 'srah_settings';
 
 	/**
 	 * Cached settings.

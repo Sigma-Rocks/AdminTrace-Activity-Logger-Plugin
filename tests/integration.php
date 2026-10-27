@@ -20,8 +20,8 @@ if ( ! is_readable( $wp_load ) ) {
 
 require $wp_load;
 
-if ( ! function_exists( 'advance_history_log' ) ) {
-	require WP_PLUGIN_DIR . '/advance-history/advance-history.php';
+if ( ! function_exists( 'srah_log' ) ) {
+	require WP_PLUGIN_DIR . '/admintrace-activity-logger/admintrace-activity-logger.php';
 }
 
 \SigmaRocks\AdvanceHistory\Plugin::boot();
@@ -35,7 +35,7 @@ $failures = 0;
  * @param bool   $ok      Condition.
  * @param string $message Message.
  */
-function ah_check( $ok, $message ) {
+function srah_check( $ok, $message ) {
 	global $failures;
 	if ( $ok ) {
 		echo "ok  {$message}\n";
@@ -47,8 +47,8 @@ function ah_check( $ok, $message ) {
 
 global $wpdb;
 $table = \SigmaRocks\AdvanceHistory\Installer::table();
-$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
-ah_check( $found === $table, 'event table exists' );
+$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+srah_check( $found === $table, 'event table exists' );
 
 $original = \SigmaRocks\AdvanceHistory\Settings::all();
 $tweaked  = $original;
@@ -58,13 +58,14 @@ $tweaked['webhook_min_severity'] = 'off';
 $tweaked['email_digest']         = 'off';
 \SigmaRocks\AdvanceHistory\Settings::update( $tweaked );
 
-$window   = get_option( 'advance_history_fail_window', null );
-$token    = 'ah-test-' . wp_generate_password( 8, false, false );
-$username = 'ah-test-user';
+$window   = get_option( 'srah_fail_window', null );
+$started  = gmdate( 'Y-m-d H:i:s' );
+$token    = 'srah-test-' . wp_generate_password( 8, false, false );
+$username = 'srah-test-user';
 $ids      = array();
 
 try {
-	$ids[] = advance_history_log(
+	$ids[] = srah_log(
 		array(
 			'summary'   => 'Synthetic event ' . $token . ' <script>alert(1)</script>',
 			'category'  => 'system',
@@ -80,17 +81,17 @@ try {
 			),
 		)
 	);
-	ah_check( $ids[0] > 0, 'event insert returns an id' );
+	srah_check( $ids[0] > 0, 'event insert returns an id' );
 
 	$row = \SigmaRocks\AdvanceHistory\Query::find( $ids[0] );
-	ah_check( is_array( $row ), 'inserted event can be read back' );
-	ah_check( false === strpos( $row['summary'], '<script>' ), 'HTML is not stored in the summary' );
-	ah_check( false === strpos( wp_json_encode( $row['context'] ), 'super-secret' ), 'password context is not stored' );
-	ah_check( isset( $row['context']['note'] ) && 'kept' === $row['context']['note'], 'safe context is stored' );
-	ah_check( isset( $row['context']['ip'] ) && '198.51.100.0' === $row['context']['ip'], 'stored context IP is masked' );
+	srah_check( is_array( $row ), 'inserted event can be read back' );
+	srah_check( false === strpos( $row['summary'], '<script>' ), 'HTML is not stored in the summary' );
+	srah_check( false === strpos( wp_json_encode( $row['context'] ), 'super-secret' ), 'password context is not stored' );
+	srah_check( isset( $row['context']['note'] ) && 'kept' === $row['context']['note'], 'safe context is stored' );
+	srah_check( isset( $row['context']['ip'] ) && '198.51.100.0' === $row['context']['ip'], 'stored context IP is masked' );
 
 	$logger = \SigmaRocks\AdvanceHistory\Logger_Registry::get( 'user' );
-	ah_check( $logger instanceof \SigmaRocks\AdvanceHistory\Loggers\User_Logger, 'user logger is registered' );
+	srah_check( $logger instanceof \SigmaRocks\AdvanceHistory\Loggers\User_Logger, 'user logger is registered' );
 	if ( $logger ) {
 		$logger->on_failed( $username, new WP_Error( 'invalid_username', 'unknown' ) );
 	}
@@ -102,9 +103,19 @@ try {
 			'unrestricted' => true,
 		)
 	);
-	ah_check( $failed['total'] >= 1, 'failed login is recorded' );
+	srah_check( $failed['total'] >= 1, 'failed login is recorded' );
+	if ( $logger instanceof \SigmaRocks\AdvanceHistory\Loggers\User_Logger ) {
+		for ( $n = 0; $n < 40; $n++ ) {
+			$logger->on_failed( 'srah-flood-' . $n, new WP_Error( 'invalid_username', 'unknown' ) );
+		}
+	}
+	$buckets = get_transient( 'srah_fail_logins' );
+	$like    = $wpdb->esc_like( '_transient_srah_fl_' ) . '%';
+	$extra   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE %s", $like ) );
+	srah_check( is_array( $buckets ) && count( $buckets ) <= 33, 'failed-login bucket map stays bounded' );
+	srah_check( 0 === $extra, 'failed logins do not create a transient per username' );
 	if ( ! empty( $failed['rows'][0] ) ) {
-		ah_check( false === strpos( wp_json_encode( $failed['rows'][0] ), 'secret-password' ), 'failed login row has no password field' );
+		srah_check( false === strpos( wp_json_encode( $failed['rows'][0] ), 'secret-password' ), 'failed login row has no password field' );
 	}
 
 	$admins = get_users(
@@ -114,38 +125,49 @@ try {
 			'fields' => 'ID',
 		)
 	);
-	ah_check( ! empty( $admins ), 'an administrator account exists for the screen render' );
+	srah_check( ! empty( $admins ), 'an administrator account exists for the screen render' );
 	if ( ! empty( $admins ) ) {
 		wp_set_current_user( (int) $admins[0] );
 		if ( ! function_exists( 'wp_dropdown_users' ) ) {
 			require_once ABSPATH . 'wp-admin/includes/user.php';
 		}
 		$_GET = array(
-			'page' => 'advance-history',
+			'page' => 'admintrace-activity-logger',
 			's'    => $token,
 		);
 		ob_start();
 		\SigmaRocks\AdvanceHistory\Admin\Timeline_Screen::render();
 		$html = ob_get_clean();
-		ah_check( false !== strpos( $html, 'ah-wrap' ), 'journal screen renders' );
-		ah_check( false !== strpos( $html, 'Synthetic event' ), 'journal screen includes the test event' );
-		ah_check( false === strpos( $html, '<script>alert(1)</script>' ), 'journal screen does not print raw HTML' );
+		srah_check( false !== strpos( $html, 'srah-wrap' ), 'journal screen renders' );
+		srah_check( false !== strpos( $html, 'srah-avatar-local' ), 'journal uses a local profile mark' );
+		srah_check( false === stripos( $html, 'gravatar.com' ), 'journal does not request Gravatar' );
+		srah_check( false !== strpos( $html, 'Synthetic event' ), 'journal screen includes the test event' );
+		srah_check( false === strpos( $html, '<script>alert(1)</script>' ), 'journal screen does not print raw HTML' );
 
 		ob_start();
 		\SigmaRocks\AdvanceHistory\Admin\Settings_Screen::render();
 		$settings_html = ob_get_clean();
-		ah_check( false !== strpos( $settings_html, 'ah-retention' ), 'settings screen renders' );
+		srah_check( false !== strpos( $settings_html, 'srah-retention' ), 'settings screen renders' );
 	}
 } catch ( Throwable $e ) {
-	ah_check( false, 'integration exception: ' . $e->getMessage() );
+	srah_check( false, 'integration exception: ' . $e->getMessage() );
 } finally {
 	\SigmaRocks\AdvanceHistory\Settings::update( $original );
 	if ( null === $window ) {
-		delete_option( 'advance_history_fail_window' );
+		delete_option( 'srah_fail_window' );
 	} else {
-		update_option( 'advance_history_fail_window', $window, false );
+		update_option( 'srah_fail_window', $window, false );
 	}
-	delete_transient( 'ah_fl_' . md5( strtolower( $username ) ) );
+	delete_transient( 'srah_fail_logins' );
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$table} WHERE action = %s AND created_gmt >= %s",
+			'security.login_threshold',
+			$started
+		)
+	);
+	$flood = '%' . $wpdb->esc_like( 'srah-flood-' ) . '%';
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE summary LIKE %s", $flood ) );
 	if ( $ids ) {
 		\SigmaRocks\AdvanceHistory\Retention::delete_ids( $ids );
 	}

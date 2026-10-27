@@ -35,7 +35,7 @@ class Integration_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Other plugins', 'advance-history' );
+		return __( 'Other plugins', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class Integration_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Jetpack modules, user switching, ACF field groups, duplicated posts, Beaver Builder saves, and Redirection changes.', 'advance-history' );
+		return __( 'Jetpack modules, user switching, ACF field groups, duplicated posts, Beaver Builder saves, and Redirection changes.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -97,7 +97,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: 1: new user ID, 2: previous user ID. */
-					__( 'Switched into user %1$d from user %2$d.', 'advance-history' ),
+					__( 'Switched into user %1$d from user %2$d.', 'admintrace-activity-logger' ),
 					absint( $user_id ),
 					absint( $old_user_id )
 				),
@@ -122,7 +122,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %d: user ID. */
-					__( 'Switched back to user %d.', 'advance-history' ),
+					__( 'Switched back to user %d.', 'admintrace-activity-logger' ),
 					absint( $user_id )
 				),
 				'category' => 'user',
@@ -142,7 +142,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %d: user ID. */
-					__( 'User %d switched off.', 'advance-history' ),
+					__( 'User %d switched off.', 'admintrace-activity-logger' ),
 					absint( $old_user_id )
 				),
 				'category' => 'user',
@@ -164,7 +164,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: %s: field group title. */
-					__( 'Saved the field group "%s".', 'advance-history' ),
+					__( 'Saved the field group "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $title, 120 )
 				),
 				'category'     => 'integration',
@@ -187,7 +187,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %s: field group title. */
-					__( 'Deleted the field group "%s".', 'advance-history' ),
+					__( 'Deleted the field group "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $title, 120 )
 				),
 				'category' => 'integration',
@@ -209,7 +209,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: original title. */
-					__( 'Duplicated "%s".', 'advance-history' ),
+					__( 'Duplicated "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $title, 120 )
 				),
 				'category'    => 'content',
@@ -233,7 +233,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: title. */
-					__( 'Saved a Beaver Builder layout for "%s".', 'advance-history' ),
+					__( 'Saved a Beaver Builder layout for "%s".', 'admintrace-activity-logger' ),
 					$post ? $post->post_title : (string) $post_id
 				),
 				'category'    => 'content',
@@ -261,7 +261,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %d: redirect ID. */
-					__( 'Saved redirect %d.', 'advance-history' ),
+					__( 'Saved redirect %d.', 'admintrace-activity-logger' ),
 					absint( $id )
 				),
 				'category'    => 'integration',
@@ -290,7 +290,7 @@ class Integration_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %d: redirect ID. */
-					__( 'Deleted redirect %d.', 'advance-history' ),
+					__( 'Deleted redirect %d.', 'admintrace-activity-logger' ),
 					$id
 				),
 				'category' => 'integration',
@@ -313,12 +313,12 @@ class Integration_Logger extends Logger {
 				'summary'  => $enabled
 					? sprintf(
 						/* translators: %s: module slug. */
-						__( 'Activated the Jetpack module "%s".', 'advance-history' ),
+						__( 'Activated the Jetpack module "%s".', 'admintrace-activity-logger' ),
 						$module
 					)
 					: sprintf(
 						/* translators: %s: module slug. */
-						__( 'Deactivated the Jetpack module "%s".', 'advance-history' ),
+						__( 'Deactivated the Jetpack module "%s".', 'admintrace-activity-logger' ),
 						$module
 					),
 				'category' => 'integration',

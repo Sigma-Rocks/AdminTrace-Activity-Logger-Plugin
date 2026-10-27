@@ -38,7 +38,7 @@ class Menu_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Menus', 'advance-history' );
+		return __( 'Menus', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -47,7 +47,7 @@ class Menu_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Navigation menu creation, saves, and deletion.', 'advance-history' );
+		return __( 'Navigation menu creation, saves, and deletion.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Menu_Logger extends Logger {
 			$menu_id,
 			'menu.created',
 			/* translators: %s: menu name. */
-			__( 'Created the menu "%s".', 'advance-history' ),
+			__( 'Created the menu "%s".', 'admintrace-activity-logger' ),
 			'notice'
 		);
 	}
@@ -89,7 +89,7 @@ class Menu_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: menu name, 2: item count. */
-					__( 'Updated the menu "%1$s" (%2$d items).', 'advance-history' ),
+					__( 'Updated the menu "%1$s" (%2$d items).', 'admintrace-activity-logger' ),
 					$name,
 					$count
 				),
@@ -130,7 +130,7 @@ class Menu_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: %s: menu name. */
-					__( 'Deleted the menu "%s".', 'advance-history' ),
+					__( 'Deleted the menu "%s".', 'admintrace-activity-logger' ),
 					$name
 				),
 				'category'     => 'menu',

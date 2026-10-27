@@ -1,15 +1,15 @@
 <?php
 /**
- * Plugin Name: Advance History
+ * Plugin Name: AdminTrace Activity Logger
  * Description: A readable activity journal for WordPress. See who changed content, users, plugins, orders, and settings.
- * Version: 1.0.0
+ * Version: 1.0.3
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author: Sigma Rocks
  * Author URI: https://sigmarocks.com
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
- * Text Domain: advance-history
+ * Text Domain: admintrace-activity-logger
  * Domain Path: /languages
  *
  * @package AdvanceHistory
@@ -19,13 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'AH_VERSION', '1.0.0' );
-define( 'AH_DB_VERSION', '1' );
-define( 'AH_FILE', __FILE__ );
-define( 'AH_PATH', plugin_dir_path( __FILE__ ) );
-define( 'AH_URL', plugin_dir_url( __FILE__ ) );
+define( 'SRAH_VERSION', '1.0.3' );
+define( 'SRAH_DB_VERSION', '1' );
+define( 'SRAH_FILE', __FILE__ );
+define( 'SRAH_PATH', plugin_dir_path( __FILE__ ) );
+define( 'SRAH_URL', plugin_dir_url( __FILE__ ) );
 
-require_once AH_PATH . 'includes/Autoloader.php';
+require_once SRAH_PATH . 'includes/Autoloader.php';
 
 SigmaRocks\AdvanceHistory\Autoloader::register();
 
@@ -48,7 +48,7 @@ add_action(
  * @param array $event Event arguments.
  * @return int Event ID, or 0 when the event was not stored.
  */
-function advance_history_log( $event ) {
+function srah_log( $event ) {
 	if ( ! is_array( $event ) ) {
 		return 0;
 	}

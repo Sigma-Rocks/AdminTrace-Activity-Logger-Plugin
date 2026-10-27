@@ -23,7 +23,7 @@ class Installer {
 	 */
 	public static function table() {
 		global $wpdb;
-		return $wpdb->prefix . 'ah_events';
+		return $wpdb->prefix . 'srah_events';
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Installer {
 				self::backfill();
 				Recorder::log(
 					array(
-						'summary'   => __( 'Advance History was activated.', 'advance-history' ),
+						'summary'   => __( 'AdminTrace Activity Logger was activated.', 'admintrace-activity-logger' ),
 						'category'  => 'system',
 						'action'    => 'system.activated',
 						'severity'  => 'notice',
@@ -51,7 +51,7 @@ class Installer {
 						'user_id'   => get_current_user_id(),
 					)
 				);
-				set_transient( 'ah_welcome_' . get_current_user_id(), 1, DAY_IN_SECONDS );
+				set_transient( 'srah_welcome_' . get_current_user_id(), 1, DAY_IN_SECONDS );
 			}
 		);
 	}
@@ -67,7 +67,7 @@ class Installer {
 			static function () {
 				Recorder::log(
 					array(
-						'summary'   => __( 'Advance History was deactivated.', 'advance-history' ),
+						'summary'   => __( 'AdminTrace Activity Logger was deactivated.', 'admintrace-activity-logger' ),
 						'category'  => 'system',
 						'action'    => 'system.deactivated',
 						'severity'  => 'notice',
@@ -102,8 +102,10 @@ class Installer {
 	 * Create or upgrade the table when the schema version changes.
 	 */
 	public static function maybe_upgrade() {
-		$installed = get_option( 'advance_history_db_version' );
-		if ( (string) $installed === (string) AH_DB_VERSION ) {
+		self::migrate_legacy_storage();
+		self::rename_legacy_table();
+		$installed = get_option( 'srah_db_version' );
+		if ( (string) $installed === (string) SRAH_DB_VERSION ) {
 			return;
 		}
 		self::install();
@@ -116,6 +118,7 @@ class Installer {
 	public static function install() {
 		global $wpdb;
 
+		self::rename_legacy_table();
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		$table   = self::table();
@@ -148,17 +151,17 @@ class Installer {
 		) {$charset};";
 
 		dbDelta( $sql );
-		update_option( 'advance_history_db_version', AH_DB_VERSION, true );
+		update_option( 'srah_db_version', SRAH_DB_VERSION, true );
 	}
 
 	/**
 	 * Note a few existing posts so a new journal is not blank.
 	 */
 	private static function backfill() {
-		if ( get_option( 'advance_history_backfilled' ) ) {
+		if ( get_option( 'srah_backfilled' ) ) {
 			return;
 		}
-		update_option( 'advance_history_backfilled', 1, true );
+		update_option( 'srah_backfilled', 1, true );
 
 		$posts = get_posts(
 			array(
@@ -179,7 +182,7 @@ class Installer {
 			Recorder::log(
 				array(
 					/* translators: 1: content title, 2: author display name, 3: status. */
-					'summary'     => sprintf( __( 'Noted from existing content: "%1$s" (%3$s), last edited by %2$s. This was recorded when Advance History was activated, not as a live edit.', 'advance-history' ), $post->post_title, $author ? $author : __( 'unknown author', 'advance-history' ), $post->post_status ),
+					'summary'     => sprintf( __( 'Noted from existing content: "%1$s" (%3$s), last edited by %2$s. This was recorded when AdminTrace Activity Logger was activated, not as a live edit.', 'admintrace-activity-logger' ), $post->post_title, $author ? $author : __( 'unknown author', 'admintrace-activity-logger' ), $post->post_status ),
 					'category'    => 'content',
 					'action'      => 'content.snapshot',
 					'severity'    => 'info',
@@ -223,5 +226,100 @@ class Installer {
 		}
 
 		call_user_func( $callback );
+	}
+
+	/**
+	 * Move stored keys off the earlier advance_history_ prefix.
+	 *
+	 * Runs once. Fresh installs only record that the move is done.
+	 */
+	private static function migrate_legacy_storage() {
+		if ( get_option( 'srah_legacy_prefix_done' ) ) {
+			return;
+		}
+
+		$options = array(
+			'advance_history_settings'           => array( 'srah_settings', true ),
+			'advance_history_db_version'         => array( 'srah_db_version', true ),
+			'advance_history_backfilled'         => array( 'srah_backfilled', true ),
+			'advance_history_update_fingerprint' => array( 'srah_update_fingerprint', false ),
+			'advance_history_fail_window'        => array( 'srah_fail_window', false ),
+		);
+		foreach ( $options as $old => $target ) {
+			$value = get_option( $old, null );
+			if ( null === $value ) {
+				continue;
+			}
+			if ( false === get_option( $target[0], false ) ) {
+				update_option( $target[0], $value, $target[1] );
+			}
+			delete_option( $old );
+		}
+
+		global $wpdb;
+		$meta = array(
+			'advance_history_dismiss_welcome' => 'srah_dismiss_welcome',
+			'advance_history_view'            => 'srah_view',
+		);
+		foreach ( $meta as $old => $new ) {
+			$wpdb->update(
+				$wpdb->usermeta,
+				array( 'meta_key' => $new ),
+				array( 'meta_key' => $old )
+			);
+		}
+
+		$role = get_role( 'administrator' );
+		if ( $role ) {
+			$caps = array(
+				'view_advance_history'   => 'srah_view',
+				'manage_advance_history' => 'srah_manage',
+				'export_advance_history' => 'srah_export',
+				'delete_advance_history' => 'srah_delete',
+			);
+			foreach ( $caps as $old => $new ) {
+				if ( empty( $role->capabilities[ $old ] ) ) {
+					continue;
+				}
+				$role->add_cap( $new );
+				$role->remove_cap( $old );
+			}
+		}
+
+		wp_clear_scheduled_hook( 'advance_history_prune' );
+		wp_clear_scheduled_hook( 'advance_history_digest' );
+		Capabilities::grant_roles();
+		Retention::ensure_scheduled();
+		Notifications::ensure_scheduled();
+
+		update_option( 'srah_legacy_prefix_done', 1, true );
+	}
+
+	/**
+	 * Rename the table used before the srah_ prefix.
+	 */
+	private static function rename_legacy_table() {
+		global $wpdb;
+
+		$table  = self::table();
+		$legacy = $wpdb->prefix . 'ah_events';
+		if ( $table === $legacy ) {
+			return;
+		}
+
+		$has_new = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
+		if ( $has_new === $table ) {
+			return;
+		}
+
+		$has_old = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $legacy ) ) );
+		if ( $has_old !== $legacy ) {
+			return;
+		}
+		if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $legacy ) || ! preg_match( '/^[A-Za-z0-9_]+$/', $table ) ) {
+			return;
+		}
+
+		$wpdb->query( "RENAME TABLE `{$legacy}` TO `{$table}`" );
 	}
 }

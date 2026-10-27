@@ -1,10 +1,10 @@
 # Feature comparison
 
-Sources: the public `readme.txt` shipped with Simple History 5.36.0 (tested up to WordPress 7.1) and the Premium, WooCommerce, and Debug and Monitor descriptions in that file. This is a checklist of user-facing needs, not a claim that Advance History reproduces another product.
+Sources: the public `readme.txt` shipped with Simple History 5.36.0 (tested up to WordPress 7.1) and the Premium, WooCommerce, and Debug and Monitor descriptions in that file. This is a checklist of user-facing needs, not a claim that AdminTrace Activity Logger reproduces another product.
 
-Simple History’s FAQ says the log can be exported, while the Premium section markets filtered CSV/JSON export. Both statements are public. Advance History includes filtered CSV and JSON export in the free plugin.
+Simple History’s FAQ says the log can be exported, while the Premium section markets filtered CSV/JSON export. Both statements are public. AdminTrace Activity Logger includes filtered CSV and JSON export in the free plugin.
 
-| Need | Simple History free (public readme) | Documented paid add-on | Advance History 1.0.0 |
+| Need | Simple History free (public readme) | Documented paid add-on | AdminTrace Activity Logger 1.0.0 |
 | --- | --- | --- | --- |
 | Content, users, comments, media, menus, widgets | Yes | — | Yes |
 | Plugin, theme, and core updates | Yes | — | Yes |
@@ -23,7 +23,7 @@ Simple History’s FAQ says the log can be exported, while the Premium section m
 | Outgoing HTTP and email monitor | — | Debug and Monitor add-on | Not included, to avoid storing secrets |
 | REST API and WP-CLI | Yes | — | Yes |
 | RSS feed | Yes, secret feed | — | Off until enabled. The address is a secret |
-| Custom events | Logging API | GUI for manual entries is Premium | `advance_history_log()` and a journal note form |
+| Custom events | Logging API | GUI for manual entries is Premium | `srah_log()` and a journal note form |
 | Logger on/off switches | — | Premium | Settings checkboxes |
 | Stealth mode | Code filter; GUI is Premium | Premium GUI | Not included. Hiding the plugin is intentionally omitted |
 | Post editor activity | — | Premium block-editor panel | Side meta box on the post editor |
@@ -31,4 +31,4 @@ Simple History’s FAQ says the log can be exported, while the Premium section m
 | Privacy policy text, export, and erase | Yes | — | Yes |
 | Uninstall cleanup | Documented by that plugin | — | On by default, with a setting to keep rows |
 
-Advance History does not reuse Simple History’s code, database tables, hooks, or interface.
+AdminTrace Activity Logger does not reuse Simple History’s code, database tables, hooks, or interface.

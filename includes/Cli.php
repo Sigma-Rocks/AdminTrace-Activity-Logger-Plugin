@@ -25,7 +25,7 @@ class Cli {
 		if ( ! class_exists( '\WP_CLI' ) ) {
 			return;
 		}
-		\WP_CLI::add_command( 'advance-history', __CLASS__ );
+		\WP_CLI::add_command( 'admintrace-activity-logger', __CLASS__ );
 	}
 
 	/**
@@ -168,7 +168,7 @@ class Cli {
 			return;
 		}
 		if ( ! current_user_can( $capability ) ) {
-			\WP_CLI::error( 'You do not have permission to use Advance History.' );
+			\WP_CLI::error( 'You do not have permission to use AdminTrace Activity Logger.' );
 		}
 	}
 }

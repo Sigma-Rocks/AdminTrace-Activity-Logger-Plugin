@@ -40,7 +40,7 @@ class Commerce_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'WooCommerce', 'advance-history' );
+		return __( 'WooCommerce', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Commerce_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Orders, refunds, stock, and product price changes when WooCommerce is active.', 'advance-history' );
+		return __( 'Orders, refunds, stock, and product price changes when WooCommerce is active.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -82,13 +82,13 @@ class Commerce_Logger extends Logger {
 		$summary = $placed
 			? sprintf(
 				/* translators: 1: order number, 2: status. */
-				__( 'Placed order %1$s (%2$s).', 'advance-history' ),
+				__( 'Placed order %1$s (%2$s).', 'admintrace-activity-logger' ),
 				$number,
 				sanitize_key( (string) $to )
 			)
 			: sprintf(
 				/* translators: 1: order number, 2: old status, 3: new status. */
-				__( 'Order %1$s changed from %2$s to %3$s.', 'advance-history' ),
+				__( 'Order %1$s changed from %2$s to %3$s.', 'admintrace-activity-logger' ),
 				$number,
 				sanitize_key( (string) $from ),
 				sanitize_key( (string) $to )
@@ -128,7 +128,7 @@ class Commerce_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %d: order ID. */
-					__( 'Refunded order %d.', 'advance-history' ),
+					__( 'Refunded order %d.', 'admintrace-activity-logger' ),
 					absint( $order_id )
 				),
 				'category'    => 'commerce',
@@ -158,9 +158,9 @@ class Commerce_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: product name, 2: stock quantity. */
-					__( 'Stock for "%1$s" is now %2$s.', 'advance-history' ),
+					__( 'Stock for "%1$s" is now %2$s.', 'admintrace-activity-logger' ),
 					$name,
-					is_scalar( $qty ) ? (string) $qty : __( 'unknown', 'advance-history' )
+					is_scalar( $qty ) ? (string) $qty : __( 'unknown', 'admintrace-activity-logger' )
 				),
 				'category'     => 'commerce',
 				'action'       => 'commerce.stock',
@@ -202,7 +202,7 @@ class Commerce_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: product name, 2: field list. */
-					__( 'Updated product "%1$s" (%2$s).', 'advance-history' ),
+					__( 'Updated product "%1$s" (%2$s).', 'admintrace-activity-logger' ),
 					$name,
 					implode( ', ', $interesting )
 				),

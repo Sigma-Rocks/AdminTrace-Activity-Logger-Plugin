@@ -1,27 +1,27 @@
 (function () {
-	var config = window.advanceHistoryAdmin || {};
+	var config = window.srahAdmin || {};
 
-	document.querySelectorAll('[data-ah-confirm]').forEach(function (element) {
+	document.querySelectorAll('[data-srah-confirm]').forEach(function (element) {
 		element.addEventListener('click', function (event) {
-			var message = element.getAttribute('data-ah-confirm');
+			var message = element.getAttribute('data-srah-confirm');
 			if (message && !window.confirm(message)) {
 				event.preventDefault();
 			}
 		});
 	});
 
-	var selectAll = document.querySelector('[data-ah-select-all]');
+	var selectAll = document.querySelector('[data-srah-select-all]');
 	if (selectAll) {
 		selectAll.addEventListener('change', function () {
-			document.querySelectorAll('.ah-event-check').forEach(function (box) {
+			document.querySelectorAll('.srah-event-check').forEach(function (box) {
 				box.checked = selectAll.checked;
 			});
 		});
 	}
 
-	document.querySelectorAll('[data-ah-copy]').forEach(function (button) {
+	document.querySelectorAll('[data-srah-copy]').forEach(function (button) {
 		button.addEventListener('click', function () {
-			var node = document.getElementById(button.getAttribute('data-ah-copy'));
+			var node = document.getElementById(button.getAttribute('data-srah-copy'));
 			if (!node) {
 				return;
 			}

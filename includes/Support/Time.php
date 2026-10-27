@@ -37,7 +37,7 @@ class Time {
 		$local  = function_exists( 'wp_date' ) ? wp_date( $format, $timestamp ) : gmdate( 'Y-m-d H:i:s', $timestamp );
 		$diff   = human_time_diff( $timestamp, time() );
 		/* translators: %s: amount of time, such as "3 hours". */
-		$relative = sprintf( __( '%s ago', 'advance-history' ), $diff );
+		$relative = sprintf( __( '%s ago', 'admintrace-activity-logger' ), $diff );
 		$primary  = ( time() - $timestamp ) > ( 7 * DAY_IN_SECONDS ) ? $local : $relative;
 
 		return array(

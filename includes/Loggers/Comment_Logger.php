@@ -33,7 +33,7 @@ class Comment_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Comments', 'advance-history' );
+		return __( 'Comments', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Comment_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'New comments, moderation decisions, and deletions.', 'advance-history' );
+		return __( 'New comments, moderation decisions, and deletions.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -94,11 +94,11 @@ class Comment_Logger extends Logger {
 	 */
 	private function store( $comment, $action, $status, $severity, $from = '' ) {
 		$type    = $comment->comment_type ? $comment->comment_type : 'comment';
-		$label   = ( 'note' === $type ) ? __( 'note', 'advance-history' ) : __( 'comment', 'advance-history' );
+		$label   = ( 'note' === $type ) ? __( 'note', 'admintrace-activity-logger' ) : __( 'comment', 'admintrace-activity-logger' );
 		$excerpt = Text::plain( $comment->comment_content, 140 );
 		$summary = sprintf(
 			/* translators: 1: comment or note, 2: status, 3: author name. */
-			__( 'A %1$s is %2$s. Author: %3$s.', 'advance-history' ),
+			__( 'A %1$s is %2$s. Author: %3$s.', 'admintrace-activity-logger' ),
 			$label,
 			$status,
 			Text::plain( $comment->comment_author, 80 )

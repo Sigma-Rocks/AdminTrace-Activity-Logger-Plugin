@@ -16,10 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Capabilities {
 
-	const VIEW   = 'view_advance_history';
-	const MANAGE = 'manage_advance_history';
-	const EXPORT = 'export_advance_history';
-	const DELETE = 'delete_advance_history';
+	const VIEW   = 'srah_view';
+	const MANAGE = 'srah_manage';
+	const EXPORT = 'srah_export';
+	const DELETE = 'srah_delete';
 
 	/**
 	 * Register runtime grants.

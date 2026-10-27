@@ -31,7 +31,7 @@ class Privacy_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Privacy requests', 'advance-history' );
+		return __( 'Privacy requests', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Privacy_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Personal data exports, erasures, and tools exports.', 'advance-history' );
+		return __( 'Personal data exports, erasures, and tools exports.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -67,7 +67,7 @@ class Privacy_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %d: request ID. */
-					__( 'Created a personal data export for request %d.', 'advance-history' ),
+					__( 'Created a personal data export for request %d.', 'admintrace-activity-logger' ),
 					absint( $request_id )
 				),
 				'category'    => 'privacy',
@@ -89,7 +89,7 @@ class Privacy_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %d: request ID. */
-					__( 'Erased personal data for request %d.', 'advance-history' ),
+					__( 'Erased personal data for request %d.', 'admintrace-activity-logger' ),
 					absint( $request_id )
 				),
 				'category'    => 'privacy',
@@ -113,7 +113,7 @@ class Privacy_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: 1: request type, 2: request ID. */
-					__( 'Confirmed a %1$s privacy request (%2$d).', 'advance-history' ),
+					__( 'Confirmed a %1$s privacy request (%2$d).', 'admintrace-activity-logger' ),
 					$action,
 					absint( $request_id )
 				),
@@ -138,7 +138,7 @@ class Privacy_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %s: exported content type. */
-					__( 'Exported WordPress content (%s).', 'advance-history' ),
+					__( 'Exported WordPress content (%s).', 'admintrace-activity-logger' ),
 					$content
 				),
 				'category' => 'privacy',

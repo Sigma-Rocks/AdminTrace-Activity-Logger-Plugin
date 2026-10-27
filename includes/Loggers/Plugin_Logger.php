@@ -33,7 +33,7 @@ class Plugin_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Plugins', 'advance-history' );
+		return __( 'Plugins', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Plugin_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Plugin installs, updates, activation, deactivation, and deletion.', 'advance-history' );
+		return __( 'Plugin installs, updates, activation, deactivation, and deletion.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -66,7 +66,7 @@ class Plugin_Logger extends Logger {
 			$plugin,
 			'plugin.activated',
 			/* translators: 1: plugin name, 2: version. */
-			__( 'Activated the plugin "%1$s" (%2$s).', 'advance-history' ),
+			__( 'Activated the plugin "%1$s" (%2$s).', 'admintrace-activity-logger' ),
 			'notice',
 			$network
 		);
@@ -83,7 +83,7 @@ class Plugin_Logger extends Logger {
 			$plugin,
 			'plugin.deactivated',
 			/* translators: 1: plugin name, 2: version. */
-			__( 'Deactivated the plugin "%1$s" (%2$s).', 'advance-history' ),
+			__( 'Deactivated the plugin "%1$s" (%2$s).', 'admintrace-activity-logger' ),
 			'notice',
 			$network
 		);
@@ -103,7 +103,7 @@ class Plugin_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: %s: plugin file. */
-					__( 'Deleted the plugin "%s".', 'advance-history' ),
+					__( 'Deleted the plugin "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $plugin, 120 )
 				),
 				'category'     => 'plugin',
@@ -137,11 +137,11 @@ class Plugin_Logger extends Logger {
 		foreach ( $files as $file ) {
 			if ( 'install' === $action ) {
 				/* translators: 1: plugin name, 2: version. */
-				$pattern = __( 'Installed the plugin "%1$s" (%2$s).', 'advance-history' );
+				$pattern = __( 'Installed the plugin "%1$s" (%2$s).', 'admintrace-activity-logger' );
 				$event   = 'plugin.installed';
 			} else {
 				/* translators: 1: plugin name, 2: version. */
-				$pattern = __( 'Updated the plugin "%1$s" (%2$s).', 'advance-history' );
+				$pattern = __( 'Updated the plugin "%1$s" (%2$s).', 'admintrace-activity-logger' );
 				$event   = 'plugin.updated';
 			}
 			$this->log_plugin( $file, $event, $pattern, 'notice', false );
@@ -159,7 +159,7 @@ class Plugin_Logger extends Logger {
 	 */
 	private function log_plugin( $plugin, $action, $pattern, $severity, $network ) {
 		$meta    = $this->plugin_meta( $plugin );
-		$version = '' !== $meta['version'] ? $meta['version'] : __( 'unknown version', 'advance-history' );
+		$version = '' !== $meta['version'] ? $meta['version'] : __( 'unknown version', 'admintrace-activity-logger' );
 		$this->log(
 			array(
 				'summary'      => sprintf( $pattern, $meta['name'], $version ),

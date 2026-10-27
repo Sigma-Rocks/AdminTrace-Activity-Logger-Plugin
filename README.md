@@ -1,16 +1,16 @@
-# Advance History
+# AdminTrace Activity Logger
 
 Activity journal for WordPress, by [Sigma Rocks](https://sigmarocks.com).
 
-Advance History records who changed the site and when: content, accounts, plugins, themes, comments, settings, privacy requests, and WooCommerce orders when WooCommerce is active. Every feature in this plugin is available without a license.
+AdminTrace Activity Logger records who changed the site and when: content, accounts, plugins, themes, comments, settings, privacy requests, and WooCommerce orders when WooCommerce is active. Every feature in this plugin is available without a license.
 
 ## Install
 
-1. Copy the `advance-history` folder into `wp-content/plugins/`, or upload `advance-history.zip` from Plugins → Add New.
-2. Activate **Advance History**.
-3. Open **Advance History** in the admin menu.
+1. Copy the `admintrace-activity-logger` folder into `wp-content/plugins/`, or upload `admintrace-activity-logger.zip` from Plugins → Add New.
+2. Activate **AdminTrace Activity Logger**.
+3. Open **AdminTrace Activity Logger** in the admin menu.
 
-Activation creates a database table named `{prefix}ah_events` and notes up to ten existing posts and pages so the journal is not empty. Those rows are labeled as notes taken at activation, not as live edits.
+Activation creates a database table named `{prefix}srah_events` and notes up to ten existing posts and pages so the journal is not empty. Those rows are labeled as notes taken at activation, not as live edits.
 
 Requires WordPress 6.2 or newer and PHP 7.4 or newer. Tested on WordPress 7.1.
 
@@ -26,7 +26,7 @@ Requires WordPress 6.2 or newer and PHP 7.4 or newer. Tested on WordPress 7.1.
 - Public hooks from Jetpack, User Switching, Advanced Custom Fields, Yoast Duplicate Post, Beaver Builder, and Redirection, when those plugins fire them.
 - Denied admin screens, Site Health count changes, and plugin or theme file edits after WordPress has written the file.
 
-Passwords, reset keys, application password secrets, API keys, and privacy-export download URLs are not stored. IP addresses are masked by default (the last IPv4 octet is removed; IPv6 keeps the first half) and can be turned off. Advance History does not send addresses to a geolocation service.
+Passwords, reset keys, application password secrets, API keys, and privacy-export download URLs are not stored. IP addresses are masked by default (the last IPv4 octet is removed; IPv6 keeps the first half) and can be turned off. AdminTrace Activity Logger does not send addresses to a geolocation service.
 
 Logging is wrapped so a failure is dropped instead of interrupting WordPress.
 
@@ -62,7 +62,7 @@ Deleting the plugin from the Plugins screen runs `uninstall.php`. By default it 
 ## Developers
 
 ```php
-advance_history_log(
+srah_log(
     array(
         'summary'     => __( 'Imported the nightly catalog.', 'my-plugin' ),
         'category'    => 'system',
@@ -81,32 +81,32 @@ The function returns the event ID, or `0` when the event was not stored. Context
 
 Filters:
 
-- `advance_history_should_log` — return false to skip an event.
-- `advance_history_event` — adjust the event array before it is validated again.
-- `advance_history_loggers` — add a class name that extends `SigmaRocks\AdvanceHistory\Loggers\Logger`.
-- `advance_history_tracked_options` — add option names. The credential denylist still wins.
-- `advance_history_skip_post_type` — return true to ignore a post type.
-- `advance_history_logged` — fires after a row is stored.
-- `advance_history_pruned` — fires after retention deletes rows.
+- `srah_should_log` — return false to skip an event.
+- `srah_event` — adjust the event array before it is validated again.
+- `srah_loggers` — add a class name that extends `SigmaRocks\AdvanceHistory\Loggers\Logger`.
+- `srah_tracked_options` — add option names. The credential denylist still wins.
+- `srah_skip_post_type` — return true to ignore a post type.
+- `srah_logged` — fires after a row is stored.
+- `srah_pruned` — fires after retention deletes rows.
 
-Do not call `advance_history_log()` from `advance_history_should_log` or `advance_history_logged`. Those callbacks run while a write is already in progress, and the nested call is ignored.
+Do not call `srah_log()` from `srah_should_log` or `srah_logged`. Those callbacks run while a write is already in progress, and the nested call is ignored.
 
 REST routes, for users who can view or manage the journal:
 
-- `GET /wp-json/advance-history/v1/events`
-- `GET /wp-json/advance-history/v1/events/{id}`
-- `POST /wp-json/advance-history/v1/events`
-- `DELETE /wp-json/advance-history/v1/events/{id}`
-- `GET /wp-json/advance-history/v1/stats`
+- `GET /wp-json/admintrace-activity-logger/v1/events`
+- `GET /wp-json/admintrace-activity-logger/v1/events/{id}`
+- `POST /wp-json/admintrace-activity-logger/v1/events`
+- `DELETE /wp-json/admintrace-activity-logger/v1/events/{id}`
+- `GET /wp-json/admintrace-activity-logger/v1/stats`
 
 POST always attributes the event to the authenticated user.
 
 WP-CLI:
 
 ```bash
-wp advance-history list --category=content --limit=20
-wp advance-history prune --days=90
-wp advance-history note "Noted the launch checklist."
+wp admintrace-activity-logger list --category=content --limit=20
+wp admintrace-activity-logger prune --days=90
+wp admintrace-activity-logger note "Noted the launch checklist."
 ```
 
 A shell with no `--user` can read the journal because it already has database access. `wp --user=editor` is limited to that account’s capabilities.

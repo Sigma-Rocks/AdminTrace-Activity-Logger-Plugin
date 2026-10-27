@@ -38,7 +38,7 @@ class Media_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Media', 'advance-history' );
+		return __( 'Media', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -47,7 +47,7 @@ class Media_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Uploads, image edits, and deleted files. File contents are not stored.', 'advance-history' );
+		return __( 'Uploads, image edits, and deleted files. File contents are not stored.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Media_Logger extends Logger {
 			$post_id,
 			'media.uploaded',
 			/* translators: %s: attachment title. */
-			__( 'Uploaded "%s".', 'advance-history' ),
+			__( 'Uploaded "%s".', 'admintrace-activity-logger' ),
 			'info'
 		);
 	}
@@ -85,7 +85,7 @@ class Media_Logger extends Logger {
 			$post_id,
 			'media.edited',
 			/* translators: %s: attachment title. */
-			__( 'Edited "%s".', 'advance-history' ),
+			__( 'Edited "%s".', 'admintrace-activity-logger' ),
 			'info'
 		);
 	}
@@ -100,7 +100,7 @@ class Media_Logger extends Logger {
 			$post_id,
 			'media.deleted',
 			/* translators: %s: attachment title. */
-			__( 'Deleted the file "%s".', 'advance-history' ),
+			__( 'Deleted the file "%s".', 'admintrace-activity-logger' ),
 			'warning'
 		);
 	}

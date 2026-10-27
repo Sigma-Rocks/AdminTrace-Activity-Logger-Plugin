@@ -48,7 +48,7 @@ class Content_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Content', 'advance-history' );
+		return __( 'Content', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Content_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Posts, pages, custom post types, and site-editor templates.', 'advance-history' );
+		return __( 'Posts, pages, custom post types, and site-editor templates.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -107,12 +107,12 @@ class Content_Logger extends Logger {
 		$this->touch( $after );
 
 		$map = array(
-			'post_title'     => __( 'Title', 'advance-history' ),
-			'post_name'      => __( 'Slug', 'advance-history' ),
-			'post_excerpt'   => __( 'Excerpt', 'advance-history' ),
-			'comment_status' => __( 'Comment status', 'advance-history' ),
-			'ping_status'    => __( 'Ping status', 'advance-history' ),
-			'menu_order'     => __( 'Order', 'advance-history' ),
+			'post_title'     => __( 'Title', 'admintrace-activity-logger' ),
+			'post_name'      => __( 'Slug', 'admintrace-activity-logger' ),
+			'post_excerpt'   => __( 'Excerpt', 'admintrace-activity-logger' ),
+			'comment_status' => __( 'Comment status', 'admintrace-activity-logger' ),
+			'ping_status'    => __( 'Ping status', 'admintrace-activity-logger' ),
+			'menu_order'     => __( 'Order', 'admintrace-activity-logger' ),
 		);
 		foreach ( $map as $field => $label ) {
 			$from = (string) $before->$field;
@@ -133,7 +133,7 @@ class Content_Logger extends Logger {
 			$this->change(
 				$after->ID,
 				array(
-					'field' => __( 'Author', 'advance-history' ),
+					'field' => __( 'Author', 'admintrace-activity-logger' ),
 					'from'  => $this->author_name( $before->post_author ),
 					'to'    => $this->author_name( $after->post_author ),
 				)
@@ -144,15 +144,15 @@ class Content_Logger extends Logger {
 			$diff  = Diff::summarize( $before->post_content, $after->post_content );
 			$lines = Diff::hunks( $before->post_content, $after->post_content );
 			$change = array(
-				'field'   => __( 'Content', 'advance-history' ),
+				'field'   => __( 'Content', 'admintrace-activity-logger' ),
 				'from'    => sprintf(
 					/* translators: %d: character count. */
-					__( '%d characters', 'advance-history' ),
+					__( '%d characters', 'admintrace-activity-logger' ),
 					(int) $diff['before_chars']
 				),
 				'to'      => sprintf(
 					/* translators: %d: character count. */
-					__( '%d characters', 'advance-history' ),
+					__( '%d characters', 'admintrace-activity-logger' ),
 					(int) $diff['after_chars']
 				),
 				'added'   => $diff['added'],
@@ -180,7 +180,7 @@ class Content_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: post type label, 2: title. */
-					__( 'Permanently deleted %1$s "%2$s".', 'advance-history' ),
+					__( 'Permanently deleted %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$this->type_label( $post ),
 					$post->post_title
 				),
@@ -229,7 +229,7 @@ class Content_Logger extends Logger {
 			array(
 				'field' => sprintf(
 					/* translators: %s: taxonomy label. */
-					__( 'Terms (%s)', 'advance-history' ),
+					__( 'Terms (%s)', 'admintrace-activity-logger' ),
 					$label
 				),
 				'from'  => implode( ', ', $this->term_names( $old ) ),
@@ -331,7 +331,7 @@ class Content_Logger extends Logger {
 				array_unshift(
 					$changes,
 					array(
-						'field' => __( 'Status', 'advance-history' ),
+						'field' => __( 'Status', 'admintrace-activity-logger' ),
 						'from'  => $from,
 						'to'    => $to,
 					)
@@ -345,14 +345,14 @@ class Content_Logger extends Logger {
 				if ( 'publish' === $to ) {
 					$summary = sprintf(
 						/* translators: 1: post type label, 2: title. */
-						__( 'Published %1$s "%2$s".', 'advance-history' ),
+						__( 'Published %1$s "%2$s".', 'admintrace-activity-logger' ),
 						$label,
 						$title
 					);
 				} else {
 					$summary = sprintf(
 						/* translators: 1: post type label, 2: title. */
-						__( 'Created %1$s "%2$s".', 'advance-history' ),
+						__( 'Created %1$s "%2$s".', 'admintrace-activity-logger' ),
 						$label,
 						$title
 					);
@@ -361,7 +361,7 @@ class Content_Logger extends Logger {
 				$action  = 'content.trashed';
 				$summary = sprintf(
 					/* translators: 1: post type label, 2: title. */
-					__( 'Moved %1$s "%2$s" to the trash.', 'advance-history' ),
+					__( 'Moved %1$s "%2$s" to the trash.', 'admintrace-activity-logger' ),
 					$label,
 					$title
 				);
@@ -369,7 +369,7 @@ class Content_Logger extends Logger {
 				$action  = 'content.restored';
 				$summary = sprintf(
 					/* translators: 1: post type label, 2: title. */
-					__( 'Restored %1$s "%2$s".', 'advance-history' ),
+					__( 'Restored %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$label,
 					$title
 				);
@@ -377,7 +377,7 @@ class Content_Logger extends Logger {
 				$action  = 'content.published';
 				$summary = sprintf(
 					/* translators: 1: post type label, 2: title. */
-					__( 'Published %1$s "%2$s".', 'advance-history' ),
+					__( 'Published %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$label,
 					$title
 				);
@@ -385,7 +385,7 @@ class Content_Logger extends Logger {
 				$action  = 'content.updated';
 				$summary = sprintf(
 					/* translators: 1: post type label, 2: title. */
-					__( 'Updated %1$s "%2$s".', 'advance-history' ),
+					__( 'Updated %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$label,
 					$title
 				);
@@ -456,7 +456,7 @@ class Content_Logger extends Logger {
 		if ( ! $viewable && ! in_array( $post->post_type, $allowed, true ) ) {
 			return true;
 		}
-		return (bool) apply_filters( 'advance_history_skip_post_type', false, $post->post_type, $post );
+		return (bool) apply_filters( 'srah_skip_post_type', false, $post->post_type, $post );
 	}
 
 	/**
@@ -522,9 +522,9 @@ class Content_Logger extends Logger {
 			$this->change(
 				$post->ID,
 				array(
-					'field'           => __( 'Featured image', 'advance-history' ),
-					'from'            => $old ? '#' . absint( $old ) : __( 'None', 'advance-history' ),
-					'to'              => $new ? '#' . absint( $new ) : __( 'None', 'advance-history' ),
+					'field'           => __( 'Featured image', 'admintrace-activity-logger' ),
+					'from'            => $old ? '#' . absint( $old ) : __( 'None', 'admintrace-activity-logger' ),
+					'to'              => $new ? '#' . absint( $new ) : __( 'None', 'admintrace-activity-logger' ),
 					'from_attachment' => absint( $old ),
 					'to_attachment'   => absint( $new ),
 				)
@@ -535,7 +535,7 @@ class Content_Logger extends Logger {
 			$this->change(
 				$post->ID,
 				array(
-					'field' => __( 'Template', 'advance-history' ),
+					'field' => __( 'Template', 'admintrace-activity-logger' ),
 					'from'  => Text::plain( wp_basename( (string) $old ), 80 ),
 					'to'    => Text::plain( wp_basename( (string) $new ), 80 ),
 				)
@@ -547,8 +547,8 @@ class Content_Logger extends Logger {
 				$post->ID,
 				array(
 					'field' => Text::plain( $key, 40 ),
-					'from'  => __( 'Changed', 'advance-history' ),
-					'to'    => __( 'Updated', 'advance-history' ),
+					'from'  => __( 'Changed', 'admintrace-activity-logger' ),
+					'to'    => __( 'Updated', 'admintrace-activity-logger' ),
 				)
 			);
 			return;

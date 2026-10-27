@@ -62,7 +62,7 @@ $failures = 0;
  * @param bool   $condition Condition.
  * @param string $message   Failure message.
  */
-function ah_assert( $condition, $message ) {
+function srah_assert( $condition, $message ) {
 	global $failures;
 	if ( $condition ) {
 		echo "ok  {$message}\n";
@@ -118,9 +118,9 @@ if ( ! function_exists( 'esc_url_raw' ) ) {
 	}
 }
 
-ah_assert( '192.168.1.0' === Ip::mask( '192.168.1.55' ), 'IPv4 mask drops the last octet' );
-ah_assert( '' === Ip::mask( 'not-an-ip' ), 'invalid IP is discarded' );
-ah_assert( '2001:db8:85a3:0::' === Ip::mask( '2001:db8:85a3::8a2e:370:7334' ), 'IPv6 mask keeps the first half' );
+srah_assert( '192.168.1.0' === Ip::mask( '192.168.1.55' ), 'IPv4 mask drops the last octet' );
+srah_assert( '' === Ip::mask( 'not-an-ip' ), 'invalid IP is discarded' );
+srah_assert( '2001:db8:85a3:0::' === Ip::mask( '2001:db8:85a3::8a2e:370:7334' ), 'IPv6 mask keeps the first half' );
 
 $remote = Ip::from_request(
 	array(
@@ -129,7 +129,7 @@ $remote = Ip::from_request(
 	),
 	false
 );
-ah_assert( '203.0.113.0' === $remote, 'forwarded headers are ignored unless trusted' );
+srah_assert( '203.0.113.0' === $remote, 'forwarded headers are ignored unless trusted' );
 
 $clean = Context::clean(
 	array(
@@ -140,22 +140,22 @@ $clean = Context::clean(
 		'user_agent' => 'Browser',
 	)
 );
-ah_assert( ! isset( $clean['password'] ) && ! isset( $clean['api_key'] ), 'secrets are removed from context' );
-ah_assert( isset( $clean['note'] ) && 'hello' === $clean['note'], 'ordinary context is kept' );
-ah_assert( isset( $clean['ip'] ) && '203.0.113.0' === $clean['ip'], 'IP values in context are masked' );
+srah_assert( ! isset( $clean['password'] ) && ! isset( $clean['api_key'] ), 'secrets are removed from context' );
+srah_assert( isset( $clean['note'] ) && 'hello' === $clean['note'], 'ordinary context is kept' );
+srah_assert( isset( $clean['ip'] ) && '203.0.113.0' === $clean['ip'], 'IP values in context are masked' );
 
 $diff = Diff::summarize( 'The quick brown fox', 'The quick green fox' );
-ah_assert( true === $diff['changed'], 'text change is detected' );
-ah_assert( in_array( 'green', $diff['added'], true ), 'added word is listed' );
-ah_assert( in_array( 'brown', $diff['removed'], true ), 'removed word is listed' );
+srah_assert( true === $diff['changed'], 'text change is detected' );
+srah_assert( in_array( 'green', $diff['added'], true ), 'added word is listed' );
+srah_assert( in_array( 'brown', $diff['removed'], true ), 'removed word is listed' );
 
 $hunks = Diff::hunks( "alpha\nkeep\nremove me\nkeep end", "alpha\nkeep\nadd me\nkeep end" );
-ah_assert( in_array( 'del: remove me', $hunks, true ), 'removed line is marked' );
-ah_assert( in_array( 'add: add me', $hunks, true ), 'added line is marked' );
-ah_assert( in_array( 'ctx: keep', $hunks, true ), 'nearby line is kept' );
-ah_assert( array() === Diff::hunks( '<p>Same</p>', '<p>Same</p>' ), 'identical content has no diff' );
+srah_assert( in_array( 'del: remove me', $hunks, true ), 'removed line is marked' );
+srah_assert( in_array( 'add: add me', $hunks, true ), 'added line is marked' );
+srah_assert( in_array( 'ctx: keep', $hunks, true ), 'nearby line is kept' );
+srah_assert( array() === Diff::hunks( '<p>Same</p>', '<p>Same</p>' ), 'identical content has no diff' );
 $markup = Diff::hunks( '<p>Hello brown</p>', '<p>Hello green</p>' );
-ah_assert( in_array( 'del: Hello brown', $markup, true ) && in_array( 'add: Hello green', $markup, true ), 'paragraph markup diffs as text' );
+srah_assert( in_array( 'del: Hello brown', $markup, true ) && in_array( 'add: Hello green', $markup, true ), 'paragraph markup diffs as text' );
 $stored = Context::clean(
 	array(
 		'changes' => array(
@@ -166,15 +166,15 @@ $stored = Context::clean(
 		),
 	)
 );
-ah_assert( isset( $stored['changes'][0]['lines'] ) && in_array( 'add: add me', $stored['changes'][0]['lines'], true ), 'line diff survives context cleanup' );
+srah_assert( isset( $stored['changes'][0]['lines'] ) && in_array( 'add: add me', $stored['changes'][0]['lines'], true ), 'line diff survives context cleanup' );
 
-ah_assert( "'=1+1" === Csv::cell( '=1+1' ), 'CSV formulas are neutralized' );
-ah_assert( 'safe' === Csv::cell( 'safe' ), 'plain CSV cells stay plain' );
+srah_assert( "'=1+1" === Csv::cell( '=1+1' ), 'CSV formulas are neutralized' );
+srah_assert( 'safe' === Csv::cell( 'safe' ), 'plain CSV cells stay plain' );
 
-ah_assert( '' === Url::public_https( 'http://example.com/hook' ), 'webhooks must be HTTPS' );
-ah_assert( '' === Url::public_https( 'https://127.0.0.1/hook' ), 'loopback webhooks are rejected' );
-ah_assert( '' === Url::public_https( 'https://user:pass@example.com/hook' ), 'webhook credentials are rejected' );
-ah_assert( 'https://example.com/hook' === Url::public_https( 'https://example.com/hook' ), 'public HTTPS webhooks are accepted' );
+srah_assert( '' === Url::public_https( 'http://example.com/hook' ), 'webhooks must be HTTPS' );
+srah_assert( '' === Url::public_https( 'https://127.0.0.1/hook' ), 'loopback webhooks are rejected' );
+srah_assert( '' === Url::public_https( 'https://user:pass@example.com/hook' ), 'webhook credentials are rejected' );
+srah_assert( 'https://example.com/hook' === Url::public_https( 'https://example.com/hook' ), 'public HTTPS webhooks are accepted' );
 
 $settings = Settings::sanitize(
 	array(
@@ -189,17 +189,17 @@ $settings = Settings::sanitize(
 	),
 	array( 'feed_token' => 'abc123' )
 );
-ah_assert( 3650 === $settings['retention_days'], 'retention is capped' );
-ah_assert( 25 === $settings['per_page'], 'unknown page sizes fall back' );
-ah_assert( 'masked' === $settings['ip_mode'], 'full IP storage is not a setting' );
-ah_assert( '' === $settings['webhook_url'], 'insecure webhooks are dropped' );
-ah_assert( 3 === $settings['alert_threshold'], 'alert threshold has a floor' );
-ah_assert( 'off' === $settings['email_digest'], 'unknown digest values are rejected' );
-ah_assert( array( 'user' ) === $settings['disabled_loggers'], 'logger ids are sanitized' );
-ah_assert( 'abc123' === $settings['feed_token'], 'feed secret is preserved' );
+srah_assert( 3650 === $settings['retention_days'], 'retention is capped' );
+srah_assert( 25 === $settings['per_page'], 'unknown page sizes fall back' );
+srah_assert( 'masked' === $settings['ip_mode'], 'full IP storage is not a setting' );
+srah_assert( '' === $settings['webhook_url'], 'insecure webhooks are dropped' );
+srah_assert( 3 === $settings['alert_threshold'], 'alert threshold has a floor' );
+srah_assert( 'off' === $settings['email_digest'], 'unknown digest values are rejected' );
+srah_assert( array( 'user' ) === $settings['disabled_loggers'], 'logger ids are sanitized' );
+srah_assert( 'abc123' === $settings['feed_token'], 'feed secret is preserved' );
 
 $order = Query::order_parts( 'created_gmt; DROP TABLE wp_users', 'DESC; DELETE' );
-ah_assert( 'created_gmt' === $order['column'] && 'DESC' === $order['direction'], 'ordering is whitelisted' );
+srah_assert( 'created_gmt' === $order['column'] && 'DESC' === $order['direction'], 'ordering is whitelisted' );
 
 $grouped = Groups::collapse(
 	array(
@@ -210,9 +210,9 @@ $grouped = Groups::collapse(
 		array( 'summary' => 'Logged in as "ada".', 'action' => 'user.login', 'user_id' => 1, 'object_type' => 'user', 'object_id' => 1, 'created_gmt' => '2026-10-22 08:06:24', 'context' => array() ),
 	)
 );
-ah_assert( 3 === count( $grouped ), 'repeated events collapse into one row' );
-ah_assert( 3 === (int) $grouped[0]['repeat_count'], 'repeat count includes the whole window' );
-ah_assert( 1 === (int) $grouped[2]['repeat_count'], 'a different event stays on its own' );
+srah_assert( 3 === count( $grouped ), 'repeated events collapse into one row' );
+srah_assert( 3 === (int) $grouped[0]['repeat_count'], 'repeat count includes the whole window' );
+srah_assert( 1 === (int) $grouped[2]['repeat_count'], 'a different event stays on its own' );
 
 echo $failures ? "{$failures} failed\n" : "all smoke checks passed\n";
 exit( $failures ? 1 : 0 );

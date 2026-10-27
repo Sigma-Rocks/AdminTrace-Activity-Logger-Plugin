@@ -41,7 +41,7 @@ class User_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Users and logins', 'advance-history' );
+		return __( 'Users and logins', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -50,7 +50,7 @@ class User_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Logins, logouts, failed logins, profile changes, roles, and application passwords.', 'advance-history' );
+		return __( 'Logins, logouts, failed logins, profile changes, roles, and application passwords.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -91,7 +91,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Logged in as "%s".', 'advance-history' ),
+					__( 'Logged in as "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $user_login, 60 )
 				),
 				'category'    => 'security',
@@ -114,7 +114,7 @@ class User_Logger extends Logger {
 	public function on_logout( $user_id ) {
 		$this->log(
 			array(
-				'summary'     => __( 'Logged out.', 'advance-history' ),
+				'summary'     => __( 'Logged out.', 'admintrace-activity-logger' ),
 				'category'    => 'user',
 				'action'      => 'user.logout',
 				'severity'    => 'info',
@@ -150,17 +150,17 @@ class User_Logger extends Logger {
 		if ( 'bad_password' === $code ) {
 			$summary = sprintf(
 				/* translators: %s: username. */
-				__( 'Failed login for "%s" because the password was incorrect.', 'advance-history' ),
+				__( 'Failed login for "%s" because the password was incorrect.', 'admintrace-activity-logger' ),
 				$username
 			);
 		} elseif ( 'unknown_user' === $code ) {
 			$summary = sprintf(
 				/* translators: %s: username. */
-				__( 'Failed login for an unknown username "%s".', 'advance-history' ),
+				__( 'Failed login for an unknown username "%s".', 'admintrace-activity-logger' ),
 				$username
 			);
 		} else {
-			$summary = __( 'Failed login attempt.', 'advance-history' );
+			$summary = __( 'Failed login attempt.', 'admintrace-activity-logger' );
 		}
 
 		$hit  = $this->count_failure();
@@ -189,7 +189,7 @@ class User_Logger extends Logger {
 				array(
 					'summary'   => sprintf(
 						/* translators: %d: number of failed logins. */
-						__( 'Failed login threshold reached: %d attempts in 15 minutes.', 'advance-history' ),
+						__( 'Failed login threshold reached: %d attempts in 15 minutes.', 'admintrace-activity-logger' ),
 						$hit
 					),
 					'category'  => 'security',
@@ -214,7 +214,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Created the account "%s".', 'advance-history' ),
+					__( 'Created the account "%s".', 'admintrace-activity-logger' ),
 					$user ? $user->user_login : (string) $user_id
 				),
 				'category'    => 'user',
@@ -240,10 +240,10 @@ class User_Logger extends Logger {
 		}
 
 		$fields = array(
-			'user_email'    => __( 'Email', 'advance-history' ),
-			'display_name'  => __( 'Display name', 'advance-history' ),
-			'user_url'      => __( 'Website', 'advance-history' ),
-			'user_nicename' => __( 'Nicename', 'advance-history' ),
+			'user_email'    => __( 'Email', 'admintrace-activity-logger' ),
+			'display_name'  => __( 'Display name', 'admintrace-activity-logger' ),
+			'user_url'      => __( 'Website', 'admintrace-activity-logger' ),
+			'user_nicename' => __( 'Nicename', 'admintrace-activity-logger' ),
 		);
 		$changes = array();
 		foreach ( $fields as $key => $label ) {
@@ -260,9 +260,9 @@ class User_Logger extends Logger {
 
 		if ( (string) $old->user_pass !== (string) $new->user_pass ) {
 			$changes[] = array(
-				'field' => __( 'Password', 'advance-history' ),
+				'field' => __( 'Password', 'admintrace-activity-logger' ),
 				'from'  => '••••',
-				'to'    => __( 'Updated', 'advance-history' ),
+				'to'    => __( 'Updated', 'admintrace-activity-logger' ),
 			);
 		}
 
@@ -274,7 +274,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Updated the profile for "%s".', 'advance-history' ),
+					__( 'Updated the profile for "%s".', 'admintrace-activity-logger' ),
 					$new->user_login
 				),
 				'category'    => 'user',
@@ -299,7 +299,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Deleted the account "%s".', 'advance-history' ),
+					__( 'Deleted the account "%s".', 'admintrace-activity-logger' ),
 					$user ? $user->user_login : (string) $user_id
 				),
 				'category'    => 'user',
@@ -356,7 +356,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'    => sprintf(
 					/* translators: %s: username. */
-					__( 'Password reset requested for "%s".', 'advance-history' ),
+					__( 'Password reset requested for "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $user_login, 60 )
 				),
 				'category'   => 'security',
@@ -380,7 +380,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Password reset completed for "%s".', 'advance-history' ),
+					__( 'Password reset completed for "%s".', 'admintrace-activity-logger' ),
 					$user->user_login
 				),
 				'category'    => 'security',
@@ -405,7 +405,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: application password name. */
-					__( 'Created an application password named "%s".', 'advance-history' ),
+					__( 'Created an application password named "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $name, 80 )
 				),
 				'category'    => 'security',
@@ -429,7 +429,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: application password name. */
-					__( 'Deleted the application password "%s".', 'advance-history' ),
+					__( 'Deleted the application password "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $name, 80 )
 				),
 				'category'    => 'security',
@@ -453,7 +453,7 @@ class User_Logger extends Logger {
 		}
 		$this->log(
 			array(
-				'summary'   => __( 'An application password failed to authenticate.', 'advance-history' ),
+				'summary'   => __( 'An application password failed to authenticate.', 'admintrace-activity-logger' ),
 				'category'  => 'security',
 				'action'    => 'user.login_failed',
 				'severity'  => 'warning',
@@ -478,7 +478,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: 1: username, 2: application password name. */
-					__( '"%1$s" authenticated with the application password "%2$s".', 'advance-history' ),
+					__( '"%1$s" authenticated with the application password "%2$s".', 'admintrace-activity-logger' ),
 					$user->user_login,
 					Text::plain( $name, 80 )
 				),
@@ -518,7 +518,7 @@ class User_Logger extends Logger {
 			array(
 				'summary'     => sprintf(
 					/* translators: %s: username. */
-					__( 'Changed roles for "%s".', 'advance-history' ),
+					__( 'Changed roles for "%s".', 'admintrace-activity-logger' ),
 					$login
 				),
 				'category'    => 'user',
@@ -529,7 +529,7 @@ class User_Logger extends Logger {
 				'context'     => array(
 					'changes' => array(
 						array(
-							'field' => __( 'Roles', 'advance-history' ),
+							'field' => __( 'Roles', 'admintrace-activity-logger' ),
 							'from'  => implode( ', ', array_map( 'sanitize_key', $old ) ),
 							'to'    => implode( ', ', array_map( 'sanitize_key', $new ) ),
 						),
@@ -545,7 +545,7 @@ class User_Logger extends Logger {
 	 * @return int Threshold count when it has just been reached, otherwise 0.
 	 */
 	private function count_failure() {
-		$state = get_option( 'advance_history_fail_window', array() );
+		$state = get_option( 'srah_fail_window', array() );
 		if ( ! is_array( $state ) || empty( $state['start'] ) || (int) $state['start'] < time() - ( 15 * MINUTE_IN_SECONDS ) ) {
 			$state = array(
 				'start'   => time(),
@@ -560,7 +560,7 @@ class User_Logger extends Logger {
 			$state['alerted'] = 1;
 			$hit              = (int) $state['count'];
 		}
-		update_option( 'advance_history_fail_window', $state, false );
+		update_option( 'srah_fail_window', $state, false );
 		return $hit;
 	}
 
@@ -571,9 +571,20 @@ class User_Logger extends Logger {
 	 * @return bool True when this attempt should not create its own row.
 	 */
 	private function throttled( $bucket ) {
-		$key   = 'ah_fl_' . md5( strtolower( $bucket ) );
-		$count = (int) get_transient( $key );
-		set_transient( $key, $count + 1, 10 * MINUTE_IN_SECONDS );
+		$store = 'srah_fail_logins';
+		$map   = get_transient( $store );
+		if ( ! is_array( $map ) ) {
+			$map = array();
+		}
+
+		$id = md5( strtolower( (string) $bucket ) );
+		if ( ! isset( $map[ $id ] ) && count( $map ) >= 32 ) {
+			$id = '_other';
+		}
+
+		$count      = isset( $map[ $id ] ) ? (int) $map[ $id ] : 0;
+		$map[ $id ] = $count + 1;
+		set_transient( $store, $map, 10 * MINUTE_IN_SECONDS );
 		if ( $count < 8 ) {
 			return false;
 		}
@@ -582,7 +593,7 @@ class User_Logger extends Logger {
 				array(
 					'summary'   => sprintf(
 						/* translators: 1: attempt count, 2: username. */
-						__( 'Grouped %1$d additional failed logins for "%2$s".', 'advance-history' ),
+						__( 'Grouped %1$d additional failed logins for "%2$s".', 'admintrace-activity-logger' ),
 						$count,
 						Text::plain( $bucket, 60 )
 					),

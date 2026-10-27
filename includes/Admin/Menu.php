@@ -30,18 +30,29 @@ class Menu {
 	 */
 	public static function register() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
+		add_action( 'admin_head', array( __CLASS__, 'menu_icon_css' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'welcome' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( AH_FILE ), array( __CLASS__, 'links' ) );
-		add_action( 'admin_post_advance_history_save_settings', array( __CLASS__, 'save_settings' ) );
-		add_action( 'admin_post_advance_history_export', array( __CLASS__, 'export' ) );
-		add_action( 'admin_post_advance_history_delete', array( __CLASS__, 'delete_selected' ) );
-		add_action( 'admin_post_advance_history_delete_all', array( __CLASS__, 'delete_all' ) );
-		add_action( 'admin_post_advance_history_prune', array( __CLASS__, 'prune' ) );
-		add_action( 'admin_post_advance_history_note', array( __CLASS__, 'note' ) );
-		add_action( 'admin_post_advance_history_test_email', array( __CLASS__, 'test_email' ) );
-		add_action( 'admin_post_advance_history_dismiss_welcome', array( __CLASS__, 'dismiss_welcome' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( SRAH_FILE ), array( __CLASS__, 'links' ) );
+		add_action( 'admin_post_srah_save_settings', array( __CLASS__, 'save_settings' ) );
+		add_action( 'admin_post_srah_export', array( __CLASS__, 'export' ) );
+		add_action( 'admin_post_srah_delete', array( __CLASS__, 'delete_selected' ) );
+		add_action( 'admin_post_srah_delete_all', array( __CLASS__, 'delete_all' ) );
+		add_action( 'admin_post_srah_prune', array( __CLASS__, 'prune' ) );
+		add_action( 'admin_post_srah_note', array( __CLASS__, 'note' ) );
+		add_action( 'admin_post_srah_test_email', array( __CLASS__, 'test_email' ) );
+		add_action( 'admin_post_srah_dismiss_welcome', array( __CLASS__, 'dismiss_welcome' ) );
 		Assets::register();
 		Dashboard_Widget::register();
+	}
+
+	/**
+	 * Keep the sidebar mark at the standard menu-icon size.
+	 */
+	public static function menu_icon_css() {
+		if ( 'toplevel' !== Settings::all()['menu_location'] ) {
+			return;
+		}
+		echo '<style>#adminmenu #toplevel_page_admintrace-activity-logger .wp-menu-image img{width:20px;height:20px;padding:7px 0 0;object-fit:contain;opacity:.6}#adminmenu #toplevel_page_admintrace-activity-logger:hover .wp-menu-image img,#adminmenu #toplevel_page_admintrace-activity-logger.wp-has-current-submenu .wp-menu-image img,#adminmenu #toplevel_page_admintrace-activity-logger.current .wp-menu-image img{opacity:1}</style>';
 	}
 
 	/**
@@ -53,20 +64,20 @@ class Menu {
 		$settings = array( Settings_Screen::class, 'render' );
 
 		if ( 'dashboard' === $location ) {
-			add_submenu_page( 'index.php', __( 'Advance History', 'advance-history' ), __( 'Advance History', 'advance-history' ), Capabilities::VIEW, 'advance-history', $view );
-			add_submenu_page( 'index.php', __( 'Advance History settings', 'advance-history' ), __( 'History settings', 'advance-history' ), Capabilities::MANAGE, 'advance-history-settings', $settings );
+			add_submenu_page( 'index.php', __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+			add_submenu_page( 'index.php', __( 'AdminTrace Activity Logger settings', 'admintrace-activity-logger' ), __( 'AdminTrace settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
 			return;
 		}
 
 		if ( 'tools' === $location ) {
-			add_management_page( __( 'Advance History', 'advance-history' ), __( 'Advance History', 'advance-history' ), Capabilities::VIEW, 'advance-history', $view );
-			add_management_page( __( 'Advance History settings', 'advance-history' ), __( 'History settings', 'advance-history' ), Capabilities::MANAGE, 'advance-history-settings', $settings );
+			add_management_page( __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+			add_management_page( __( 'AdminTrace Activity Logger settings', 'admintrace-activity-logger' ), __( 'AdminTrace settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
 			return;
 		}
 
-		add_menu_page( __( 'Advance History', 'advance-history' ), __( 'Advance History', 'advance-history' ), Capabilities::VIEW, 'advance-history', $view, 'dashicons-clock', 58 );
-		add_submenu_page( 'advance-history', __( 'Activity journal', 'advance-history' ), __( 'Activity journal', 'advance-history' ), Capabilities::VIEW, 'advance-history', $view );
-		add_submenu_page( 'advance-history', __( 'Settings', 'advance-history' ), __( 'Settings', 'advance-history' ), Capabilities::MANAGE, 'advance-history-settings', $settings );
+		add_menu_page( __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view, SRAH_URL . 'assets/img/admintrace-mark.png', 58 );
+		add_submenu_page( 'admintrace-activity-logger', __( 'Activity journal', 'admintrace-activity-logger' ), __( 'Activity journal', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+		add_submenu_page( 'admintrace-activity-logger', __( 'Settings', 'admintrace-activity-logger' ), __( 'Settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
 	}
 
 	/**
@@ -77,7 +88,7 @@ class Menu {
 	 */
 	public static function links( $links ) {
 		if ( current_user_can( Capabilities::VIEW ) ) {
-			array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=advance-history' ) ) . '">' . esc_html__( 'Journal', 'advance-history' ) . '</a>' );
+			array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=admintrace-activity-logger' ) ) . '">' . esc_html__( 'Journal', 'admintrace-activity-logger' ) . '</a>' );
 		}
 		return $links;
 	}
@@ -90,23 +101,23 @@ class Menu {
 			return;
 		}
 		$user_id = get_current_user_id();
-		if ( get_user_meta( $user_id, 'advance_history_dismiss_welcome', true ) ) {
+		if ( get_user_meta( $user_id, 'srah_dismiss_welcome', true ) ) {
 			return;
 		}
-		if ( ! get_transient( 'ah_welcome_' . $user_id ) ) {
+		if ( ! get_transient( 'srah_welcome_' . $user_id ) ) {
 			return;
 		}
-		$url = wp_nonce_url( admin_url( 'admin-post.php?action=advance_history_dismiss_welcome' ), 'advance_history_dismiss_welcome' );
-		echo '<div class="notice notice-info"><p>' . esc_html__( 'Advance History is recording activity.', 'advance-history' ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=advance-history' ) ) . '">' . esc_html__( 'Open the journal', 'advance-history' ) . '</a> · <a href="' . esc_url( $url ) . '">' . esc_html__( 'Dismiss', 'advance-history' ) . '</a></p></div>';
+		$url = wp_nonce_url( admin_url( 'admin-post.php?action=srah_dismiss_welcome' ), 'srah_dismiss_welcome' );
+		echo '<div class="notice notice-info"><p>' . esc_html__( 'AdminTrace Activity Logger is recording activity.', 'admintrace-activity-logger' ) . ' <a href="' . esc_url( admin_url( 'admin.php?page=admintrace-activity-logger' ) ) . '">' . esc_html__( 'Open the journal', 'admintrace-activity-logger' ) . '</a> · <a href="' . esc_url( $url ) . '">' . esc_html__( 'Dismiss', 'admintrace-activity-logger' ) . '</a></p></div>';
 	}
 
 	/**
 	 * Dismiss the welcome notice.
 	 */
 	public static function dismiss_welcome() {
-		self::authorize( Capabilities::VIEW, 'advance_history_dismiss_welcome' );
-		update_user_meta( get_current_user_id(), 'advance_history_dismiss_welcome', 1 );
-		delete_transient( 'ah_welcome_' . get_current_user_id() );
+		self::authorize( Capabilities::VIEW, 'srah_dismiss_welcome' );
+		update_user_meta( get_current_user_id(), 'srah_dismiss_welcome', 1 );
+		delete_transient( 'srah_welcome_' . get_current_user_id() );
 		wp_safe_redirect( admin_url() );
 		exit;
 	}
@@ -115,7 +126,7 @@ class Menu {
 	 * Save settings.
 	 */
 	public static function save_settings() {
-		self::authorize( Capabilities::MANAGE, 'advance_history_save_settings' );
+		self::authorize( Capabilities::MANAGE, 'srah_save_settings' );
 		$before = Settings::all();
 		$clean  = Settings::sanitize( Settings_Screen::input_from_request(), $before );
 		Settings::update( $clean );
@@ -135,22 +146,22 @@ class Menu {
 		}
 		Recorder::log(
 			array(
-				'summary'  => __( 'Updated Advance History settings.', 'advance-history' ),
+				'summary'  => __( 'Updated AdminTrace Activity Logger settings.', 'admintrace-activity-logger' ),
 				'category' => 'settings',
-				'action'   => 'settings.advance_history',
+				'action'   => 'settings.srah',
 				'severity' => 'notice',
 				'logger'   => 'settings',
 				'context'  => array( 'changed' => $changed ),
 			)
 		);
-		Notices::redirect( 'success', __( 'Settings saved.', 'advance-history' ), 'advance-history-settings' );
+		Notices::redirect( 'success', __( 'Settings saved.', 'admintrace-activity-logger' ), 'admintrace-activity-logger-settings' );
 	}
 
 	/**
 	 * Download the current filtered journal.
 	 */
 	public static function export() {
-		self::authorize( Capabilities::EXPORT, 'advance_history_export' );
+		self::authorize( Capabilities::EXPORT, 'srah_export' );
 		$filters = Timeline_Screen::filters();
 		$args    = Access::constrain( Timeline_Screen::query_args( $filters ) );
 		$format  = isset( $_REQUEST['format'] ) ? sanitize_key( wp_unslash( $_REQUEST['format'] ) ) : 'csv';
@@ -161,17 +172,17 @@ class Menu {
 	 * Delete selected events.
 	 */
 	public static function delete_selected() {
-		self::authorize( Capabilities::DELETE, 'advance_history_delete' );
+		self::authorize( Capabilities::DELETE, 'srah_delete' );
 		$ids = isset( $_POST['event_ids'] ) ? (array) wp_unslash( $_POST['event_ids'] ) : array();
 		$deleted = Retention::delete_ids( $ids );
 		if ( ! $deleted ) {
-			Notices::redirect( 'warning', __( 'Select at least one event to delete.', 'advance-history' ) );
+			Notices::redirect( 'warning', __( 'Select at least one event to delete.', 'admintrace-activity-logger' ) );
 		}
 		Notices::redirect(
 			'success',
 			sprintf(
 				/* translators: %d: number of deleted events. */
-				__( 'Deleted %d events.', 'advance-history' ),
+				__( 'Deleted %d events.', 'admintrace-activity-logger' ),
 				$deleted
 			)
 		);
@@ -181,19 +192,19 @@ class Menu {
 	 * Delete every event on this site.
 	 */
 	public static function delete_all() {
-		self::authorize( Capabilities::DELETE, 'advance_history_delete_all' );
+		self::authorize( Capabilities::DELETE, 'srah_delete_all' );
 		if ( empty( $_POST['confirm_delete_all'] ) ) {
-			Notices::redirect( 'error', __( 'Confirm deletion before clearing the journal.', 'advance-history' ), 'advance-history-settings' );
+			Notices::redirect( 'error', __( 'Confirm deletion before clearing the journal.', 'admintrace-activity-logger' ), 'admintrace-activity-logger-settings' );
 		}
 		$deleted = Retention::delete_all();
 		Notices::redirect(
 			'success',
 			sprintf(
 				/* translators: %d: number of deleted events. */
-				__( 'Deleted %d events.', 'advance-history' ),
+				__( 'Deleted %d events.', 'admintrace-activity-logger' ),
 				$deleted
 			),
-			'advance-history-settings'
+			'admintrace-activity-logger-settings'
 		);
 	}
 
@@ -201,16 +212,16 @@ class Menu {
 	 * Run retention immediately.
 	 */
 	public static function prune() {
-		self::authorize( Capabilities::DELETE, 'advance_history_prune' );
+		self::authorize( Capabilities::DELETE, 'srah_prune' );
 		$deleted = Retention::prune();
 		Notices::redirect(
 			'success',
 			sprintf(
 				/* translators: %d: number of deleted events. */
-				__( 'Removed %d events older than the retention period.', 'advance-history' ),
+				__( 'Removed %d events older than the retention period.', 'admintrace-activity-logger' ),
 				$deleted
 			),
-			'advance-history-settings'
+			'admintrace-activity-logger-settings'
 		);
 	}
 
@@ -218,7 +229,7 @@ class Menu {
 	 * Save a manual note.
 	 */
 	public static function note() {
-		self::authorize( Capabilities::MANAGE, 'advance_history_note' );
+		self::authorize( Capabilities::MANAGE, 'srah_note' );
 		$summary  = isset( $_POST['summary'] ) ? wp_unslash( $_POST['summary'] ) : '';
 		$severity = isset( $_POST['severity'] ) ? sanitize_key( wp_unslash( $_POST['severity'] ) ) : 'info';
 		if ( ! isset( Vocabulary::severities()[ $severity ] ) ) {
@@ -234,16 +245,16 @@ class Menu {
 			)
 		);
 		if ( ! $id ) {
-			Notices::redirect( 'error', __( 'The note could not be saved.', 'advance-history' ) );
+			Notices::redirect( 'error', __( 'The note could not be saved.', 'admintrace-activity-logger' ) );
 		}
-		Notices::redirect( 'success', __( 'Note added to the journal.', 'advance-history' ) );
+		Notices::redirect( 'success', __( 'Note added to the journal.', 'admintrace-activity-logger' ) );
 	}
 
 	/**
 	 * Send the digest to its recipient now.
 	 */
 	public static function test_email() {
-		self::authorize( Capabilities::MANAGE, 'advance_history_test_email' );
+		self::authorize( Capabilities::MANAGE, 'srah_test_email' );
 		$settings = Settings::all();
 		$previous = $settings['email_digest'];
 		if ( 'off' === $previous ) {
@@ -260,16 +271,16 @@ class Menu {
 		}
 		$to = Notifications::recipient( Settings::all()['digest_email'] );
 		if ( ! $sent ) {
-			Notices::redirect( 'error', __( 'The test email could not be sent.', 'advance-history' ), 'advance-history-settings' );
+			Notices::redirect( 'error', __( 'The test email could not be sent.', 'admintrace-activity-logger' ), 'admintrace-activity-logger-settings' );
 		}
 		Notices::redirect(
 			'success',
 			sprintf(
 				/* translators: %s: email address. */
-				__( 'Test digest sent to %s.', 'advance-history' ),
+				__( 'Test digest sent to %s.', 'admintrace-activity-logger' ),
 				$to
 			),
-			'advance-history-settings'
+			'admintrace-activity-logger-settings'
 		);
 	}
 
@@ -281,7 +292,7 @@ class Menu {
 	 */
 	private static function authorize( $capability, $action ) {
 		if ( ! current_user_can( $capability ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'advance-history' ), 403 );
+			wp_die( esc_html__( 'Sorry, you are not allowed to do that.', 'admintrace-activity-logger' ), 403 );
 		}
 		check_admin_referer( $action );
 	}

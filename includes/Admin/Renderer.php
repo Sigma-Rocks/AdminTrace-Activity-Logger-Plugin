@@ -21,6 +21,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Renderer {
 
 	/**
+	 * Product mark shown beside the page title.
+	 *
+	 * @return string
+	 */
+	public static function mark() {
+		$url = SRAH_URL . 'assets/img/admintrace-mark.png';
+		return '<img class="srah-mark" src="' . esc_url( $url ) . '" alt="" width="44" height="44" />';
+	}
+
+	/**
 	 * Actor label.
 	 *
 	 * @param array $row Event row.
@@ -37,36 +47,29 @@ class Renderer {
 	}
 
 	/**
-	 * Profile image for the person who caused the event.
+	 * Local initial for the person who caused the event.
+	 *
+	 * Drawn in the browser. This does not call get_avatar() or any remote avatar service.
 	 *
 	 * @param array $row  Event row.
-	 * @param int   $size Image size in pixels.
+	 * @param int   $size Mark size in pixels. Sizes of 30 or less use the compact class.
 	 * @return string
 	 */
 	public static function avatar( array $row, $size = 36 ) {
-		if ( ! function_exists( 'get_avatar' ) ) {
-			return '';
+		$size   = max( 16, min( 96, (int) $size ) );
+		$name   = self::actor( $row );
+		$letter = function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 1, 'UTF-8' ) : substr( $name, 0, 1 );
+		$letter = strtoupper( (string) $letter );
+		if ( '' === $letter ) {
+			$letter = '?';
 		}
 
-		$size    = max( 16, min( 96, (int) $size ) );
-		$user_id = isset( $row['user_id'] ) ? (int) $row['user_id'] : 0;
-		if ( $user_id < 1 && ! empty( $row['user_login'] ) && function_exists( 'get_user_by' ) ) {
-			$user = get_user_by( 'login', $row['user_login'] );
-			if ( $user instanceof \WP_User ) {
-				$user_id = (int) $user->ID;
-			}
+		$class = 'srah-avatar srah-avatar-local';
+		if ( $size <= 30 ) {
+			$class .= ' srah-avatar-sm';
 		}
 
-		$args = array(
-			'class'         => 'ah-avatar',
-			'force_display' => true,
-		);
-		if ( $user_id < 1 ) {
-			$args['force_default'] = true;
-			$user_id               = 'advance-history@invalid';
-		}
-
-		return get_avatar( $user_id, $size, '', '', $args );
+		return '<span class="' . esc_attr( $class ) . '">' . esc_html( $letter ) . '</span>';
 	}
 
 	/**
@@ -88,26 +91,26 @@ class Renderer {
 		$when     = Time::display( isset( $row['created_gmt'] ) ? $row['created_gmt'] : '' );
 		$id       = isset( $row['id'] ) ? (int) $row['id'] : 0;
 		?>
-		<article class="ah-event ah-severity-<?php echo esc_attr( $severity ); ?>" id="ah-event-<?php echo esc_attr( (string) $id ); ?>">
-			<div class="ah-event-avatar" aria-hidden="true"><?php echo self::avatar( $row, empty( $args['compact'] ) ? 36 : 28 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- get_avatar() escapes. ?></div>
-			<div class="ah-event-body">
-				<header class="ah-event-top">
+		<article class="srah-event srah-severity-<?php echo esc_attr( $severity ); ?>" id="srah-event-<?php echo esc_attr( (string) $id ); ?>">
+			<div class="srah-event-avatar" aria-hidden="true"><?php echo self::avatar( $row, empty( $args['compact'] ) ? 36 : 28 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- avatar() escapes. ?></div>
+			<div class="srah-event-body">
+				<header class="srah-event-top">
 					<?php if ( $args['checkbox'] && $id ) : ?>
-						<label class="ah-check">
-							<input class="ah-event-check" type="checkbox" name="event_ids[]" value="<?php echo esc_attr( (string) $id ); ?>">
-							<span class="screen-reader-text"><?php esc_html_e( 'Select event', 'advance-history' ); ?></span>
+						<label class="srah-check">
+							<input class="srah-event-check" type="checkbox" name="event_ids[]" value="<?php echo esc_attr( (string) $id ); ?>">
+							<span class="screen-reader-text"><?php esc_html_e( 'Select event', 'admintrace-activity-logger' ); ?></span>
 						</label>
 					<?php endif; ?>
-					<span class="ah-pill"><?php echo esc_html( Vocabulary::category_label( $category ) ); ?></span>
-					<span class="ah-pill ah-pill-<?php echo esc_attr( $severity ); ?>"><?php echo esc_html( Vocabulary::severity_label( $severity ) ); ?></span>
+					<span class="srah-pill"><?php echo esc_html( Vocabulary::category_label( $category ) ); ?></span>
+					<span class="srah-pill srah-pill-<?php echo esc_attr( $severity ); ?>"><?php echo esc_html( Vocabulary::severity_label( $severity ) ); ?></span>
 					<?php $repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1; ?>
 					<?php if ( $repeats > 1 ) : ?>
-						<span class="ah-pill ah-pill-repeat">
+						<span class="srah-pill srah-pill-repeat">
 							<?php
 							echo esc_html(
 								sprintf(
 									/* translators: %d: number of times this event happened. */
-									_n( '%d time', '%d times', $repeats, 'advance-history' ),
+									_n( '%d time', '%d times', $repeats, 'admintrace-activity-logger' ),
 									$repeats
 								)
 							);
@@ -115,17 +118,17 @@ class Renderer {
 						</span>
 					<?php endif; ?>
 					<?php if ( ! empty( $row['initiator'] ) && 'user' !== $row['initiator'] && ! empty( $row['user_id'] ) ) : ?>
-						<span class="ah-pill"><?php echo esc_html( Vocabulary::initiators()[ $row['initiator'] ] ?? $row['initiator'] ); ?></span>
+						<span class="srah-pill"><?php echo esc_html( Vocabulary::initiators()[ $row['initiator'] ] ?? $row['initiator'] ); ?></span>
 					<?php endif; ?>
 					<time datetime="<?php echo esc_attr( $when['iso'] ); ?>" title="<?php echo esc_attr( $when['local'] ); ?>"><?php echo esc_html( $when['primary'] ); ?></time>
 				</header>
-				<h3 class="ah-event-summary" id="ah-summary-<?php echo esc_attr( (string) $id ); ?>"><?php echo esc_html( $row['summary'] ); ?></h3>
-				<p class="ah-event-meta">
+				<h3 class="srah-event-summary" id="srah-summary-<?php echo esc_attr( (string) $id ); ?>"><?php echo esc_html( $row['summary'] ); ?></h3>
+				<p class="srah-event-meta">
 					<?php
 					echo esc_html(
 						sprintf(
 							/* translators: %s: person or system that performed the action. */
-							__( 'By %s', 'advance-history' ),
+							__( 'By %s', 'admintrace-activity-logger' ),
 							self::actor( $row )
 						)
 					);
@@ -139,7 +142,7 @@ class Renderer {
 					if ( $link ) :
 						?>
 						<span aria-hidden="true"> · </span>
-						<a href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'Open', 'advance-history' ); ?></a>
+						<a href="<?php echo esc_url( $link ); ?>"><?php esc_html_e( 'Open', 'admintrace-activity-logger' ); ?></a>
 					<?php endif; ?>
 					<?php if ( ! empty( $row['ip_masked'] ) ) : ?>
 						<span aria-hidden="true"> · </span>
@@ -147,7 +150,7 @@ class Renderer {
 						echo esc_html(
 							sprintf(
 								/* translators: %s: masked IP address. */
-								__( 'Network %s', 'advance-history' ),
+								__( 'Network %s', 'admintrace-activity-logger' ),
 								$row['ip_masked']
 							)
 						);
@@ -183,40 +186,40 @@ class Renderer {
 		$repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1;
 		$times   = isset( $row['repeat_times'] ) && is_array( $row['repeat_times'] ) ? $row['repeat_times'] : array();
 		?>
-		<details class="ah-details"<?php echo $has_patch ? ' open' : ''; ?>>
-			<summary><?php esc_html_e( 'Details', 'advance-history' ); ?></summary>
+		<details class="srah-details"<?php echo $has_patch ? ' open' : ''; ?>>
+			<summary><?php esc_html_e( 'Details', 'admintrace-activity-logger' ); ?></summary>
 			<?php if ( $repeats > 1 ) : ?>
-				<p class="ah-event-meta">
+				<p class="srah-event-meta">
 					<?php
 					echo esc_html(
 						sprintf(
 							/* translators: %d: number of repeated events. */
-							_n( 'Combined %d matching event.', 'Combined %d matching events.', $repeats, 'advance-history' ),
+							_n( 'Combined %d matching event.', 'Combined %d matching events.', $repeats, 'admintrace-activity-logger' ),
 							$repeats
 						)
 					);
 					?>
 				</p>
 				<?php if ( count( $times ) > 1 ) : ?>
-					<ul class="ah-repeat-times">
+					<ul class="srah-repeat-times">
 						<?php foreach ( $times as $gmt ) : ?>
 							<li><time datetime="<?php echo esc_attr( Time::display( $gmt )['iso'] ); ?>"><?php echo esc_html( Time::display( $gmt )['local'] ); ?></time></li>
 						<?php endforeach; ?>
 					</ul>
 				<?php endif; ?>
 			<?php endif; ?>
-			<dl class="ah-facts">
+			<dl class="srah-facts">
 				<div>
-					<dt><?php esc_html_e( 'When', 'advance-history' ); ?></dt>
+					<dt><?php esc_html_e( 'When', 'admintrace-activity-logger' ); ?></dt>
 					<dd><?php echo esc_html( Time::display( $row['created_gmt'] )['local'] ); ?> UTC <?php echo esc_html( $row['created_gmt'] ); ?></dd>
 				</div>
 				<div>
-					<dt><?php esc_html_e( 'Action', 'advance-history' ); ?></dt>
+					<dt><?php esc_html_e( 'Action', 'admintrace-activity-logger' ); ?></dt>
 					<dd><code><?php echo esc_html( $row['action'] ); ?></code></dd>
 				</div>
 				<?php if ( ! empty( $row['user_login'] ) ) : ?>
 					<div>
-						<dt><?php esc_html_e( 'Username', 'advance-history' ); ?></dt>
+						<dt><?php esc_html_e( 'Username', 'admintrace-activity-logger' ); ?></dt>
 						<dd><?php echo esc_html( $row['user_login'] ); ?></dd>
 					</div>
 				<?php endif; ?>
@@ -240,13 +243,13 @@ class Renderer {
 			}
 			?>
 			<?php if ( $plain_changes ) : ?>
-				<table class="ah-changes">
-					<caption><?php esc_html_e( 'What changed', 'advance-history' ); ?></caption>
+				<table class="srah-changes">
+					<caption><?php esc_html_e( 'What changed', 'admintrace-activity-logger' ); ?></caption>
 					<thead>
 						<tr>
-							<th scope="col"><?php esc_html_e( 'Field', 'advance-history' ); ?></th>
-							<th scope="col"><?php esc_html_e( 'Before', 'advance-history' ); ?></th>
-							<th scope="col"><?php esc_html_e( 'After', 'advance-history' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Field', 'admintrace-activity-logger' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Before', 'admintrace-activity-logger' ); ?></th>
+							<th scope="col"><?php esc_html_e( 'After', 'admintrace-activity-logger' ); ?></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -260,10 +263,10 @@ class Renderer {
 								<tr>
 									<td colspan="3">
 										<?php if ( ! empty( $change['removed'] ) && is_array( $change['removed'] ) ) : ?>
-											<p><span class="ah-diff-label"><?php esc_html_e( 'Removed words', 'advance-history' ); ?></span> <?php echo esc_html( implode( ' ', $change['removed'] ) ); ?></p>
+											<p><span class="srah-diff-label"><?php esc_html_e( 'Removed words', 'admintrace-activity-logger' ); ?></span> <?php echo esc_html( implode( ' ', $change['removed'] ) ); ?></p>
 										<?php endif; ?>
 										<?php if ( ! empty( $change['added'] ) && is_array( $change['added'] ) ) : ?>
-											<p><span class="ah-diff-label"><?php esc_html_e( 'Added words', 'advance-history' ); ?></span> <?php echo esc_html( implode( ' ', $change['added'] ) ); ?></p>
+											<p><span class="srah-diff-label"><?php esc_html_e( 'Added words', 'admintrace-activity-logger' ); ?></span> <?php echo esc_html( implode( ' ', $change['added'] ) ); ?></p>
 										<?php endif; ?>
 									</td>
 								</tr>
@@ -276,7 +279,7 @@ class Renderer {
 				<?php self::patch( $patch['lines'], $patch['field'] ); ?>
 			<?php endforeach; ?>
 			<?php if ( $context ) : ?>
-				<dl class="ah-facts">
+				<dl class="srah-facts">
 					<?php foreach ( $context as $key => $value ) : ?>
 						<?php if ( is_array( $value ) || is_object( $value ) ) { $value = wp_json_encode( $value ); } ?>
 						<div>
@@ -288,8 +291,8 @@ class Renderer {
 			<?php endif; ?>
 			<?php if ( ! empty( $row['id'] ) ) : ?>
 				<p>
-					<button type="button" class="button-link" data-ah-copy="ah-summary-<?php echo esc_attr( (string) $row['id'] ); ?>">
-						<?php esc_html_e( 'Copy summary', 'advance-history' ); ?>
+					<button type="button" class="button-link" data-srah-copy="srah-summary-<?php echo esc_attr( (string) $row['id'] ); ?>">
+						<?php esc_html_e( 'Copy summary', 'admintrace-activity-logger' ); ?>
 					</button>
 				</p>
 			<?php endif; ?>
@@ -307,7 +310,7 @@ class Renderer {
 		$attachment_key = $side . '_attachment';
 		$attachment_id  = isset( $change[ $attachment_key ] ) ? absint( $change[ $attachment_key ] ) : 0;
 		if ( $attachment_id && wp_attachment_is_image( $attachment_id ) ) {
-			echo wp_get_attachment_image( $attachment_id, array( 64, 64 ), false, array( 'class' => 'ah-thumb' ) );
+			echo wp_get_attachment_image( $attachment_id, array( 64, 64 ), false, array( 'class' => 'srah-thumb' ) );
 		}
 		echo esc_html( isset( $change[ $side ] ) ? (string) $change[ $side ] : '' );
 	}
@@ -397,12 +400,12 @@ class Renderer {
 	 */
 	private static function patch( array $lines, $field ) {
 		if ( '' === $field ) {
-			$field = __( 'Content', 'advance-history' );
+			$field = __( 'Content', 'admintrace-activity-logger' );
 		}
 		?>
-		<div class="ah-patch">
-			<div class="ah-patch-file"><?php echo esc_html( $field ); ?></div>
-			<div class="ah-patch-body">
+		<div class="srah-patch">
+			<div class="srah-patch-file"><?php echo esc_html( $field ); ?></div>
+			<div class="srah-patch-body">
 				<?php foreach ( $lines as $line ) : ?>
 					<?php
 					if ( ! is_scalar( $line ) ) {
@@ -413,33 +416,33 @@ class Renderer {
 					$text    = $decoded[1];
 					if ( 'note' === $op && 'gap' === $text ) :
 						?>
-						<div class="ah-patch-gap"><span class="screen-reader-text"><?php esc_html_e( 'Unchanged lines omitted', 'advance-history' ); ?></span><span aria-hidden="true">···</span></div>
+						<div class="srah-patch-gap"><span class="screen-reader-text"><?php esc_html_e( 'Unchanged lines omitted', 'admintrace-activity-logger' ); ?></span><span aria-hidden="true">···</span></div>
 						<?php
 						continue;
 					endif;
 					if ( 'note' === $op ) :
 						?>
-						<p class="ah-patch-note"><?php esc_html_e( 'More of this edit was left out.', 'advance-history' ); ?></p>
+						<p class="srah-patch-note"><?php esc_html_e( 'More of this edit was left out.', 'admintrace-activity-logger' ); ?></p>
 						<?php
 						continue;
 					endif;
 					if ( 'del' === $op ) {
-						$class = 'ah-patch-del';
+						$class = 'srah-patch-del';
 						$sign  = '−';
-						$label = __( 'Removed line', 'advance-history' );
+						$label = __( 'Removed line', 'admintrace-activity-logger' );
 					} elseif ( 'add' === $op ) {
-						$class = 'ah-patch-add';
+						$class = 'srah-patch-add';
 						$sign  = '+';
-						$label = __( 'Added line', 'advance-history' );
+						$label = __( 'Added line', 'admintrace-activity-logger' );
 					} else {
-						$class = 'ah-patch-ctx';
+						$class = 'srah-patch-ctx';
 						$sign  = ' ';
-						$label = __( 'Unchanged line', 'advance-history' );
+						$label = __( 'Unchanged line', 'admintrace-activity-logger' );
 					}
 					?>
-					<div class="ah-patch-line <?php echo esc_attr( $class ); ?>">
-						<span class="ah-patch-gutter" aria-hidden="true"><?php echo esc_html( $sign ); ?></span>
-						<span class="ah-patch-text"><span class="screen-reader-text"><?php echo esc_html( $label ); ?> </span><?php echo esc_html( $text ); ?></span>
+					<div class="srah-patch-line <?php echo esc_attr( $class ); ?>">
+						<span class="srah-patch-gutter" aria-hidden="true"><?php echo esc_html( $sign ); ?></span>
+						<span class="srah-patch-text"><span class="screen-reader-text"><?php echo esc_html( $label ); ?> </span><?php echo esc_html( $text ); ?></span>
 					</div>
 				<?php endforeach; ?>
 			</div>

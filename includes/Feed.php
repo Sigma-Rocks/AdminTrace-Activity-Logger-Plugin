@@ -31,7 +31,7 @@ class Feed {
 	 * Render the feed when a valid token is presented.
 	 */
 	public static function maybe_render() {
-		if ( ! isset( $_GET['advance_history_feed'] ) ) {
+		if ( ! isset( $_GET['srah_feed'] ) ) {
 			return;
 		}
 
@@ -63,12 +63,12 @@ class Feed {
 		echo '<title>' . esc_html(
 			sprintf(
 				/* translators: %s: site name. */
-				__( '%s activity', 'advance-history' ),
+				__( '%s activity', 'admintrace-activity-logger' ),
 				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 			)
 		) . '</title>';
 		echo '<link>' . esc_url( home_url( '/' ) ) . '</link>';
-		echo '<description>' . esc_html__( 'Recent activity recorded by Advance History.', 'advance-history' ) . '</description>';
+		echo '<description>' . esc_html__( 'Recent activity recorded by AdminTrace Activity Logger.', 'admintrace-activity-logger' ) . '</description>';
 
 		foreach ( $result['rows'] as $row ) {
 			echo '<item>';
@@ -95,7 +95,7 @@ class Feed {
 		}
 		return add_query_arg(
 			array(
-				'advance_history_feed' => 1,
+				'srah_feed' => 1,
 				'token'                => $settings['feed_token'],
 			),
 			home_url( '/' )

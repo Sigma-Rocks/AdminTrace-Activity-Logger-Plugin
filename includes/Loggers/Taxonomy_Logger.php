@@ -40,7 +40,7 @@ class Taxonomy_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Taxonomies', 'advance-history' );
+		return __( 'Taxonomies', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Taxonomy_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Categories, tags, and other terms.', 'advance-history' );
+		return __( 'Categories, tags, and other terms.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -83,7 +83,7 @@ class Taxonomy_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: taxonomy label, 2: term name. */
-					__( 'Created %1$s "%2$s".', 'advance-history' ),
+					__( 'Created %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$this->label_for( $taxonomy ),
 					$term->name
 				),
@@ -149,10 +149,10 @@ class Taxonomy_Logger extends Logger {
 		);
 		$changes = array();
 		foreach ( array(
-			'name'        => __( 'Name', 'advance-history' ),
-			'slug'        => __( 'Slug', 'advance-history' ),
-			'description' => __( 'Description', 'advance-history' ),
-			'parent'      => __( 'Parent', 'advance-history' ),
+			'name'        => __( 'Name', 'admintrace-activity-logger' ),
+			'slug'        => __( 'Slug', 'admintrace-activity-logger' ),
+			'description' => __( 'Description', 'admintrace-activity-logger' ),
+			'parent'      => __( 'Parent', 'admintrace-activity-logger' ),
 		) as $field => $label ) {
 			$from = isset( $old[ $field ] ) ? (string) $old[ $field ] : '';
 			$to   = (string) $new[ $field ];
@@ -171,7 +171,7 @@ class Taxonomy_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: taxonomy label, 2: term name. */
-					__( 'Updated %1$s "%2$s".', 'advance-history' ),
+					__( 'Updated %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$this->label_for( $taxonomy ),
 					$term->name
 				),
@@ -207,7 +207,7 @@ class Taxonomy_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: taxonomy label, 2: term name. */
-					__( 'Deleted %1$s "%2$s".', 'advance-history' ),
+					__( 'Deleted %1$s "%2$s".', 'admintrace-activity-logger' ),
 					$this->label_for( $taxonomy ),
 					$name
 				),

@@ -52,7 +52,7 @@ class Export {
 			array(
 				'summary'   => sprintf(
 					/* translators: 1: file format, 2: number of rows. */
-					__( 'Exported the activity journal as %1$s (%2$d rows).', 'advance-history' ),
+					__( 'Exported the activity journal as %1$s (%2$d rows).', 'admintrace-activity-logger' ),
 					strtoupper( $format ),
 					count( $rows )
 				),
@@ -66,7 +66,7 @@ class Export {
 
 		nocache_headers();
 		header( 'X-Content-Type-Options: nosniff' );
-		$filename = 'advance-history-' . gmdate( 'Ymd-His' ) . '.' . $format;
+		$filename = 'admintrace-activity-logger-' . gmdate( 'Ymd-His' ) . '.' . $format;
 
 		if ( 'json' === $format ) {
 			header( 'Content-Type: application/json; charset=utf-8' );

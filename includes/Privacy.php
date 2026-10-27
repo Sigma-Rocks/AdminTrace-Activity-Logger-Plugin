@@ -33,10 +33,10 @@ class Privacy {
 			return;
 		}
 
-		$content = '<p>' . esc_html__( 'Advance History stores an activity journal in the site database. Entries can include the display name and username of the account that made a change, a short description of the change, the related content title, and the time of the event. A post edit can also include a short line-by-line preview of the changed text. The full post is not copied into the journal. When IP recording is left at its default, only a masked address is stored: the last part of an IPv4 address is removed, and only the first half of an IPv6 address is kept. The plugin does not store passwords, application passwords, API keys, or the contents of private messages.', 'advance-history' ) . '</p>';
-		$content .= '<p>' . esc_html__( 'Events are kept for the retention period chosen in Advance History settings, then deleted. A site administrator can export or delete the journal sooner. If a webhook or email notification is enabled, the summary of an event is sent to the address the administrator configured. Advance History does not send the journal anywhere else and does not look up IP addresses with an external service.', 'advance-history' ) . '</p>';
+		$content = '<p>' . esc_html__( 'AdminTrace Activity Logger stores an activity journal in the site database. Entries can include the display name and username of the account that made a change, a short description of the change, the related content title, and the time of the event. A post edit can also include a short line-by-line preview of the changed text. The full post is not copied into the journal. When IP recording is left at its default, only a masked address is stored: the last part of an IPv4 address is removed, and only the first half of an IPv6 address is kept. The plugin does not store passwords, application passwords, API keys, or the contents of private messages.', 'admintrace-activity-logger' ) . '</p>';
+		$content .= '<p>' . esc_html__( 'Events are kept for the retention period chosen in AdminTrace Activity Logger settings, then deleted. A site administrator can export or delete the journal sooner. If a webhook or email notification is enabled, the summary of an event is sent to the address the administrator configured. AdminTrace Activity Logger does not send the journal anywhere else and does not look up IP addresses with an external service.', 'admintrace-activity-logger' ) . '</p>';
 
-		wp_add_privacy_policy_content( 'Advance History', wp_kses_post( $content ) );
+		wp_add_privacy_policy_content( 'AdminTrace Activity Logger', wp_kses_post( $content ) );
 	}
 
 	/**
@@ -46,8 +46,8 @@ class Privacy {
 	 * @return array
 	 */
 	public static function exporters( $exporters ) {
-		$exporters['advance-history'] = array(
-			'exporter_friendly_name' => __( 'Advance History', 'advance-history' ),
+		$exporters['admintrace-activity-logger'] = array(
+			'exporter_friendly_name' => __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ),
 			'callback'               => array( __CLASS__, 'export_personal_data' ),
 		);
 		return $exporters;
@@ -60,8 +60,8 @@ class Privacy {
 	 * @return array
 	 */
 	public static function erasers( $erasers ) {
-		$erasers['advance-history'] = array(
-			'eraser_friendly_name' => __( 'Advance History', 'advance-history' ),
+		$erasers['admintrace-activity-logger'] = array(
+			'eraser_friendly_name' => __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ),
 			'callback'             => array( __CLASS__, 'erase_personal_data' ),
 		);
 		return $erasers;
@@ -97,24 +97,24 @@ class Privacy {
 		$data = array();
 		foreach ( $result['rows'] as $row ) {
 			$data[] = array(
-				'group_id'    => 'advance-history',
-				'group_label' => __( 'Activity journal', 'advance-history' ),
+				'group_id'    => 'admintrace-activity-logger',
+				'group_label' => __( 'Activity journal', 'admintrace-activity-logger' ),
 				'item_id'     => 'event-' . (int) $row['id'],
 				'data'        => array(
 					array(
-						'name'  => __( 'Time (UTC)', 'advance-history' ),
+						'name'  => __( 'Time (UTC)', 'admintrace-activity-logger' ),
 						'value' => $row['created_gmt'],
 					),
 					array(
-						'name'  => __( 'Activity', 'advance-history' ),
+						'name'  => __( 'Activity', 'admintrace-activity-logger' ),
 						'value' => $row['summary'],
 					),
 					array(
-						'name'  => __( 'Category', 'advance-history' ),
+						'name'  => __( 'Category', 'admintrace-activity-logger' ),
 						'value' => $row['category'],
 					),
 					array(
-						'name'  => __( 'Masked network', 'advance-history' ),
+						'name'  => __( 'Masked network', 'admintrace-activity-logger' ),
 						'value' => $row['ip_masked'],
 					),
 				),

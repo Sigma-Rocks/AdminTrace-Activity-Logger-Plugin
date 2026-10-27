@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Notifications {
 
-	const DIGEST = 'advance_history_digest';
+	const DIGEST = 'srah_digest';
 
 	/**
 	 * Whether a notification is currently being sent.
@@ -34,7 +34,7 @@ class Notifications {
 	public static function register() {
 		add_filter( 'cron_schedules', array( __CLASS__, 'schedules' ) );
 		add_action( self::DIGEST, array( __CLASS__, 'send_digest' ) );
-		add_action( 'advance_history_logged', array( __CLASS__, 'on_logged' ), 10, 2 );
+		add_action( 'srah_logged', array( __CLASS__, 'on_logged' ), 10, 2 );
 		add_action( 'init', array( __CLASS__, 'ensure_scheduled' ) );
 	}
 
@@ -45,9 +45,9 @@ class Notifications {
 	 * @return array
 	 */
 	public static function schedules( $schedules ) {
-		$schedules['ah_weekly'] = array(
+		$schedules['srah_weekly'] = array(
 			'interval' => WEEK_IN_SECONDS,
-			'display'  => __( 'Once a week (Advance History)', 'advance-history' ),
+			'display'  => __( 'Once a week (AdminTrace Activity Logger)', 'admintrace-activity-logger' ),
 		);
 		return $schedules;
 	}
@@ -78,7 +78,7 @@ class Notifications {
 		if ( 'daily' === $mode ) {
 			wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', self::DIGEST );
 		} elseif ( 'weekly' === $mode ) {
-			wp_schedule_event( time() + HOUR_IN_SECONDS, 'ah_weekly', self::DIGEST );
+			wp_schedule_event( time() + HOUR_IN_SECONDS, 'srah_weekly', self::DIGEST );
 		}
 	}
 
@@ -113,18 +113,18 @@ class Notifications {
 		);
 
 		$lines   = array();
-		$lines[] = __( 'Advance History', 'advance-history' );
+		$lines[] = __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' );
 		$lines[] = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 		$lines[] = '';
 		$lines[] = sprintf(
 			/* translators: %d: number of events. */
-			__( 'Events in this period: %d', 'advance-history' ),
+			__( 'Events in this period: %d', 'admintrace-activity-logger' ),
 			(int) $result['total']
 		);
 		$lines[] = '';
 
 		if ( ! $result['rows'] ) {
-			$lines[] = __( 'No activity was recorded.', 'advance-history' );
+			$lines[] = __( 'No activity was recorded.', 'admintrace-activity-logger' );
 		} else {
 			foreach ( $result['rows'] as $row ) {
 				$lines[] = '- ' . Text::plain( $row['summary'], 240 ) . ' (' . $row['created_gmt'] . ' UTC)';
@@ -132,12 +132,12 @@ class Notifications {
 		}
 
 		$lines[] = '';
-		$lines[] = __( 'Open the journal:', 'advance-history' );
-		$lines[] = admin_url( 'admin.php?page=advance-history' );
+		$lines[] = __( 'Open the journal:', 'admintrace-activity-logger' );
+		$lines[] = admin_url( 'admin.php?page=admintrace-activity-logger' );
 
 		$subject = sprintf(
 			/* translators: %s: site name. */
-			__( '[%s] Activity digest', 'advance-history' ),
+			__( '[%s] Activity digest', 'admintrace-activity-logger' ),
 			wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 		);
 
@@ -171,10 +171,10 @@ class Notifications {
 			self::recipient( $settings['alert_email'] ),
 			sprintf(
 				/* translators: %s: site name. */
-				__( '[%s] Critical activity', 'advance-history' ),
+				__( '[%s] Critical activity', 'admintrace-activity-logger' ),
 				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 			),
-			Text::plain( $row['summary'], 500 ) . "\n\n" . admin_url( 'admin.php?page=advance-history' )
+			Text::plain( $row['summary'], 500 ) . "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger' )
 		);
 	}
 
@@ -193,14 +193,14 @@ class Notifications {
 			self::recipient( $settings['alert_email'] ),
 			sprintf(
 				/* translators: %s: site name. */
-				__( '[%s] Repeated failed logins', 'advance-history' ),
+				__( '[%s] Repeated failed logins', 'admintrace-activity-logger' ),
 				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 			),
 			sprintf(
 				/* translators: %d: number of failed logins. */
-				__( '%d failed logins were recorded in the last 15 minutes.', 'advance-history' ),
+				__( '%d failed logins were recorded in the last 15 minutes.', 'admintrace-activity-logger' ),
 				(int) $count
-			) . "\n\n" . admin_url( 'admin.php?page=advance-history&category=security' )
+			) . "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger&category=security' )
 		);
 	}
 

@@ -23,7 +23,7 @@ class Notices {
 	 * @param string $text    Plain text.
 	 * @param string $page    Admin page slug to return to.
 	 */
-	public static function redirect( $type, $text, $page = 'advance-history' ) {
+	public static function redirect( $type, $text, $page = 'admintrace-activity-logger' ) {
 		set_transient(
 			self::key(),
 			array(
@@ -35,7 +35,7 @@ class Notices {
 
 		$target = admin_url( 'admin.php?page=' . sanitize_key( $page ) );
 		$ref    = wp_get_referer();
-		if ( is_string( $ref ) && false !== strpos( $ref, 'page=advance-history' ) ) {
+		if ( is_string( $ref ) && false !== strpos( $ref, 'page=admintrace-activity-logger' ) ) {
 			$target = $ref;
 		}
 		wp_safe_redirect( $target );
@@ -66,6 +66,6 @@ class Notices {
 	 * @return string
 	 */
 	private static function key() {
-		return 'ah_notice_' . get_current_user_id();
+		return 'srah_notice_' . get_current_user_id();
 	}
 }

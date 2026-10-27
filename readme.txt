@@ -1,10 +1,10 @@
-=== Advance History ===
+=== AdminTrace Activity Logger ===
 Contributors: sigmarocks
 Tags: activity, audit, history, log, users
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,23 +12,23 @@ A readable journal of who changed your WordPress site, and when.
 
 == Description ==
 
-Advance History records important changes on a WordPress site: content, accounts, plugins, themes, comments, settings, privacy tools, and WooCommerce orders when WooCommerce is active.
+AdminTrace Activity Logger records important changes on a WordPress site: content, accounts, plugins, themes, comments, settings, privacy tools, and WooCommerce orders when WooCommerce is active.
 
-There is no paid tier. Search, filters, export, retention, email digests, and the WooCommerce recorder are all included.
+It is a journal with fixed limits. Profile marks are initials drawn on the site. A content edit stores a short added-and-removed preview, not the post. Network addresses stay masked, and the plugin does not look them up. Email and webhooks stay off until an administrator turns them on. Search, filters, export, and retention are included. There is no paid tier.
 
-The journal stores a short description of each change. A post edit can include a short line-by-line preview of what changed, not a copy of the whole post. It does not store passwords, application passwords, or API keys. Network addresses are masked unless you turn them off. Advance History does not look addresses up with an outside service and does not phone home.
+Each row is a short description. It does not store passwords, application passwords, or API keys. Masked network addresses can also be turned off. The plugin does not call Gravatar, an address lookup, or an analytics service.
 
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install the zip from Plugins → Add New.
-2. Activate Advance History.
-3. Open Advance History in the admin menu. Recording starts immediately.
+2. Activate AdminTrace Activity Logger.
+3. Open AdminTrace Activity Logger in the admin menu. Recording starts immediately.
 
 == Frequently Asked Questions ==
 
 = Where is the journal stored? =
 
-In a database table named `{prefix}ah_events` on each site. Multisite installs keep a separate table per site.
+In a database table named `{prefix}srah_events` on each site. Multisite installs keep a separate table per site.
 
 = How long is it kept? =
 
@@ -44,7 +44,11 @@ Yes, by default. There is a setting to keep the journal instead. Deactivation do
 
 = Does it send data anywhere? =
 
-Only if you save an email recipient or an HTTPS webhook. Both are off until you turn them on. The private RSS feed is also off until you enable it.
+The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. The private feed is off until it is enabled. The plugin does not contact Gravatar, an address lookup, or an analytics service.
+
+= Does it load profile images from Gravatar? =
+
+No. Each person is shown as an initial drawn by the plugin. It does not contact Gravatar or any other avatar service.
 
 == Screenshots ==
 
@@ -53,6 +57,20 @@ Only if you save an email recipient or an HTTPS webhook. Both are off until you 
 3. The same journal as a table, including the account that made each change.
 
 == Changelog ==
+
+= 1.0.3 =
+* Display name is AdminTrace Activity Logger. The requested permalink is admintrace-activity-logger.
+* The journal header and admin menu use the AdminTrace icon.
+
+= 1.0.2 =
+* Hooks, options, capabilities, scheduled tasks, and srah_log() use the srah_ prefix.
+* Journal counts keep one fixed cache key per site.
+
+= 1.0.1 =
+* Profile marks are drawn on the site. The plugin does not request Gravatar.
+* Failed-login throttling uses one bounded record instead of a new transient for every username.
+* Directory banners, icons, and screenshots are not included in the plugin.
+* WordPress loads translations. The plugin no longer calls load_plugin_textdomain().
 
 = 1.0.0 =
 * First release.

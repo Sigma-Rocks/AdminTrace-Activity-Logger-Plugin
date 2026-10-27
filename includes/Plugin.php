@@ -30,8 +30,6 @@ class Plugin {
 		}
 		$booted = true;
 
-		add_action( 'init', array( __CLASS__, 'load_textdomain' ) );
-
 		Installer::maybe_upgrade();
 		add_action( 'wp_initialize_site', array( Installer::class, 'on_new_site' ) );
 		Capabilities::register();
@@ -52,12 +50,5 @@ class Plugin {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			Cli::register();
 		}
-	}
-
-	/**
-	 * Load translations.
-	 */
-	public static function load_textdomain() {
-		load_plugin_textdomain( 'advance-history', false, dirname( plugin_basename( AH_FILE ) ) . '/languages' );
 	}
 }

@@ -37,7 +37,7 @@ class Settings_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Settings', 'advance-history' );
+		return __( 'Settings', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -46,7 +46,7 @@ class Settings_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Important site settings. Secrets, API keys, and transients are skipped.', 'advance-history' );
+		return __( 'Important site settings. Secrets, API keys, and transients are skipped.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -100,7 +100,7 @@ class Settings_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: %d: number of settings. */
-					__( 'Saved customizer changes (%d settings).', 'advance-history' ),
+					__( 'Saved customizer changes (%d settings).', 'admintrace-activity-logger' ),
 					$count
 				),
 				'category' => 'settings',
@@ -142,7 +142,7 @@ class Settings_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: %s: option name. */
-					$added ? __( 'Added the setting "%s".', 'advance-history' ) : __( 'Changed the setting "%s".', 'advance-history' ),
+					$added ? __( 'Added the setting "%s".', 'admintrace-activity-logger' ) : __( 'Changed the setting "%s".', 'admintrace-activity-logger' ),
 					$option
 				),
 				'category'     => $category,
@@ -222,7 +222,7 @@ class Settings_Logger extends Logger {
 			'woocommerce_prices_include_tax',
 			'woocommerce_demo_store',
 		);
-		$options = apply_filters( 'advance_history_tracked_options', $options );
+		$options = apply_filters( 'srah_tracked_options', $options );
 		return is_array( $options ) ? $options : array();
 	}
 
@@ -233,7 +233,7 @@ class Settings_Logger extends Logger {
 	 * @return bool
 	 */
 	private function blocked( $option ) {
-		if ( 0 === strpos( $option, '_transient' ) || 0 === strpos( $option, '_site_transient' ) || 0 === strpos( $option, 'advance_history_' ) ) {
+		if ( 0 === strpos( $option, '_transient' ) || 0 === strpos( $option, '_site_transient' ) || 0 === strpos( $option, 'srah_' ) || 0 === strpos( $option, 'advance_history_' ) ) {
 			return true;
 		}
 		return (bool) preg_match( '/pass|secret|token|api|key|salt|private|credential|smtp|webhook|auth|consumer|signature/i', $option );
@@ -252,6 +252,6 @@ class Settings_Logger extends Logger {
 		if ( is_scalar( $value ) ) {
 			return Text::plain( $value, 180 );
 		}
-		return __( '(value not shown)', 'advance-history' );
+		return __( '(value not shown)', 'admintrace-activity-logger' );
 	}
 }

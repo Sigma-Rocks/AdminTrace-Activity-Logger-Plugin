@@ -14,7 +14,7 @@ find . -name '*.php' -exec php -l {} \;
 
 `smoke.php` does not load WordPress. It checks IP masking, context redaction, the short text diff, CSV formula neutralization, webhook URL rules, settings sanitizing, and SQL order whitelisting.
 
-`integration.php` loads this site’s `wp-load.php`. It creates or updates the `ah_events` table, inserts a sample event, records one failed login through the user logger (without firing the public `wp_login_failed` hook), renders the journal and settings screens as an administrator, then deletes the sample rows and restores settings.
+`integration.php` loads this site’s `wp-load.php`. It creates or updates the `srah_events` table, inserts a sample event, records one failed login through the user logger (without firing the public `wp_login_failed` hook), renders the journal and settings screens as an administrator, then deletes the sample rows and restores settings.
 
 ### Latest run
 
@@ -26,7 +26,7 @@ find . -name '*.php' -exec php -l {} \;
 
 ## Browser
 
-Opening `http://wordpress.test/wp-admin/admin.php?page=advance-history` redirects to the WordPress login screen. The interactive admin session was not available without credentials. The journal and settings markup were rendered as an administrator in PHP instead, including the live activation events.
+Opening `http://wordpress.test/wp-admin/admin.php?page=admintrace-activity-logger` redirects to the WordPress login screen. The interactive admin session was not available without credentials. The journal and settings markup were rendered as an administrator in PHP instead, including the live activation events.
 
 ## Manual checks still worth doing on a staging site
 

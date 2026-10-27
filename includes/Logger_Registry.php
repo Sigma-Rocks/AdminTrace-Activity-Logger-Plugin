@@ -45,7 +45,7 @@ class Logger_Registry {
 	 */
 	public static function boot() {
 		$classes = apply_filters(
-			'advance_history_loggers',
+			'srah_loggers',
 			array(
 				User_Logger::class,
 				Content_Logger::class,

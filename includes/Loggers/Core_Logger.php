@@ -33,7 +33,7 @@ class Core_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'WordPress updates', 'advance-history' );
+		return __( 'WordPress updates', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Core_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Completed WordPress updates, language packs, and automatic updates.', 'advance-history' );
+		return __( 'Completed WordPress updates, language packs, and automatic updates.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class Core_Logger extends Logger {
 			array(
 				'summary'   => sprintf(
 					/* translators: %s: WordPress version. */
-					__( 'Updated WordPress to %s.', 'advance-history' ),
+					__( 'Updated WordPress to %s.', 'admintrace-activity-logger' ),
 					Text::plain( $version, 20 )
 				),
 				'category'  => 'core',
@@ -91,7 +91,7 @@ class Core_Logger extends Logger {
 				array(
 					'summary'  => sprintf(
 						/* translators: %d: number of language packs. */
-						__( 'Updated %d language pack(s).', 'advance-history' ),
+						__( 'Updated %d language pack(s).', 'admintrace-activity-logger' ),
 						$count
 					),
 					'category' => 'core',
@@ -132,7 +132,7 @@ class Core_Logger extends Logger {
 			array(
 				'summary'   => sprintf(
 					/* translators: 1: successful updates, 2: failed updates. */
-					__( 'Automatic updates finished. %1$d succeeded and %2$d failed.', 'advance-history' ),
+					__( 'Automatic updates finished. %1$d succeeded and %2$d failed.', 'admintrace-activity-logger' ),
 					$ok,
 					$failed
 				),

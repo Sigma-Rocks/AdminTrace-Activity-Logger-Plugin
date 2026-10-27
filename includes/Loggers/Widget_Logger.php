@@ -31,7 +31,7 @@ class Widget_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Widgets', 'advance-history' );
+		return __( 'Widgets', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Widget_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Widgets added to or removed from sidebars.', 'advance-history' );
+		return __( 'Widgets added to or removed from sidebars.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -68,7 +68,7 @@ class Widget_Logger extends Logger {
 		}
 		$this->log(
 			array(
-				'summary'  => __( 'Updated sidebar widgets.', 'advance-history' ),
+				'summary'  => __( 'Updated sidebar widgets.', 'admintrace-activity-logger' ),
 				'category' => 'widget',
 				'action'   => 'widget.updated',
 				'severity' => 'info',

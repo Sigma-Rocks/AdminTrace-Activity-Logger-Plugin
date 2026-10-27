@@ -33,7 +33,7 @@ class Theme_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Themes', 'advance-history' );
+		return __( 'Themes', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -42,7 +42,7 @@ class Theme_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Theme switches, installs, updates, and deletion.', 'advance-history' );
+		return __( 'Theme switches, installs, updates, and deletion.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -68,9 +68,9 @@ class Theme_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: 1: new theme, 2: previous theme. */
-					__( 'Switched the theme to "%1$s" from "%2$s".', 'advance-history' ),
+					__( 'Switched the theme to "%1$s" from "%2$s".', 'admintrace-activity-logger' ),
 					$new_label,
-					'' !== $old_label ? $old_label : __( 'none', 'advance-history' )
+					'' !== $old_label ? $old_label : __( 'none', 'admintrace-activity-logger' )
 				),
 				'category'     => 'theme',
 				'action'       => 'theme.switched',
@@ -95,7 +95,7 @@ class Theme_Logger extends Logger {
 			array(
 				'summary'      => sprintf(
 					/* translators: %s: theme stylesheet. */
-					__( 'Deleted the theme "%s".', 'advance-history' ),
+					__( 'Deleted the theme "%s".', 'admintrace-activity-logger' ),
 					Text::plain( $stylesheet, 80 )
 				),
 				'category'     => 'theme',
@@ -133,9 +133,9 @@ class Theme_Logger extends Logger {
 					'summary'      => sprintf(
 						'install' === $action
 							/* translators: %s: theme name. */
-							? __( 'Installed the theme "%s".', 'advance-history' )
+							? __( 'Installed the theme "%s".', 'admintrace-activity-logger' )
 							/* translators: %s: theme name. */
-							: __( 'Updated the theme "%s".', 'advance-history' ),
+							: __( 'Updated the theme "%s".', 'admintrace-activity-logger' ),
 						$name
 					),
 					'category'     => 'theme',

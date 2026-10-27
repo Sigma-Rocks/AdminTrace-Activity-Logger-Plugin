@@ -37,7 +37,7 @@ class Dashboard_Widget {
 		if ( empty( Settings::all()['dashboard_widget'] ) || ! current_user_can( Capabilities::VIEW ) ) {
 			return;
 		}
-		wp_add_dashboard_widget( 'advance_history_widget', __( 'Advance History', 'advance-history' ), array( __CLASS__, 'render' ) );
+		wp_add_dashboard_widget( 'srah_widget', __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), array( __CLASS__, 'render' ) );
 	}
 
 	/**
@@ -48,25 +48,25 @@ class Dashboard_Widget {
 		$rows   = Groups::collapse( Query::recent( 6, $args ) );
 		$scoped = ! current_user_can( Capabilities::MANAGE );
 		$stats  = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );
-		echo '<div class="ah-widget">';
-		echo '<p class="ah-widget-counts">' . esc_html(
+		echo '<div class="srah-widget">';
+		echo '<p class="srah-widget-counts">' . esc_html(
 			sprintf(
 				/* translators: 1: events today, 2: events in 7 days. */
-				__( '%1$d today · %2$d in 7 days', 'advance-history' ),
+				__( '%1$d today · %2$d in 7 days', 'admintrace-activity-logger' ),
 				(int) $stats['today'],
 				(int) $stats['week']
 			)
 		) . '</p>';
 		if ( ! $rows ) {
-			echo '<p>' . esc_html__( 'No activity yet.', 'advance-history' ) . '</p>';
+			echo '<p>' . esc_html__( 'No activity yet.', 'admintrace-activity-logger' ) . '</p>';
 		} else {
-			echo '<div class="ah-timeline ah-timeline-compact">';
+			echo '<div class="srah-timeline srah-timeline-compact">';
 			foreach ( $rows as $row ) {
 				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ), array( 'compact' => true ) );
 			}
 			echo '</div>';
 		}
-		echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=advance-history' ) ) . '">' . esc_html__( 'Open the journal', 'advance-history' ) . '</a></p>';
+		echo '<p><a href="' . esc_url( admin_url( 'admin.php?page=admintrace-activity-logger' ) ) . '">' . esc_html__( 'Open the journal', 'admintrace-activity-logger' ) . '</a></p>';
 		echo '</div>';
 	}
 }

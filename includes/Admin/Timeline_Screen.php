@@ -29,23 +29,23 @@ class Timeline_Screen {
 	 */
 	public static function render() {
 		if ( ! current_user_can( Capabilities::VIEW ) ) {
-			wp_die( esc_html__( 'Sorry, you are not allowed to view the activity journal.', 'advance-history' ), 403 );
+			wp_die( esc_html__( 'Sorry, you are not allowed to view the activity journal.', 'admintrace-activity-logger' ), 403 );
 		}
 
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 		if ( $screen ) {
 			$screen->add_help_tab(
 				array(
-					'id'      => 'ah-overview',
-					'title'   => __( 'Overview', 'advance-history' ),
-					'content' => '<p>' . esc_html__( 'Advance History lists important changes on this site. Use the filters to narrow the journal, open Details on any event, and export the current view if you are allowed to.', 'advance-history' ) . '</p>',
+					'id'      => 'srah-overview',
+					'title'   => __( 'Overview', 'admintrace-activity-logger' ),
+					'content' => '<p>' . esc_html__( 'AdminTrace Activity Logger lists important changes on this site. Use the filters to narrow the journal, open Details on any event, and export the current view if you are allowed to.', 'admintrace-activity-logger' ) . '</p>',
 				)
 			);
 			$screen->add_help_tab(
 				array(
-					'id'      => 'ah-privacy',
-					'title'   => __( 'Privacy', 'advance-history' ),
-					'content' => '<p>' . esc_html__( 'Passwords and API keys are not stored. IP addresses are masked. Editors, when allowed to view the journal, see content activity and not security events.', 'advance-history' ) . '</p>',
+					'id'      => 'srah-privacy',
+					'title'   => __( 'Privacy', 'admintrace-activity-logger' ),
+					'content' => '<p>' . esc_html__( 'Passwords and API keys are not stored. IP addresses are masked. Editors, when allowed to view the journal, see content activity and not security events.', 'admintrace-activity-logger' ) . '</p>',
 				)
 			);
 		}
@@ -63,25 +63,25 @@ class Timeline_Screen {
 			$highlight = isset( $found['rows'][0] ) ? Access::present( $found['rows'][0], ! empty( $args['include_ip'] ) ) : false;
 		}
 
-		echo '<div class="wrap ah-wrap">';
+		echo '<div class="wrap srah-wrap">';
 		Notices::render();
 		self::hero( $filters );
 		self::stats( $stats, $manage );
 		if ( false === $highlight ) {
-			echo '<div class="notice notice-warning"><p>' . esc_html__( 'That event is not available.', 'advance-history' ) . '</p></div>';
+			echo '<div class="notice notice-warning"><p>' . esc_html__( 'That event is not available.', 'admintrace-activity-logger' ) . '</p></div>';
 		} elseif ( is_array( $highlight ) ) {
-			echo '<div class="ah-highlight">';
+			echo '<div class="srah-highlight">';
 			Renderer::card( $highlight, array( 'checkbox' => false ) );
 			echo '</div>';
 		}
 		self::filter_form( $filters, $manage );
 		$rows = Groups::collapse( $result['rows'] );
 		if ( ! $rows ) {
-			echo '<div class="ah-empty"><h2>' . esc_html__( 'Nothing recorded yet', 'advance-history' ) . '</h2><p>' . esc_html__( 'New changes will appear here. Existing posts and pages are noted once, when the plugin is activated.', 'advance-history' ) . '</p></div>';
+			echo '<div class="srah-empty"><h2>' . esc_html__( 'Nothing recorded yet', 'admintrace-activity-logger' ) . '</h2><p>' . esc_html__( 'New changes will appear here. Existing posts and pages are noted once, when the plugin is activated.', 'admintrace-activity-logger' ) . '</p></div>';
 		} elseif ( 'table' === $filters['view'] ) {
 			self::table( $rows, ! empty( $args['include_ip'] ) );
 		} else {
-			echo '<div class="ah-timeline">';
+			echo '<div class="srah-timeline">';
 			foreach ( $rows as $row ) {
 				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ) );
 			}
@@ -91,7 +91,7 @@ class Timeline_Screen {
 		if ( $manage ) {
 			self::note_form();
 		}
-		echo '<p class="ah-credit"><a href="' . esc_url( 'https://sigmarocks.com' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Advance History by Sigma Rocks', 'advance-history' ) . '</a></p>';
+		echo '<p class="srah-credit"><a href="' . esc_url( 'https://sigmarocks.com' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'AdminTrace Activity Logger by Sigma Rocks', 'admintrace-activity-logger' ) . '</a></p>';
 		echo '</div>';
 	}
 
@@ -156,33 +156,33 @@ class Timeline_Screen {
 				add_query_arg(
 					array_merge(
 						array(
-							'action' => 'advance_history_export',
+							'action' => 'srah_export',
 							'format' => 'csv',
 						),
 						array_filter( self::query_args( $filters ) )
 					),
 					admin_url( 'admin-post.php' )
 				),
-				'advance_history_export'
+				'srah_export'
 			);
 		}
 		?>
-		<header class="ah-hero">
-			<div class="ah-brand">
-				<span class="ah-mark" aria-hidden="true">AH</span>
+		<header class="srah-hero">
+			<div class="srah-brand">
+				<?php echo wp_kses_post( Renderer::mark() ); ?>
 				<div>
-					<h1><?php esc_html_e( 'Advance History', 'advance-history' ); ?></h1>
-					<p><?php esc_html_e( 'A journal of who changed this site, and when.', 'advance-history' ); ?></p>
+					<h1><?php esc_html_e( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ); ?></h1>
+					<p><?php esc_html_e( 'A journal of who changed this site, and when.', 'admintrace-activity-logger' ); ?></p>
 				</div>
 			</div>
-			<div class="ah-hero-actions">
+			<div class="srah-hero-actions">
 				<?php if ( $export ) : ?>
-					<a class="button" href="<?php echo esc_url( $export ); ?>"><?php esc_html_e( 'Export CSV', 'advance-history' ); ?></a>
-					<a class="button" href="<?php echo esc_url( add_query_arg( 'format', 'json', $export ) ); ?>"><?php esc_html_e( 'Export JSON', 'advance-history' ); ?></a>
+					<a class="button" href="<?php echo esc_url( $export ); ?>"><?php esc_html_e( 'Export CSV', 'admintrace-activity-logger' ); ?></a>
+					<a class="button" href="<?php echo esc_url( add_query_arg( 'format', 'json', $export ) ); ?>"><?php esc_html_e( 'Export JSON', 'admintrace-activity-logger' ); ?></a>
 				<?php endif; ?>
-				<div class="ah-segment" role="group" aria-label="<?php esc_attr_e( 'Journal view', 'advance-history' ); ?>">
-					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'timeline' ) ); ?>" <?php echo 'timeline' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Timeline', 'advance-history' ); ?></a>
-					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'table' ) ); ?>" <?php echo 'table' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Table', 'advance-history' ); ?></a>
+				<div class="srah-segment" role="group" aria-label="<?php esc_attr_e( 'Journal view', 'admintrace-activity-logger' ); ?>">
+					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'timeline' ) ); ?>" <?php echo 'timeline' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Timeline', 'admintrace-activity-logger' ); ?></a>
+					<a class="button" href="<?php echo esc_url( self::view_url( $filters, 'table' ) ); ?>" <?php echo 'table' === $filters['view'] ? 'aria-current="page"' : ''; ?>><?php esc_html_e( 'Table', 'admintrace-activity-logger' ); ?></a>
 				</div>
 			</div>
 		</header>
@@ -198,23 +198,23 @@ class Timeline_Screen {
 	private static function stats( array $stats, $manage ) {
 		$tiles = array(
 			array(
-				'label' => __( 'Today', 'advance-history' ),
+				'label' => __( 'Today', 'admintrace-activity-logger' ),
 				'value' => (int) $stats['today'],
 			),
 			array(
-				'label' => __( 'Last 7 days', 'advance-history' ),
+				'label' => __( 'Last 7 days', 'admintrace-activity-logger' ),
 				'value' => (int) $stats['week'],
 			),
 		);
 		if ( $manage ) {
 			$tiles[] = array(
-				'label' => __( 'Failed logins, 24 hours', 'advance-history' ),
+				'label' => __( 'Failed logins, 24 hours', 'admintrace-activity-logger' ),
 				'value' => (int) $stats['failed_logins'],
 			);
 		}
-		echo '<section class="ah-stats" aria-label="' . esc_attr__( 'Activity summary', 'advance-history' ) . '">';
+		echo '<section class="srah-stats" aria-label="' . esc_attr__( 'Activity summary', 'admintrace-activity-logger' ) . '">';
 		foreach ( $tiles as $tile ) {
-			echo '<article class="ah-stat"><p>' . esc_html( $tile['label'] ) . '</p><strong>' . esc_html( (string) $tile['value'] ) . '</strong></article>';
+			echo '<article class="srah-stat"><p>' . esc_html( $tile['label'] ) . '</p><strong>' . esc_html( (string) $tile['value'] ) . '</strong></article>';
 		}
 		echo '</section>';
 	}
@@ -227,18 +227,18 @@ class Timeline_Screen {
 	 */
 	private static function filter_form( array $filters, $manage ) {
 		?>
-		<form class="ah-filters" method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
-			<input type="hidden" name="page" value="advance-history">
+		<form class="srah-filters" method="get" action="<?php echo esc_url( admin_url( 'admin.php' ) ); ?>">
+			<input type="hidden" name="page" value="admintrace-activity-logger">
 			<input type="hidden" name="view" value="<?php echo esc_attr( $filters['view'] ); ?>">
-			<div class="ah-filter-grid">
+			<div class="srah-filter-grid">
 			<p>
-				<label for="ah-search"><?php esc_html_e( 'Search', 'advance-history' ); ?></label>
-				<input id="ah-search" type="search" name="s" value="<?php echo esc_attr( $filters['search'] ); ?>">
+				<label for="srah-search"><?php esc_html_e( 'Search', 'admintrace-activity-logger' ); ?></label>
+				<input id="srah-search" type="search" name="s" value="<?php echo esc_attr( $filters['search'] ); ?>">
 			</p>
 			<p>
-				<label for="ah-category"><?php esc_html_e( 'Category', 'advance-history' ); ?></label>
-				<select id="ah-category" name="category">
-					<option value=""><?php esc_html_e( 'All categories', 'advance-history' ); ?></option>
+				<label for="srah-category"><?php esc_html_e( 'Category', 'admintrace-activity-logger' ); ?></label>
+				<select id="srah-category" name="category">
+					<option value=""><?php esc_html_e( 'All categories', 'admintrace-activity-logger' ); ?></option>
 					<?php foreach ( Vocabulary::categories() as $key => $label ) : ?>
 						<?php if ( ! $manage && ! in_array( $key, Vocabulary::viewer_categories(), true ) ) { continue; } ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $filters['category'], $key ); ?>><?php echo esc_html( $label ); ?></option>
@@ -246,18 +246,18 @@ class Timeline_Screen {
 				</select>
 			</p>
 			<p>
-				<label for="ah-severity"><?php esc_html_e( 'Severity', 'advance-history' ); ?></label>
-				<select id="ah-severity" name="severity">
-					<option value=""><?php esc_html_e( 'All severities', 'advance-history' ); ?></option>
+				<label for="srah-severity"><?php esc_html_e( 'Severity', 'admintrace-activity-logger' ); ?></label>
+				<select id="srah-severity" name="severity">
+					<option value=""><?php esc_html_e( 'All severities', 'admintrace-activity-logger' ); ?></option>
 					<?php foreach ( Vocabulary::severities() as $key => $label ) : ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $filters['severity'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</p>
 			<p>
-				<label for="ah-initiator"><?php esc_html_e( 'Source', 'advance-history' ); ?></label>
-				<select id="ah-initiator" name="initiator">
-					<option value=""><?php esc_html_e( 'Any source', 'advance-history' ); ?></option>
+				<label for="srah-initiator"><?php esc_html_e( 'Source', 'admintrace-activity-logger' ); ?></label>
+				<select id="srah-initiator" name="initiator">
+					<option value=""><?php esc_html_e( 'Any source', 'admintrace-activity-logger' ); ?></option>
 					<?php foreach ( Vocabulary::initiators() as $key => $label ) : ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $filters['initiator'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
@@ -265,13 +265,13 @@ class Timeline_Screen {
 			</p>
 			<?php if ( $manage && current_user_can( 'list_users' ) ) : ?>
 				<p>
-					<label for="ah-user"><?php esc_html_e( 'Account', 'advance-history' ); ?></label>
+					<label for="srah-user"><?php esc_html_e( 'Account', 'admintrace-activity-logger' ); ?></label>
 					<?php
 					wp_dropdown_users(
 						array(
 							'name'              => 'user_id',
-							'id'                => 'ah-user',
-							'show_option_all'   => __( 'All accounts', 'advance-history' ),
+							'id'                => 'srah-user',
+							'show_option_all'   => __( 'All accounts', 'admintrace-activity-logger' ),
 							'selected'          => $filters['user_id'],
 						)
 					);
@@ -279,21 +279,21 @@ class Timeline_Screen {
 				</p>
 			<?php endif; ?>
 			</div>
-			<div class="ah-filter-bar">
+			<div class="srah-filter-bar">
 			<p>
-				<label for="ah-after"><?php esc_html_e( 'From', 'advance-history' ); ?></label>
-				<input id="ah-after" type="date" name="after" value="<?php echo esc_attr( $filters['after'] ); ?>">
+				<label for="srah-after"><?php esc_html_e( 'From', 'admintrace-activity-logger' ); ?></label>
+				<input id="srah-after" type="date" name="after" value="<?php echo esc_attr( $filters['after'] ); ?>">
 			</p>
 			<p>
-				<label for="ah-before"><?php esc_html_e( 'To', 'advance-history' ); ?></label>
-				<input id="ah-before" type="date" name="before" value="<?php echo esc_attr( $filters['before'] ); ?>">
+				<label for="srah-before"><?php esc_html_e( 'To', 'admintrace-activity-logger' ); ?></label>
+				<input id="srah-before" type="date" name="before" value="<?php echo esc_attr( $filters['before'] ); ?>">
 			</p>
-			<p class="ah-filter-check">
-				<label for="ah-exclude"><input id="ah-exclude" type="checkbox" name="exclude_me" value="1" <?php checked( $filters['exclude'] ); ?>> <?php esc_html_e( 'Hide my events', 'advance-history' ); ?></label>
+			<p class="srah-filter-check">
+				<label for="srah-exclude"><input id="srah-exclude" type="checkbox" name="exclude_me" value="1" <?php checked( $filters['exclude'] ); ?>> <?php esc_html_e( 'Hide my events', 'admintrace-activity-logger' ); ?></label>
 			</p>
-			<p class="ah-filter-actions">
-				<button class="button button-primary" type="submit"><?php esc_html_e( 'Apply filters', 'advance-history' ); ?></button>
-				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=advance-history' ) ); ?>"><?php esc_html_e( 'Reset', 'advance-history' ); ?></a>
+			<p class="srah-filter-actions">
+				<button class="button button-primary" type="submit"><?php esc_html_e( 'Apply filters', 'admintrace-activity-logger' ); ?></button>
+				<a class="button" href="<?php echo esc_url( admin_url( 'admin.php?page=admintrace-activity-logger' ) ); ?>"><?php esc_html_e( 'Reset', 'admintrace-activity-logger' ); ?></a>
 			</p>
 			</div>
 		</form>
@@ -307,12 +307,12 @@ class Timeline_Screen {
 	 * @param bool  $include_ip Whether masked IPs are shown.
 	 */
 	private static function table( array $rows, $include_ip ) {
-		echo '<table class="widefat striped ah-table"><thead><tr>';
-		echo '<th scope="col">' . esc_html__( 'When', 'advance-history' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Severity', 'advance-history' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Category', 'advance-history' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Activity', 'advance-history' ) . '</th>';
-		echo '<th scope="col">' . esc_html__( 'Actor', 'advance-history' ) . '</th>';
+		echo '<table class="widefat striped srah-table"><thead><tr>';
+		echo '<th scope="col">' . esc_html__( 'When', 'admintrace-activity-logger' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Severity', 'admintrace-activity-logger' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Category', 'admintrace-activity-logger' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Activity', 'admintrace-activity-logger' ) . '</th>';
+		echo '<th scope="col">' . esc_html__( 'Actor', 'admintrace-activity-logger' ) . '</th>';
 		echo '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
 			$row  = Access::present( $row, $include_ip );
@@ -321,19 +321,19 @@ class Timeline_Screen {
 			echo '<td><time datetime="' . esc_attr( $when['iso'] ) . '">' . esc_html( $when['primary'] ) . '</time></td>';
 			echo '<td>' . esc_html( Vocabulary::severity_label( $row['severity'] ) ) . '</td>';
 			echo '<td>' . esc_html( Vocabulary::category_label( $row['category'] ) ) . '</td>';
-			echo '<td><a href="' . esc_url( admin_url( 'admin.php?page=advance-history&event=' . (int) $row['id'] ) ) . '">' . esc_html( $row['summary'] ) . '</a>';
+			echo '<td><a href="' . esc_url( admin_url( 'admin.php?page=admintrace-activity-logger&event=' . (int) $row['id'] ) ) . '">' . esc_html( $row['summary'] ) . '</a>';
 			$repeats = isset( $row['repeat_count'] ) ? (int) $row['repeat_count'] : 1;
 			if ( $repeats > 1 ) {
-				echo ' <span class="ah-pill ah-pill-repeat">' . esc_html(
+				echo ' <span class="srah-pill srah-pill-repeat">' . esc_html(
 					sprintf(
 						/* translators: %d: number of times this event happened. */
-						_n( '%d time', '%d times', $repeats, 'advance-history' ),
+						_n( '%d time', '%d times', $repeats, 'admintrace-activity-logger' ),
 						$repeats
 					)
 				) . '</span>';
 			}
 			echo '</td>';
-			echo '<td class="ah-actor-cell"><span class="ah-event-avatar" aria-hidden="true">' . wp_kses_post( Renderer::avatar( $row, 28 ) ) . '</span><span>' . esc_html( Renderer::actor( $row ) ) . '</span></td>';
+			echo '<td class="srah-actor-cell"><span class="srah-event-avatar" aria-hidden="true">' . wp_kses_post( Renderer::avatar( $row, 28 ) ) . '</span><span>' . esc_html( Renderer::actor( $row ) ) . '</span></td>';
 			echo '</tr>';
 		}
 		echo '</tbody></table>';
@@ -357,12 +357,12 @@ class Timeline_Screen {
 				'current'   => $filters['paged'],
 				'total'     => $pages,
 				'type'      => 'plain',
-				'prev_text' => __( 'Previous', 'advance-history' ),
-				'next_text' => __( 'Next', 'advance-history' ),
+				'prev_text' => __( 'Previous', 'admintrace-activity-logger' ),
+				'next_text' => __( 'Next', 'admintrace-activity-logger' ),
 			)
 		);
 		if ( $links ) {
-			echo '<nav class="ah-pager" aria-label="' . esc_attr__( 'Journal pages', 'advance-history' ) . '">' . wp_kses_post( $links ) . '</nav>';
+			echo '<nav class="srah-pager" aria-label="' . esc_attr__( 'Journal pages', 'admintrace-activity-logger' ) . '">' . wp_kses_post( $links ) . '</nav>';
 		}
 	}
 
@@ -371,24 +371,24 @@ class Timeline_Screen {
 	 */
 	private static function note_form() {
 		?>
-		<details class="ah-note" id="ah-note">
-			<summary><?php esc_html_e( 'Add a journal note', 'advance-history' ); ?></summary>
+		<details class="srah-note" id="srah-note">
+			<summary><?php esc_html_e( 'Add a journal note', 'admintrace-activity-logger' ); ?></summary>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<?php wp_nonce_field( 'advance_history_note' ); ?>
-				<input type="hidden" name="action" value="advance_history_note">
+				<?php wp_nonce_field( 'srah_note' ); ?>
+				<input type="hidden" name="action" value="srah_note">
 				<p>
-					<label for="ah-note-text"><?php esc_html_e( 'Note', 'advance-history' ); ?></label>
-					<textarea id="ah-note-text" name="summary" rows="3" required maxlength="500"></textarea>
+					<label for="srah-note-text"><?php esc_html_e( 'Note', 'admintrace-activity-logger' ); ?></label>
+					<textarea id="srah-note-text" name="summary" rows="3" required maxlength="500"></textarea>
 				</p>
 				<p>
-					<label for="ah-note-severity"><?php esc_html_e( 'Severity', 'advance-history' ); ?></label>
-					<select id="ah-note-severity" name="severity">
+					<label for="srah-note-severity"><?php esc_html_e( 'Severity', 'admintrace-activity-logger' ); ?></label>
+					<select id="srah-note-severity" name="severity">
 						<?php foreach ( Vocabulary::severities() as $key => $label ) : ?>
 							<option value="<?php echo esc_attr( $key ); ?>"><?php echo esc_html( $label ); ?></option>
 						<?php endforeach; ?>
 					</select>
 				</p>
-				<p><button class="button button-primary" type="submit"><?php esc_html_e( 'Save note', 'advance-history' ); ?></button></p>
+				<p><button class="button button-primary" type="submit"><?php esc_html_e( 'Save note', 'admintrace-activity-logger' ); ?></button></p>
 			</form>
 		</details>
 		<?php
@@ -418,7 +418,7 @@ class Timeline_Screen {
 	 */
 	private static function view_url( array $filters, $view ) {
 		$args = array(
-			'page' => 'advance-history',
+			'page' => 'admintrace-activity-logger',
 			'view' => $view,
 		);
 		foreach ( array( 'search' => 's', 'category' => 'category', 'severity' => 'severity', 'initiator' => 'initiator', 'user_id' => 'user_id', 'after' => 'after', 'before' => 'before' ) as $from => $to ) {

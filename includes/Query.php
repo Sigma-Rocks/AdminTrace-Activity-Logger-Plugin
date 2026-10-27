@@ -120,7 +120,7 @@ class Query {
 	public static function stats( $scoped, array $categories ) {
 		global $wpdb;
 
-		$key    = 'ah_stats_' . get_current_blog_id() . ( $scoped ? '_view' : '_all' );
+		$key    = 'srah_stats_' . get_current_blog_id() . ( $scoped ? '_view' : '_all' );
 		$cached = get_transient( $key );
 		if ( is_array( $cached ) ) {
 			return $cached;
@@ -143,9 +143,9 @@ class Query {
 			}
 			$clean = array();
 			foreach ( $categories as $category ) {
-				$key = Text::key( $category, 32, '' );
-				if ( '' !== $key ) {
-					$clean[] = $key;
+				$category_key = Text::key( $category, 32, '' );
+				if ( '' !== $category_key ) {
+					$clean[] = $category_key;
 				}
 			}
 			if ( ! $clean ) {

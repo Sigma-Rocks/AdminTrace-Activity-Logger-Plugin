@@ -23,23 +23,23 @@ class Vocabulary {
 	 */
 	public static function categories() {
 		return array(
-			'security'    => __( 'Security', 'advance-history' ),
-			'user'        => __( 'Users', 'advance-history' ),
-			'content'     => __( 'Content', 'advance-history' ),
-			'media'       => __( 'Media', 'advance-history' ),
-			'comment'     => __( 'Comments', 'advance-history' ),
-			'plugin'      => __( 'Plugins', 'advance-history' ),
-			'theme'       => __( 'Themes', 'advance-history' ),
-			'core'        => __( 'WordPress', 'advance-history' ),
-			'taxonomy'    => __( 'Taxonomy', 'advance-history' ),
-			'settings'    => __( 'Settings', 'advance-history' ),
-			'menu'        => __( 'Menus', 'advance-history' ),
-			'widget'      => __( 'Widgets', 'advance-history' ),
-			'privacy'     => __( 'Privacy', 'advance-history' ),
-			'commerce'    => __( 'Commerce', 'advance-history' ),
-			'integration' => __( 'Integrations', 'advance-history' ),
-			'journal'     => __( 'Journal', 'advance-history' ),
-			'system'      => __( 'System', 'advance-history' ),
+			'security'    => __( 'Security', 'admintrace-activity-logger' ),
+			'user'        => __( 'Users', 'admintrace-activity-logger' ),
+			'content'     => __( 'Content', 'admintrace-activity-logger' ),
+			'media'       => __( 'Media', 'admintrace-activity-logger' ),
+			'comment'     => __( 'Comments', 'admintrace-activity-logger' ),
+			'plugin'      => __( 'Plugins', 'admintrace-activity-logger' ),
+			'theme'       => __( 'Themes', 'admintrace-activity-logger' ),
+			'core'        => __( 'WordPress', 'admintrace-activity-logger' ),
+			'taxonomy'    => __( 'Taxonomy', 'admintrace-activity-logger' ),
+			'settings'    => __( 'Settings', 'admintrace-activity-logger' ),
+			'menu'        => __( 'Menus', 'admintrace-activity-logger' ),
+			'widget'      => __( 'Widgets', 'admintrace-activity-logger' ),
+			'privacy'     => __( 'Privacy', 'admintrace-activity-logger' ),
+			'commerce'    => __( 'Commerce', 'admintrace-activity-logger' ),
+			'integration' => __( 'Integrations', 'admintrace-activity-logger' ),
+			'journal'     => __( 'Journal', 'admintrace-activity-logger' ),
+			'system'      => __( 'System', 'admintrace-activity-logger' ),
 		);
 	}
 
@@ -50,10 +50,10 @@ class Vocabulary {
 	 */
 	public static function severities() {
 		return array(
-			'info'     => __( 'Info', 'advance-history' ),
-			'notice'   => __( 'Notice', 'advance-history' ),
-			'warning'  => __( 'Warning', 'advance-history' ),
-			'critical' => __( 'Critical', 'advance-history' ),
+			'info'     => __( 'Info', 'admintrace-activity-logger' ),
+			'notice'   => __( 'Notice', 'admintrace-activity-logger' ),
+			'warning'  => __( 'Warning', 'admintrace-activity-logger' ),
+			'critical' => __( 'Critical', 'admintrace-activity-logger' ),
 		);
 	}
 
@@ -64,13 +64,13 @@ class Vocabulary {
 	 */
 	public static function initiators() {
 		return array(
-			'user'      => __( 'Person', 'advance-history' ),
-			'anonymous' => __( 'Visitor', 'advance-history' ),
-			'cron'      => __( 'Scheduled task', 'advance-history' ),
-			'cli'       => __( 'WP-CLI', 'advance-history' ),
-			'xmlrpc'    => __( 'XML-RPC', 'advance-history' ),
-			'rest'      => __( 'REST', 'advance-history' ),
-			'system'    => __( 'Advance History', 'advance-history' ),
+			'user'      => __( 'Person', 'admintrace-activity-logger' ),
+			'anonymous' => __( 'Visitor', 'admintrace-activity-logger' ),
+			'cron'      => __( 'Scheduled task', 'admintrace-activity-logger' ),
+			'cli'       => __( 'WP-CLI', 'admintrace-activity-logger' ),
+			'xmlrpc'    => __( 'XML-RPC', 'admintrace-activity-logger' ),
+			'rest'      => __( 'REST', 'admintrace-activity-logger' ),
+			'system'    => __( 'AdminTrace', 'admintrace-activity-logger' ),
 		);
 	}
 

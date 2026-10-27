@@ -40,7 +40,7 @@ class Security_Logger extends Logger {
 	 * @return string
 	 */
 	public function label() {
-		return __( 'Security signals', 'advance-history' );
+		return __( 'Security signals', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -49,7 +49,7 @@ class Security_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Denied admin screens, plugin and theme file edits, and Site Health changes.', 'advance-history' );
+		return __( 'Denied admin screens, plugin and theme file edits, and Site Health changes.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -72,7 +72,7 @@ class Security_Logger extends Logger {
 		$path = wp_parse_url( (string) $uri, PHP_URL_PATH );
 		$this->log(
 			array(
-				'summary'  => __( 'An admin screen was denied.', 'advance-history' ),
+				'summary'  => __( 'An admin screen was denied.', 'admintrace-activity-logger' ),
 				'category' => 'security',
 				'action'   => 'security.access_denied',
 				'severity' => 'warning',
@@ -100,7 +100,7 @@ class Security_Logger extends Logger {
 			array(
 				'summary'  => sprintf(
 					/* translators: 1: critical count, 2: recommended count. */
-					__( 'Site Health changed: %1$d critical and %2$d recommended.', 'advance-history' ),
+					__( 'Site Health changed: %1$d critical and %2$d recommended.', 'admintrace-activity-logger' ),
 					$after['critical'],
 					$after['recommended']
 				),
@@ -110,12 +110,12 @@ class Security_Logger extends Logger {
 				'context'  => array(
 					'changes' => array(
 						array(
-							'field' => __( 'Critical', 'advance-history' ),
+							'field' => __( 'Critical', 'admintrace-activity-logger' ),
 							'from'  => (string) $before['critical'],
 							'to'    => (string) $after['critical'],
 						),
 						array(
-							'field' => __( 'Recommended', 'advance-history' ),
+							'field' => __( 'Recommended', 'admintrace-activity-logger' ),
 							'from'  => (string) $before['recommended'],
 							'to'    => (string) $after['recommended'],
 						),
@@ -196,7 +196,7 @@ class Security_Logger extends Logger {
 				array(
 					'summary'      => sprintf(
 						/* translators: 1: plugin or theme, 2: relative file. */
-						__( 'Edited %1$s file "%2$s".', 'advance-history' ),
+						__( 'Edited %1$s file "%2$s".', 'admintrace-activity-logger' ),
 						$watch['kind'],
 						$watch['file']
 					),

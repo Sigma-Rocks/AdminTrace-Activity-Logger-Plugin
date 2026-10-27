@@ -31,7 +31,7 @@ class Rest_Controller {
 	 */
 	public static function routes() {
 		register_rest_route(
-			'advance-history/v1',
+			'admintrace-activity-logger/v1',
 			'/events',
 			array(
 				array(
@@ -70,7 +70,7 @@ class Rest_Controller {
 		);
 
 		register_rest_route(
-			'advance-history/v1',
+			'admintrace-activity-logger/v1',
 			'/events/(?P<id>\d+)',
 			array(
 				array(
@@ -87,7 +87,7 @@ class Rest_Controller {
 		);
 
 		register_rest_route(
-			'advance-history/v1',
+			'admintrace-activity-logger/v1',
 			'/stats',
 			array(
 				'methods'             => \WP_REST_Server::READABLE,
@@ -165,7 +165,7 @@ class Rest_Controller {
 			$result = Query::search( $args );
 		} catch ( \Throwable $e ) {
 			unset( $e );
-			return new \WP_Error( 'advance_history_query_failed', __( 'The journal could not be read.', 'advance-history' ), array( 'status' => 500 ) );
+			return new \WP_Error( 'srah_query_failed', __( 'The journal could not be read.', 'admintrace-activity-logger' ), array( 'status' => 500 ) );
 		}
 
 		$rows = array();
@@ -193,7 +193,7 @@ class Rest_Controller {
 		);
 		$result = Query::search( $args );
 		if ( empty( $result['rows'][0] ) ) {
-			return new \WP_Error( 'advance_history_not_found', __( 'That event is not available.', 'advance-history' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'srah_not_found', __( 'That event is not available.', 'admintrace-activity-logger' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( Access::present( $result['rows'][0], ! empty( $args['include_ip'] ) ) );
 	}
@@ -225,7 +225,7 @@ class Rest_Controller {
 		);
 
 		if ( ! $id ) {
-			return new \WP_Error( 'advance_history_failed', __( 'The event could not be saved.', 'advance-history' ), array( 'status' => 500 ) );
+			return new \WP_Error( 'srah_failed', __( 'The event could not be saved.', 'admintrace-activity-logger' ), array( 'status' => 500 ) );
 		}
 
 		return rest_ensure_response( array( 'id' => $id ) );
@@ -240,7 +240,7 @@ class Rest_Controller {
 	public static function destroy( $request ) {
 		$deleted = Retention::delete_ids( array( (int) $request['id'] ) );
 		if ( ! $deleted ) {
-			return new \WP_Error( 'advance_history_not_found', __( 'That event is not available.', 'advance-history' ), array( 'status' => 404 ) );
+			return new \WP_Error( 'srah_not_found', __( 'That event is not available.', 'admintrace-activity-logger' ), array( 'status' => 404 ) );
 		}
 		return rest_ensure_response( array( 'deleted' => true ) );
 	}
