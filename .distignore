@@ -1,0 +1,16 @@
+# Kept in the plugin folder. Omitted from the WordPress.org upload zip.
+.git
+tests
+
+# Directory page files. Upload these to the SVN assets directory after approval.
+assets/banner-772x250.png
+assets/banner-1544x500.jpg
+assets/icon-128x128.png
+assets/icon-256x256.png
+assets/screenshot-1.png
+assets/screenshot-2.png
+assets/screenshot-3.png
+
+.DS_Store
+**/.DS_Store
+.distignore
