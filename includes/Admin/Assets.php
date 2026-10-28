@@ -8,6 +8,7 @@
 namespace SigmaRocks\AdvanceHistory\Admin;
 
 use SigmaRocks\AdvanceHistory\Capabilities;
+use SigmaRocks\AdvanceHistory\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -31,6 +32,8 @@ class Assets {
 	 * @param string $hook Current admin page hook.
 	 */
 	public static function enqueue( $hook ) {
+		self::enqueue_menu_icon();
+
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 		$ours = in_array( $page, array( 'admintrace-activity-logger', 'admintrace-activity-logger-settings' ), true );
 		$related = in_array( $hook, array( 'index.php', 'post.php', 'post-new.php' ), true );
@@ -67,6 +70,26 @@ class Assets {
 			array(
 				'copied' => __( 'Copied', 'admintrace-activity-logger' ),
 			)
+		);
+	}
+
+	/**
+	 * Size the top-level menu image on every admin screen.
+	 *
+	 * The journal stylesheet loads only on plugin screens, and the sidebar
+	 * mark is visible everywhere, so these rules are a separate stylesheet.
+	 */
+	private static function enqueue_menu_icon() {
+		if ( 'toplevel' !== Settings::all()['menu_location'] ) {
+			return;
+		}
+
+		$style = SRAH_PATH . 'assets/css/menu-icon.css';
+		wp_enqueue_style(
+			'admintrace-activity-logger-menu-icon',
+			SRAH_URL . 'assets/css/menu-icon.css',
+			array(),
+			file_exists( $style ) ? (string) filemtime( $style ) : SRAH_VERSION
 		);
 	}
 }

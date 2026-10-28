@@ -4,7 +4,7 @@ Tags: activity, audit, history, log, users
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,10 @@ No. Each person is shown as an initial drawn by the plugin. It does not contact 
 3. The same journal as a table, including the account that made each change.
 
 == Changelog ==
+
+= 1.0.4 =
+* Directory banners, icons, and screenshots are kept out of the plugin package.
+* The admin menu icon stylesheet is loaded with wp_enqueue_style().
 
 = 1.0.3 =
 * Display name is AdminTrace Activity Logger. The requested permalink is admintrace-activity-logger.

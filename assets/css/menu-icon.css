@@ -1,0 +1,13 @@
+#adminmenu #toplevel_page_admintrace-activity-logger .wp-menu-image img {
+	width: 20px;
+	height: 20px;
+	padding: 7px 0 0;
+	object-fit: contain;
+	opacity: 0.6;
+}
+
+#adminmenu #toplevel_page_admintrace-activity-logger:hover .wp-menu-image img,
+#adminmenu #toplevel_page_admintrace-activity-logger.wp-has-current-submenu .wp-menu-image img,
+#adminmenu #toplevel_page_admintrace-activity-logger.current .wp-menu-image img {
+	opacity: 1;
+}

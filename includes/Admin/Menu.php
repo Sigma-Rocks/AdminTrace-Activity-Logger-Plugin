@@ -30,7 +30,6 @@ class Menu {
 	 */
 	public static function register() {
 		add_action( 'admin_menu', array( __CLASS__, 'menu' ) );
-		add_action( 'admin_head', array( __CLASS__, 'menu_icon_css' ) );
 		add_action( 'admin_notices', array( __CLASS__, 'welcome' ) );
 		add_filter( 'plugin_action_links_' . plugin_basename( SRAH_FILE ), array( __CLASS__, 'links' ) );
 		add_action( 'admin_post_srah_save_settings', array( __CLASS__, 'save_settings' ) );
@@ -43,16 +42,6 @@ class Menu {
 		add_action( 'admin_post_srah_dismiss_welcome', array( __CLASS__, 'dismiss_welcome' ) );
 		Assets::register();
 		Dashboard_Widget::register();
-	}
-
-	/**
-	 * Keep the sidebar mark at the standard menu-icon size.
-	 */
-	public static function menu_icon_css() {
-		if ( 'toplevel' !== Settings::all()['menu_location'] ) {
-			return;
-		}
-		echo '<style>#adminmenu #toplevel_page_admintrace-activity-logger .wp-menu-image img{width:20px;height:20px;padding:7px 0 0;object-fit:contain;opacity:.6}#adminmenu #toplevel_page_admintrace-activity-logger:hover .wp-menu-image img,#adminmenu #toplevel_page_admintrace-activity-logger.wp-has-current-submenu .wp-menu-image img,#adminmenu #toplevel_page_admintrace-activity-logger.current .wp-menu-image img{opacity:1}</style>';
 	}
 
 	/**
