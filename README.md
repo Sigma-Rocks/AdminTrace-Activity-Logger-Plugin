@@ -16,14 +16,15 @@ Requires WordPress 6.2 or newer and PHP 7.4 or newer. Tested on WordPress 7.1.
 
 ## What is recorded
 
-- Logins, logouts, failed logins, password resets, application passwords, profile changes, role changes, and deleted accounts.
-- Posts, pages, custom post types, site-editor templates, terms, comments, and media. Content changes store field names and a short word summary, not the full post.
-- Plugin and theme installs, updates, activation, switching, and deletion.
-- WordPress core updates, language packs, and a notice when the available-update list changes.
+- Logins, logouts, failed logins (wrong password or unknown username), password resets, application passwords, profile changes, role changes, and deleted accounts.
+- Two Factor sign-in, including the method name, and a rejected second-factor check. The one-time code is not stored.
+- Posts, pages, custom post types, site-editor templates, terms, comments, collaboration notes, and media. Content changes store field names and a short word summary, not the full post. Image edits name crop, rotate, flip, or scale. Menu saves include added and removed item titles.
+- Plugin and theme installs, updates, activation, switching, deletion, and automatic-update toggles.
+- WordPress core updates, language packs, automatic updates, and a notice when the number of available updates changes.
 - A curated set of site settings. Options whose names look like credentials are skipped even if a filter tries to add them.
 - Navigation menus, sidebar widgets, privacy exports and erasures, and Tools → Export.
-- WooCommerce order status, refunds, stock, and product price or SKU changes.
-- Public hooks from Jetpack, User Switching, Advanced Custom Fields, Yoast Duplicate Post, Beaver Builder, and Redirection, when those plugins fire them.
+- WooCommerce order status, coupon codes, refunds, stock, and product price or SKU changes. Customer email addresses are not stored.
+- Public hooks from Jetpack, User Switching, Advanced Custom Fields, Yoast Duplicate Post, Beaver Builder, Redirection, and Enable Media Replace, when those plugins fire them.
 - Denied admin screens, Site Health count changes, and plugin or theme file edits after WordPress has written the file.
 
 Passwords, reset keys, application password secrets, API keys, and privacy-export download URLs are not stored. IP addresses are masked by default (the last IPv4 octet is removed; IPv6 keeps the first half) and can be turned off. AdminTrace Activity Logger does not send addresses to a geolocation service.

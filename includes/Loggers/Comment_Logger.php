@@ -42,7 +42,7 @@ class Comment_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'New comments, moderation decisions, and deletions.', 'admintrace-activity-logger' );
+		return __( 'New comments, collaboration notes, moderation decisions, and deletions.', 'admintrace-activity-logger' );
 	}
 
 	/**

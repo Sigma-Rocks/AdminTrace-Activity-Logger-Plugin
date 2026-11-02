@@ -1,23 +1,90 @@
 === AdminTrace Activity Logger ===
 Contributors: sigmarocks
-Tags: activity, audit, history, log, users
+Tags: activity-log, audit-log, user-activity, security, woocommerce
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/paypalme/sigmarocks
 
-A readable journal of who changed your WordPress site, and when.
+WordPress activity log and audit trail. See who changed content, users, plugins, themes, settings, and WooCommerce orders.
 
 == Description ==
 
-AdminTrace Activity Logger records important changes on a WordPress site: content, accounts, plugins, themes, comments, settings, privacy tools, and WooCommerce orders when WooCommerce is active.
+AdminTrace Activity Logger is a WordPress activity log for sites that need a clear audit trail. It records who changed the site, what changed, and when, in short sentences instead of raw database dumps.
 
-It is a journal with fixed limits. Profile marks are initials drawn on the site. A content edit stores a short added-and-removed preview, not the post. Network addresses stay masked, and the plugin does not look them up. Email and webhooks stay off until an administrator turns them on. Search, filters, export, and retention are included. There is no paid tier.
+Activate it and recording starts at once. Search, filters, a timeline, a table, CSV and JSON export, email digests, and retention settings are included. There is no paid upgrade.
 
-Each row is a short description. It does not store passwords, application passwords, or API keys. Masked network addresses can also be turned off. The plugin does not call Gravatar, an address lookup, or an analytics service.
+= Security and user activity =
+
+* Logins, logouts, and failed logins. A failed login says whether the password was wrong or the username does not exist.
+* Second-factor sign-in when the Two Factor plugin accepts a code, including the method name. Rejected second-factor checks are recorded without the code.
+* Password resets, role changes, deleted accounts, and application passwords. The secret itself is never stored.
+* Denied admin screens, Site Health changes, and plugin or theme file edits after WordPress has written the file.
+* Network addresses are masked by default. The plugin does not look up a city, a host, or a map.
+
+= Content, media, and comments =
+
+* Posts, pages, custom post types, and site-editor templates. An edit stores the field names and a short added-and-removed preview, not the full post.
+* Media uploads, deletions, and image edits such as crop, rotate, flip, and scale. Enable Media Replace file replacements are recorded when that plugin is active. File contents are not stored.
+* Categories, tags, comments, and the collaboration notes introduced in WordPress 6.9.
+* Navigation menus, including the titles that were added or removed, and sidebar widgets.
+
+= Plugins, themes, WordPress, and settings =
+
+* Plugin install, update, activation, deactivation, deletion, and automatic-update toggles, with the plugin name and version.
+* Theme install, update, switch, deletion, and automatic-update toggles.
+* WordPress core updates, language packs, automatic updates, and a notice when the number of available updates changes.
+* A curated set of settings, including the site title, permalinks, the homepage, comment rules, and the privacy policy page. Options that look like passwords or API keys are skipped.
+
+= WooCommerce activity log =
+
+When WooCommerce is active, the same journal records order status, coupon codes used on an order, refunds, stock, product price and SKU changes, and store settings such as currency. Customer email addresses are not stored.
+
+= Other plugins =
+
+These events are recorded when the other plugin is active and fires its public hook:
+
+* Jetpack module activation and deactivation
+* User Switching
+* Advanced Custom Fields field groups
+* Duplicate Post clones
+* Beaver Builder layout saves
+* Redirection saves and deletions
+
+= Where to read the audit log =
+
+* The activity journal, with search plus filters for category, severity, source, account, and date
+* Timeline and table views
+* A Dashboard widget and an admin-bar list
+* The WordPress command palette on WordPress 6.9 and newer, alongside the other admin screens
+* A panel on the post editing screen for that post’s history
+* A plain-text daily or weekly email digest, and an email when failed logins cross a threshold
+* A private RSS feed that stays off until an administrator enables it
+* CSV and JSON export of the current filters, up to 5,000 rows
+* REST API and WP-CLI, including a way for other plugins to add events with `srah_log()`
+
+= How long it is kept =
+
+Events are kept for 90 days by default. Choose any period from 0 days, which keeps rows until you delete them, through 10 years. Administrators can delete selected rows or clear the journal for the current site.
+
+Editors and shop managers can be allowed to see content activity. They do not see security events or network addresses. Shop managers can also see WooCommerce events.
+
+Multisite keeps a separate journal on each site.
+
+= Privacy =
+
+The journal stays on this site. Profile marks are initials drawn by the plugin, so it does not call Gravatar. It does not set a tracking cookie or call an analytics service. The email digest, the failed-login alert, and the HTTPS webhook stay off until an administrator turns them on. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
+
+= What this activity log does not do =
+
+* It does not hide itself from the Plugins screen.
+* It does not scan core files against WordPress.org checksums.
+* It does not forward events to syslog, Datadog, or Splunk. One HTTPS webhook is available.
+* It does not record the body of outgoing HTTP requests or emails.
+* It does not keep a separate log of WP Crontrol cron events.
 
 == Installation ==
 
@@ -51,6 +118,22 @@ The journal stays on this site. The email digest and the webhook are off until a
 
 No. Each person is shown as an initial drawn by the plugin. It does not contact Gravatar or any other avatar service.
 
+= Does it record WooCommerce orders? =
+
+Yes, when WooCommerce is active. Order status changes, coupon codes, refunds, stock changes, and product price or SKU edits are written to the same activity log. Customer email addresses are not stored.
+
+= Can I export the activity log? =
+
+Yes. CSV and JSON export follow the filters currently on the journal and stop at 5,000 rows. Cells that start with `=`, `+`, `-`, or `@` are prefixed so a spreadsheet does not treat them as formulas.
+
+= Can I see what changed inside a post? =
+
+Yes. A content event stores the fields that changed and a short list of words that were added or removed. The full post is not copied into the log. The same history is available in a panel on the post editing screen.
+
+= Will the activity log slow down visitors? =
+
+Recording runs when someone changes the site, mostly in wp-admin. A logging failure is dropped instead of interrupting WordPress. The public site does not load the journal script.
+
 == Screenshots ==
 
 1. The activity journal, with search, filters, and a post edit shown as added and removed lines.
@@ -58,6 +141,17 @@ No. Each person is shown as an initial drawn by the plugin. It does not contact 
 3. The same journal as a table, including the account that made each change.
 
 == Changelog ==
+
+= 1.0.5 =
+* The directory description now lists the activity log, audit trail, and WooCommerce coverage in the words people search for.
+* Plugin and theme automatic-update toggles are recorded.
+* The journal notes when the number of available plugin, theme, or WordPress updates changes.
+* Menu saves include the item titles that were added or removed.
+* Two Factor sign-in records the method name, and a rejected second-factor check is logged without the code.
+* Enable Media Replace file replacements are recorded without storing the file address.
+* WooCommerce orders include the coupon codes used on that order.
+* Image edits name the operation, such as crop or rotate.
+* The privacy policy page is included with the other tracked settings.
 
 = 1.0.4 =
 * Directory banners, icons, and screenshots are kept out of the plugin package.

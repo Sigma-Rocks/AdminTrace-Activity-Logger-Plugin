@@ -4,15 +4,15 @@ Sources: the public `readme.txt` shipped with Simple History 5.36.0 (tested up t
 
 Simple History’s FAQ says the log can be exported, while the Premium section markets filtered CSV/JSON export. Both statements are public. AdminTrace Activity Logger includes filtered CSV and JSON export in the free plugin.
 
-| Need | Simple History free (public readme) | Documented paid add-on | AdminTrace Activity Logger 1.0.0 |
+| Need | Simple History free (public readme) | Documented paid add-on | AdminTrace Activity Logger 1.0.5 |
 | --- | --- | --- | --- |
 | Content, users, comments, media, menus, widgets | Yes | — | Yes |
-| Plugin, theme, and core updates | Yes | — | Yes |
-| Failed logins, with masked addresses | Yes | — | Yes. Full addresses are not stored, and there is no geolocation lookup |
+| Plugin, theme, and core updates | Yes | — | Yes, including auto-update toggles and a notice when the available-update count changes |
+| Failed logins, with masked addresses | Yes | — | Yes, including wrong password versus unknown username. Full addresses are not stored, and there is no geolocation lookup |
 | File editor changes | Yes, when the edit is accepted | — | Yes, only after the file hash changes |
 | Site Health and denied admin screens | Yes | — | Yes |
-| Third-party plugin hooks | Many named plugins | — | Jetpack, User Switching, ACF, Duplicate Post, Beaver Builder, Redirection, Two Factor login flag |
-| WooCommerce orders, refunds, stock, prices | — | WooCommerce Logger add-on | Included when WooCommerce is active |
+| Third-party plugin hooks | Many named plugins | — | Jetpack, User Switching, ACF, Duplicate Post, Beaver Builder, Redirection, Enable Media Replace, Two Factor method name and rejected checks |
+| WooCommerce orders, refunds, stock, prices | — | WooCommerce Logger add-on | Included when WooCommerce is active, including coupon codes on the order |
 | Dashboard widget and admin bar | Yes | — | Yes |
 | Search, filters, timeline and compact/table views | Yes. Table view is described as Premium | Table view | Timeline and table, both included |
 | Field-level before/after | Yes | — | Yes, plus a short added/removed word list. Full post text is not stored |

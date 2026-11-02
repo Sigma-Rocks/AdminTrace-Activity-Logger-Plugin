@@ -49,7 +49,7 @@ class Commerce_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Orders, refunds, stock, and product price changes when WooCommerce is active.', 'admintrace-activity-logger' );
+		return __( 'Orders, coupons, refunds, stock, and product price changes when WooCommerce is active.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -78,7 +78,8 @@ class Commerce_Logger extends Logger {
 		$number = $this->order_number( $order, $order_id );
 		$total  = ( is_object( $order ) && method_exists( $order, 'get_total' ) ) ? $order->get_total() : '';
 		$currency = ( is_object( $order ) && method_exists( $order, 'get_currency' ) ) ? $order->get_currency() : '';
-		$placed = in_array( (string) $from, array( '', 'checkout-draft', 'new', 'auto-draft' ), true );
+		$placed  = in_array( (string) $from, array( '', 'checkout-draft', 'new', 'auto-draft' ), true );
+		$coupons = $this->coupon_codes( $order );
 		$summary = $placed
 			? sprintf(
 				/* translators: 1: order number, 2: status. */
@@ -93,6 +94,13 @@ class Commerce_Logger extends Logger {
 				sanitize_key( (string) $from ),
 				sanitize_key( (string) $to )
 			);
+		if ( $coupons ) {
+			$summary .= ' ' . sprintf(
+				/* translators: %s: comma-separated coupon codes. */
+				__( 'Coupon: %s.', 'admintrace-activity-logger' ),
+				implode( ', ', $coupons )
+			);
+		}
 		$this->log(
 			array(
 				'summary'      => $summary,
@@ -105,6 +113,7 @@ class Commerce_Logger extends Logger {
 				'context'      => array(
 					'total'    => is_scalar( $total ) ? (string) $total : '',
 					'currency' => is_scalar( $currency ) ? (string) $currency : '',
+					'coupons'  => $coupons,
 				),
 			)
 		);
@@ -215,6 +224,26 @@ class Commerce_Logger extends Logger {
 				'context'      => $context,
 			)
 		);
+	}
+
+	/**
+	 * Coupon codes on an order. Customer details are not read.
+	 *
+	 * @param mixed $order Order.
+	 * @return string[]
+	 */
+	private function coupon_codes( $order ) {
+		if ( ! is_object( $order ) || ! method_exists( $order, 'get_coupon_codes' ) ) {
+			return array();
+		}
+		$codes = array();
+		foreach ( (array) $order->get_coupon_codes() as $code ) {
+			$code = sanitize_text_field( (string) $code );
+			if ( '' !== $code ) {
+				$codes[] = $code;
+			}
+		}
+		return array_slice( $codes, 0, 5 );
 	}
 
 	/**

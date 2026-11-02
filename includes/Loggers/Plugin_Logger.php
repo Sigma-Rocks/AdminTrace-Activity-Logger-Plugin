@@ -42,7 +42,7 @@ class Plugin_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Plugin installs, updates, activation, deactivation, and deletion.', 'admintrace-activity-logger' );
+		return __( 'Plugin installs, updates, activation, deactivation, deletion, and auto-update toggles.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -53,6 +53,8 @@ class Plugin_Logger extends Logger {
 		$this->listen( 'deactivated_plugin', 'on_deactivated', 2 );
 		$this->listen( 'deleted_plugin', 'on_deleted', 2 );
 		$this->listen( 'upgrader_process_complete', 'on_upgrader', 2 );
+		$this->listen( 'update_option_auto_update_plugins', 'on_auto_update', 2 );
+		$this->listen( 'update_site_option_auto_update_plugins', 'on_site_auto_update', 3 );
 	}
 
 	/**
@@ -146,6 +148,99 @@ class Plugin_Logger extends Logger {
 			}
 			$this->log_plugin( $file, $event, $pattern, 'notice', false );
 		}
+	}
+
+	/**
+	 * Auto-update list changed on this site.
+	 *
+	 * @param mixed $old Previous plugin files.
+	 * @param mixed $new New plugin files.
+	 */
+	public function on_auto_update( $old, $new ) {
+		$this->diff_auto_updates( $old, $new );
+	}
+
+	/**
+	 * Auto-update list changed for the network.
+	 *
+	 * The site-option hook passes the option name first.
+	 *
+	 * @param mixed $option Ignored option name.
+	 * @param mixed $new    New plugin files.
+	 * @param mixed $old    Previous plugin files.
+	 */
+	public function on_site_auto_update( $option, $new, $old ) {
+		unset( $option );
+		$this->diff_auto_updates( $old, $new );
+	}
+
+	/**
+	 * Record plugins whose auto-update flag flipped.
+	 *
+	 * @param mixed $old Previous plugin files.
+	 * @param mixed $new New plugin files.
+	 */
+	private function diff_auto_updates( $old, $new ) {
+		$old = is_array( $old ) ? $old : array();
+		$new = is_array( $new ) ? $new : array();
+		$enabled  = array_values( array_diff( $new, $old ) );
+		$disabled = array_values( array_diff( $old, $new ) );
+		if ( count( $enabled ) + count( $disabled ) > 12 ) {
+			$this->log(
+				array(
+					'summary'  => sprintf(
+						/* translators: 1: enabled count, 2: disabled count. */
+						__( 'Changed plugin auto-updates: %1$d enabled and %2$d disabled.', 'admintrace-activity-logger' ),
+						count( $enabled ),
+						count( $disabled )
+					),
+					'category' => 'plugin',
+					'action'   => 'plugin.auto_update',
+					'severity' => 'notice',
+				)
+			);
+			return;
+		}
+		foreach ( $enabled as $file ) {
+			$this->log_auto_update( $file, true );
+		}
+		foreach ( $disabled as $file ) {
+			$this->log_auto_update( $file, false );
+		}
+	}
+
+	/**
+	 * Record one plugin auto-update change.
+	 *
+	 * @param string $plugin  Plugin file.
+	 * @param bool   $enabled Whether auto-update was turned on.
+	 */
+	private function log_auto_update( $plugin, $enabled ) {
+		$meta = $this->plugin_meta( $plugin );
+		$this->log(
+			array(
+				'summary'      => $enabled
+					? sprintf(
+						/* translators: %s: plugin name. */
+						__( 'Turned on automatic updates for the plugin "%s".', 'admintrace-activity-logger' ),
+						$meta['name']
+					)
+					: sprintf(
+						/* translators: %s: plugin name. */
+						__( 'Turned off automatic updates for the plugin "%s".', 'admintrace-activity-logger' ),
+						$meta['name']
+					),
+				'category'     => 'plugin',
+				'action'       => 'plugin.auto_update',
+				'severity'     => 'notice',
+				'object_type'  => 'plugin',
+				'object_title' => $meta['name'],
+				'context'      => array(
+					'file'    => Text::plain( $plugin, 160 ),
+					'enabled' => (bool) $enabled,
+				),
+			)
+		);
 	}
 
 	/**

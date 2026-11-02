@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: AdminTrace Activity Logger
- * Description: A readable activity journal for WordPress. See who changed content, users, plugins, orders, and settings.
- * Version: 1.0.4
+ * Description: WordPress activity log and audit trail for content, users, plugins, themes, orders, and settings.
+ * Version: 1.0.5
  * Requires at least: 6.2
  * Requires PHP: 7.4
  * Author: Sigma Rocks
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SRAH_VERSION', '1.0.4' );
+define( 'SRAH_VERSION', '1.0.5' );
 define( 'SRAH_DB_VERSION', '1' );
 define( 'SRAH_FILE', __FILE__ );
 define( 'SRAH_PATH', plugin_dir_path( __FILE__ ) );

@@ -182,6 +182,7 @@ class Settings_Logger extends Logger {
 			'page_on_front',
 			'page_for_posts',
 			'show_on_front',
+			'wp_page_for_privacy_policy',
 			'default_comment_status',
 			'default_ping_status',
 			'comment_moderation',

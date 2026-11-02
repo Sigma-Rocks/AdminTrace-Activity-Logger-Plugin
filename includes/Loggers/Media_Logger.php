@@ -47,7 +47,7 @@ class Media_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Uploads, image edits, and deleted files. File contents are not stored.', 'admintrace-activity-logger' );
+		return __( 'Uploads, image edits, file replacements, and deleted files. File contents are not stored.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -57,6 +57,7 @@ class Media_Logger extends Logger {
 		$this->listen( 'add_attachment', 'on_add', 1 );
 		$this->listen( 'edit_attachment', 'on_edit', 1 );
 		$this->listen( 'delete_attachment', 'on_delete', 1 );
+		$this->listen( 'enable-media-replace-upload-done', 'on_replaced', 3 );
 		add_filter( 'wp_image_editor_before_change', array( $this, 'on_image_change' ), 10, 2 );
 	}
 
@@ -106,6 +107,39 @@ class Media_Logger extends Logger {
 	}
 
 	/**
+	 * Enable Media Replace finished a replacement.
+	 *
+	 * Download addresses are not stored. The attachment is recorded when one
+	 * of the hook arguments is its ID.
+	 *
+	 * @param mixed $first  First hook argument.
+	 * @param mixed $second Second hook argument.
+	 * @param mixed $third  Third hook argument.
+	 */
+	public function on_replaced( $first = null, $second = null, $third = null ) {
+		foreach ( array( $first, $second, $third ) as $arg ) {
+			if ( is_numeric( $arg ) && 'attachment' === get_post_type( (int) $arg ) ) {
+				$this->log_media(
+					(int) $arg,
+					'media.replaced',
+					/* translators: %s: attachment title. */
+					__( 'Replaced the file "%s".', 'admintrace-activity-logger' ),
+					'notice'
+				);
+				return;
+			}
+		}
+		$this->log(
+			array(
+				'summary'  => __( 'Replaced a media file.', 'admintrace-activity-logger' ),
+				'category' => 'media',
+				'action'   => 'media.replaced',
+				'severity' => 'notice',
+			)
+		);
+	}
+
+	/**
 	 * Remember crop, rotate, flip, or scale operations.
 	 *
 	 * @param mixed $image   Image editor.
@@ -147,9 +181,18 @@ class Media_Logger extends Logger {
 		}
 		$file = get_attached_file( $post_id );
 		$mime = get_post_mime_type( $post_id );
+		$ops  = isset( $this->operations[ $post_id ] ) ? $this->operations[ $post_id ] : array();
+		$summary = sprintf( $pattern, $post->post_title );
+		if ( $ops && 'media.edited' === $action ) {
+			$summary .= ' ' . sprintf(
+				/* translators: %s: comma-separated image operations such as crop or rotate. */
+				__( 'Operations: %s.', 'admintrace-activity-logger' ),
+				implode( ', ', $ops )
+			);
+		}
 		$this->log(
 			array(
-				'summary'      => sprintf( $pattern, $post->post_title ),
+				'summary'      => $summary,
 				'category'     => 'media',
 				'action'       => $action,
 				'severity'     => $severity,
@@ -159,7 +202,7 @@ class Media_Logger extends Logger {
 				'context'      => array(
 					'filename'   => $file ? wp_basename( $file ) : '',
 					'mime'       => $mime ? $mime : '',
-					'operations' => isset( $this->operations[ $post_id ] ) ? $this->operations[ $post_id ] : array(),
+					'operations' => $ops,
 				),
 			)
 		);

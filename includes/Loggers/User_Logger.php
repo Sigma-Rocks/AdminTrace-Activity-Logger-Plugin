@@ -22,7 +22,9 @@ class User_Logger extends Logger {
 	/**
 	 * User IDs that completed a second factor during this request.
 	 *
-	 * @var array<int,bool>
+	 * Values are the method label, or true when the method name is unknown.
+	 *
+	 * @var array<int,string|bool>
 	 */
 	private $two_factor = array();
 
@@ -50,7 +52,7 @@ class User_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Logins, logouts, failed logins, profile changes, roles, and application passwords.', 'admintrace-activity-logger' );
+		return __( 'Logins, logouts, failed logins, second-factor checks, profile changes, roles, and application passwords.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -72,7 +74,8 @@ class User_Logger extends Logger {
 		$this->listen( 'wp_delete_application_password', 'on_app_password_deleted', 2 );
 		$this->listen( 'application_password_failed_authentication', 'on_app_password_failed', 1 );
 		$this->listen( 'application_password_did_authenticate', 'on_app_password_login', 2 );
-		$this->listen( 'two_factor_user_authenticated', 'on_two_factor', 1 );
+		$this->listen( 'two_factor_user_authenticated', 'on_two_factor', 2 );
+		$this->listen( 'two_factor_login_nonce_failed', 'on_two_factor_nonce', 2 );
 	}
 
 	/**
@@ -84,16 +87,33 @@ class User_Logger extends Logger {
 	public function on_login( $user_login, $user ) {
 		$user_id = ( $user instanceof \WP_User ) ? (int) $user->ID : 0;
 		$context = array();
+		$login   = Text::plain( $user_login, 60 );
+		$summary = sprintf(
+			/* translators: %s: username. */
+			__( 'Logged in as "%s".', 'admintrace-activity-logger' ),
+			$login
+		);
 		if ( $user_id && ! empty( $this->two_factor[ $user_id ] ) ) {
-			$context['two_factor'] = true;
+			$method = $this->two_factor[ $user_id ];
+			$context['two_factor'] = is_string( $method ) ? $method : 'yes';
+			if ( is_string( $method ) && '' !== $method ) {
+				$summary = sprintf(
+					/* translators: 1: username, 2: second-factor method. */
+					__( 'Logged in as "%1$s" after the "%2$s" second factor.', 'admintrace-activity-logger' ),
+					$login,
+					$method
+				);
+			} else {
+				$summary = sprintf(
+					/* translators: %s: username. */
+					__( 'Logged in as "%s" after a second factor.', 'admintrace-activity-logger' ),
+					$login
+				);
+			}
 		}
 		$this->log(
 			array(
-				'summary'     => sprintf(
-					/* translators: %s: username. */
-					__( 'Logged in as "%s".', 'admintrace-activity-logger' ),
-					Text::plain( $user_login, 60 )
-				),
+				'summary'     => $summary,
 				'category'    => 'security',
 				'action'      => 'user.login',
 				'severity'    => 'notice',
@@ -495,12 +515,78 @@ class User_Logger extends Logger {
 	/**
 	 * Remember that a second factor was accepted.
 	 *
-	 * @param \WP_User $user User.
+	 * The one-time code is never stored.
+	 *
+	 * @param \WP_User $user     User.
+	 * @param mixed    $provider Provider instance, when the Two Factor plugin supplies one.
 	 */
-	public function on_two_factor( $user ) {
+	public function on_two_factor( $user, $provider = null ) {
 		if ( $user instanceof \WP_User ) {
-			$this->two_factor[ (int) $user->ID ] = true;
+			$this->two_factor[ (int) $user->ID ] = $this->provider_label( $provider );
 		}
+	}
+
+	/**
+	 * A Two Factor login check was rejected.
+	 *
+	 * Only expired and mismatched checks are stored. Requests with no pending
+	 * login are ignored so a guessed user ID cannot fill the journal.
+	 *
+	 * @param int    $user_id User ID.
+	 * @param string $reason  Rejection reason.
+	 */
+	public function on_two_factor_nonce( $user_id, $reason ) {
+		if ( empty( Settings::all()['log_failed_logins'] ) ) {
+			return;
+		}
+		$reason = sanitize_key( (string) $reason );
+		if ( ! in_array( $reason, array( 'expired', 'mismatch' ), true ) ) {
+			return;
+		}
+		$user  = get_userdata( absint( $user_id ) );
+		$login = $user ? $user->user_login : (string) absint( $user_id );
+		$summary = ( 'expired' === $reason )
+			? sprintf(
+				/* translators: %s: username. */
+				__( 'Second-factor login for "%s" was rejected because the check had expired.', 'admintrace-activity-logger' ),
+				Text::plain( $login, 60 )
+			)
+			: sprintf(
+				/* translators: %s: username. */
+				__( 'Second-factor login for "%s" was rejected because the check did not match.', 'admintrace-activity-logger' ),
+				Text::plain( $login, 60 )
+			);
+		$this->log(
+			array(
+				'summary'    => $summary,
+				'category'   => 'security',
+				'action'     => 'user.login_failed',
+				'severity'   => 'warning',
+				'user_id'    => 0,
+				'user_login' => $login,
+				'initiator'  => 'anonymous',
+				'context'    => array( 'reason' => 'two_factor_' . $reason ),
+			)
+		);
+	}
+
+	/**
+	 * Public name of a second-factor provider.
+	 *
+	 * @param mixed $provider Provider object or name.
+	 * @return string|bool Method label, or true when the method name is unknown.
+	 */
+	private function provider_label( $provider ) {
+		$label = '';
+		if ( is_object( $provider ) && method_exists( $provider, 'get_label' ) ) {
+			$label = (string) $provider->get_label();
+		} elseif ( is_object( $provider ) && method_exists( $provider, 'get_key' ) ) {
+			$label = (string) $provider->get_key();
+		} elseif ( is_string( $provider ) ) {
+			$label = $provider;
+		}
+		$label = Text::plain( wp_strip_all_tags( $label ), 40 );
+		return '' !== $label ? $label : true;
 	}
 
 	/**

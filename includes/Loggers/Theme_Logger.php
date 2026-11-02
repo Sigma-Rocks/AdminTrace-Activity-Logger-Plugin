@@ -42,7 +42,7 @@ class Theme_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Theme switches, installs, updates, and deletion.', 'admintrace-activity-logger' );
+		return __( 'Theme switches, installs, updates, deletion, and auto-update toggles.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -52,6 +52,8 @@ class Theme_Logger extends Logger {
 		$this->listen( 'switch_theme', 'on_switch', 3 );
 		$this->listen( 'deleted_theme', 'on_deleted', 2 );
 		$this->listen( 'upgrader_process_complete', 'on_upgrader', 2 );
+		$this->listen( 'update_option_auto_update_themes', 'on_auto_update', 2 );
+		$this->listen( 'update_site_option_auto_update_themes', 'on_site_auto_update', 3 );
 	}
 
 	/**
@@ -103,6 +105,98 @@ class Theme_Logger extends Logger {
 				'severity'     => 'warning',
 				'object_type'  => 'theme',
 				'object_title' => Text::plain( $stylesheet, 80 ),
+			)
+		);
+	}
+
+	/**
+	 * Auto-update list changed on this site.
+	 *
+	 * @param mixed $old Previous theme stylesheets.
+	 * @param mixed $new New theme stylesheets.
+	 */
+	public function on_auto_update( $old, $new ) {
+		$this->diff_auto_updates( $old, $new );
+	}
+
+	/**
+	 * Auto-update list changed for the network.
+	 *
+	 * @param mixed $option Ignored option name.
+	 * @param mixed $new    New theme stylesheets.
+	 * @param mixed $old    Previous theme stylesheets.
+	 */
+	public function on_site_auto_update( $option, $new, $old ) {
+		unset( $option );
+		$this->diff_auto_updates( $old, $new );
+	}
+
+	/**
+	 * Record themes whose auto-update flag flipped.
+	 *
+	 * @param mixed $old Previous stylesheets.
+	 * @param mixed $new New stylesheets.
+	 */
+	private function diff_auto_updates( $old, $new ) {
+		$old = is_array( $old ) ? $old : array();
+		$new = is_array( $new ) ? $new : array();
+		$enabled  = array_values( array_diff( $new, $old ) );
+		$disabled = array_values( array_diff( $old, $new ) );
+		if ( count( $enabled ) + count( $disabled ) > 12 ) {
+			$this->log(
+				array(
+					'summary'  => sprintf(
+						/* translators: 1: enabled count, 2: disabled count. */
+						__( 'Changed theme auto-updates: %1$d enabled and %2$d disabled.', 'admintrace-activity-logger' ),
+						count( $enabled ),
+						count( $disabled )
+					),
+					'category' => 'theme',
+					'action'   => 'theme.auto_update',
+					'severity' => 'notice',
+				)
+			);
+			return;
+		}
+		foreach ( $enabled as $stylesheet ) {
+			$this->log_auto_update( $stylesheet, true );
+		}
+		foreach ( $disabled as $stylesheet ) {
+			$this->log_auto_update( $stylesheet, false );
+		}
+	}
+
+	/**
+	 * Record one theme auto-update change.
+	 *
+	 * @param string $stylesheet Theme stylesheet.
+	 * @param bool   $enabled    Whether auto-update was turned on.
+	 */
+	private function log_auto_update( $stylesheet, $enabled ) {
+		$theme = wp_get_theme( $stylesheet );
+		$name  = $theme->exists() ? $theme->get( 'Name' ) : Text::plain( $stylesheet, 80 );
+		$this->log(
+			array(
+				'summary'      => $enabled
+					? sprintf(
+						/* translators: %s: theme name. */
+						__( 'Turned on automatic updates for the theme "%s".', 'admintrace-activity-logger' ),
+						$name
+					)
+					: sprintf(
+						/* translators: %s: theme name. */
+						__( 'Turned off automatic updates for the theme "%s".', 'admintrace-activity-logger' ),
+						$name
+					),
+				'category'     => 'theme',
+				'action'       => 'theme.auto_update',
+				'severity'     => 'notice',
+				'object_type'  => 'theme',
+				'object_title' => $name,
+				'context'      => array(
+					'stylesheet' => Text::plain( $stylesheet, 80 ),
+					'enabled'    => (bool) $enabled,
+				),
 			)
 		);
 	}

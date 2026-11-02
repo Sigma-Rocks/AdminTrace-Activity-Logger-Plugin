@@ -7,6 +7,8 @@
 
 namespace SigmaRocks\AdvanceHistory\Loggers;
 
+use SigmaRocks\AdvanceHistory\Support\Text;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -22,6 +24,13 @@ class Menu_Logger extends Logger {
 	 * @var string
 	 */
 	private $pending_name = '';
+
+	/**
+	 * Item titles captured before a menu screen save.
+	 *
+	 * @var array<int,string[]>
+	 */
+	private $before_items = array();
 
 	/**
 	 * Logger ID.
@@ -47,7 +56,7 @@ class Menu_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Navigation menu creation, saves, and deletion.', 'admintrace-activity-logger' );
+		return __( 'Navigation menu creation, saves, item changes, and deletion.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -58,6 +67,7 @@ class Menu_Logger extends Logger {
 		$this->listen( 'wp_update_nav_menu', 'on_update', 1 );
 		$this->listen( 'pre_delete_term', 'on_before_delete', 2 );
 		$this->listen( 'wp_delete_nav_menu', 'on_delete', 1 );
+		add_action( 'load-nav-menus.php', array( $this, 'snapshot_items' ) );
 	}
 
 	/**
@@ -81,26 +91,89 @@ class Menu_Logger extends Logger {
 	 * @param int $menu_id Menu ID.
 	 */
 	public function on_update( $menu_id ) {
-		$items = wp_get_nav_menu_items( $menu_id );
-		$count = is_array( $items ) ? count( $items ) : 0;
-		$menu  = wp_get_nav_menu_object( $menu_id );
-		$name  = ( $menu && ! is_wp_error( $menu ) ) ? $menu->name : (string) $menu_id;
+		$menu_id = absint( $menu_id );
+		$after   = $this->item_titles( $menu_id );
+		$count   = count( $after );
+		$menu    = wp_get_nav_menu_object( $menu_id );
+		$name    = ( $menu && ! is_wp_error( $menu ) ) ? $menu->name : (string) $menu_id;
+		$added   = array();
+		$removed = array();
+		if ( isset( $this->before_items[ $menu_id ] ) ) {
+			$added   = array_values( array_diff( $after, $this->before_items[ $menu_id ] ) );
+			$removed = array_values( array_diff( $this->before_items[ $menu_id ], $after ) );
+		}
+		$summary = sprintf(
+			/* translators: 1: menu name, 2: item count. */
+			__( 'Updated the menu "%1$s" (%2$d items).', 'admintrace-activity-logger' ),
+			$name,
+			$count
+		);
+		if ( $added ) {
+			$summary .= ' ' . sprintf(
+				/* translators: %s: comma-separated menu item titles. */
+				__( 'Added: %s.', 'admintrace-activity-logger' ),
+				implode( ', ', array_slice( $added, 0, 6 ) )
+			);
+		}
+		if ( $removed ) {
+			$summary .= ' ' . sprintf(
+				/* translators: %s: comma-separated menu item titles. */
+				__( 'Removed: %s.', 'admintrace-activity-logger' ),
+				implode( ', ', array_slice( $removed, 0, 6 ) )
+			);
+		}
 		$this->log(
 			array(
-				'summary'      => sprintf(
-					/* translators: 1: menu name, 2: item count. */
-					__( 'Updated the menu "%1$s" (%2$d items).', 'admintrace-activity-logger' ),
-					$name,
-					$count
-				),
+				'summary'      => $summary,
 				'category'     => 'menu',
 				'action'       => 'menu.updated',
 				'severity'     => 'info',
 				'object_type'  => 'menu',
-				'object_id'    => absint( $menu_id ),
+				'object_id'    => $menu_id,
 				'object_title' => $name,
+				'context'      => array(
+					'added'   => array_slice( $added, 0, 8 ),
+					'removed' => array_slice( $removed, 0, 8 ),
+				),
 			)
 		);
+	}
+
+	/**
+	 * Remember menu item titles before the menu screen writes them.
+	 */
+	public function snapshot_items() {
+		if ( ! $this->enabled() || empty( $_POST['menu'] ) || ! is_scalar( $_POST['menu'] ) ) {
+			return;
+		}
+		$menu_id = absint( wp_unslash( $_POST['menu'] ) );
+		if ( $menu_id ) {
+			$this->before_items[ $menu_id ] = $this->item_titles( $menu_id );
+		}
+	}
+
+	/**
+	 * Visible titles on a menu.
+	 *
+	 * @param int $menu_id Menu ID.
+	 * @return string[]
+	 */
+	private function item_titles( $menu_id ) {
+		$items  = wp_get_nav_menu_items( $menu_id );
+		$titles = array();
+		if ( ! is_array( $items ) ) {
+			return $titles;
+		}
+		foreach ( $items as $item ) {
+			if ( ! is_object( $item ) || ! isset( $item->title ) ) {
+				continue;
+			}
+			$title = Text::plain( $item->title, 80 );
+			if ( '' !== $title ) {
+				$titles[] = $title;
+			}
+		}
+		return $titles;
 	}
 
 	/**
