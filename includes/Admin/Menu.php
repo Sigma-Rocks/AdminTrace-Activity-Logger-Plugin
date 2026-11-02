@@ -8,6 +8,7 @@
 namespace SigmaRocks\AdvanceHistory\Admin;
 
 use SigmaRocks\AdvanceHistory\Capabilities;
+use SigmaRocks\AdvanceHistory\Watch;
 use SigmaRocks\AdvanceHistory\Export;
 use SigmaRocks\AdvanceHistory\Notifications;
 use SigmaRocks\AdvanceHistory\Recorder;
@@ -39,6 +40,7 @@ class Menu {
 		add_action( 'admin_post_srah_prune', array( __CLASS__, 'prune' ) );
 		add_action( 'admin_post_srah_note', array( __CLASS__, 'note' ) );
 		add_action( 'admin_post_srah_test_email', array( __CLASS__, 'test_email' ) );
+		add_action( 'admin_post_srah_watch_now', array( __CLASS__, 'watch_now' ) );
 		add_action( 'admin_post_srah_dismiss_welcome', array( __CLASS__, 'dismiss_welcome' ) );
 		Assets::register();
 		Dashboard_Widget::register();
@@ -54,19 +56,48 @@ class Menu {
 
 		if ( 'dashboard' === $location ) {
 			add_submenu_page( 'index.php', __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+			self::extra_pages( 'index.php' );
 			add_submenu_page( 'index.php', __( 'AdminTrace Activity Logger settings', 'admintrace-activity-logger' ), __( 'AdminTrace settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
 			return;
 		}
 
 		if ( 'tools' === $location ) {
 			add_management_page( __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+			self::extra_pages( 'tools.php' );
 			add_management_page( __( 'AdminTrace Activity Logger settings', 'admintrace-activity-logger' ), __( 'AdminTrace settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
 			return;
 		}
 
 		add_menu_page( __( 'AdminTrace Activity Logger', 'admintrace-activity-logger' ), __( 'AdminTrace', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view, SRAH_URL . 'assets/img/admintrace-mark.png', 58 );
 		add_submenu_page( 'admintrace-activity-logger', __( 'Activity journal', 'admintrace-activity-logger' ), __( 'Activity journal', 'admintrace-activity-logger' ), Capabilities::VIEW, 'admintrace-activity-logger', $view );
+		self::extra_pages( 'admintrace-activity-logger' );
 		add_submenu_page( 'admintrace-activity-logger', __( 'Settings', 'admintrace-activity-logger' ), __( 'Settings', 'admintrace-activity-logger' ), Capabilities::MANAGE, 'admintrace-activity-logger-settings', $settings );
+	}
+
+	/**
+	 * Pages for events, files, and display.
+	 *
+	 * @param string $parent Parent menu slug.
+	 */
+	private static function extra_pages( $parent ) {
+		$pages = array(
+			array( __( 'Events', 'admintrace-activity-logger' ), 'admintrace-activity-logger-events', array( Events_Screen::class, 'render' ) ),
+			array( __( 'Files and database', 'admintrace-activity-logger' ), 'admintrace-activity-logger-files', array( Files_Screen::class, 'render' ) ),
+			array( __( 'Display', 'admintrace-activity-logger' ), 'admintrace-activity-logger-display', array( Display_Screen::class, 'render' ) ),
+		);
+		foreach ( $pages as $page ) {
+			add_submenu_page( $parent, $page[0], $page[0], Capabilities::MANAGE, $page[1], $page[2] );
+		}
+	}
+
+	/**
+	 * Run the file and table scan immediately.
+	 */
+	public static function watch_now() {
+		self::authorize( Capabilities::MANAGE, 'srah_watch_now' );
+		$result = Watch::run();
+		$type   = in_array( 'error', $result, true ) ? 'warning' : 'success';
+		Notices::redirect( $type, Watch::note( $result ), 'admintrace-activity-logger-files' );
 	}
 
 	/**

@@ -7,6 +7,8 @@
 
 namespace SigmaRocks\AdvanceHistory;
 
+use SigmaRocks\AdvanceHistory\Support\Events;
+use SigmaRocks\AdvanceHistory\Support\Text;
 use SigmaRocks\AdvanceHistory\Support\Url;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -43,6 +45,11 @@ class Settings {
 			'excluded_roles'             => array(),
 			'excluded_user_ids'          => array(),
 			'disabled_loggers'           => array(),
+			'disabled_actions'           => array(),
+			'file_watch'                 => 1,
+			'file_watch_uploads'         => 0,
+			'table_watch'                => 1,
+			'use_gravatar'               => 0,
 			'dashboard_widget'           => 1,
 			'admin_bar'                  => 1,
 			'email_digest'               => 'off',
@@ -101,6 +108,22 @@ class Settings {
 	}
 
 	/**
+	 * Whether an event ID is recorded.
+	 *
+	 * IDs that are not on the Events screen stay on.
+	 *
+	 * @param string $action Event ID.
+	 * @return bool
+	 */
+	public static function action_enabled( $action ) {
+		$disabled = self::all()['disabled_actions'];
+		if ( ! is_array( $disabled ) ) {
+			return true;
+		}
+		return ! in_array( Text::key( $action, 64, '' ), $disabled, true );
+	}
+
+	/**
 	 * Sanitize a settings payload.
 	 *
 	 * @param mixed $input   Submitted values.
@@ -116,7 +139,25 @@ class Settings {
 			return array_merge( $defaults, $current );
 		}
 
-		$clean = $defaults;
+		$section = isset( $input['settings_section'] ) ? sanitize_key( (string) $input['settings_section'] ) : '';
+		$base    = array_merge( $defaults, $current );
+
+		if ( 'events' === $section ) {
+			$base['disabled_actions'] = Events::disabled_from( isset( $input['actions'] ) ? $input['actions'] : array() );
+			return $base;
+		}
+		if ( 'files' === $section ) {
+			$base['file_watch']         = empty( $input['file_watch'] ) ? 0 : 1;
+			$base['file_watch_uploads'] = empty( $input['file_watch_uploads'] ) ? 0 : 1;
+			$base['table_watch']        = empty( $input['table_watch'] ) ? 0 : 1;
+			return $base;
+		}
+		if ( 'display' === $section ) {
+			$base['use_gravatar'] = empty( $input['use_gravatar'] ) ? 0 : 1;
+			return $base;
+		}
+
+		$clean = ( 'general' === $section ) ? $base : $defaults;
 
 		$days = isset( $input['retention_days'] ) ? (int) $input['retention_days'] : $defaults['retention_days'];
 		$clean['retention_days'] = min( 3650, max( 0, $days ) );

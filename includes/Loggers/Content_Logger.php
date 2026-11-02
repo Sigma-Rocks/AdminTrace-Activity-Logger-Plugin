@@ -489,6 +489,36 @@ class Content_Logger extends Logger {
 	}
 
 	/**
+	 * Friendly label for a Yoast SEO or Rank Math on-page field.
+	 *
+	 * Other private meta stays ignored so secrets are not stored.
+	 *
+	 * @param string $key Meta key.
+	 * @return string
+	 */
+	private function seo_label( $key ) {
+		$labels = array(
+			'_yoast_wpseo_title'                => __( 'SEO title', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_metadesc'             => __( 'SEO description', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_focuskw'              => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_canonical'            => __( 'Canonical URL', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_meta-robots-noindex'  => __( 'SEO noindex', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_meta-robots-nofollow' => __( 'SEO nofollow', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_opengraph-title'      => __( 'Social title', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_opengraph-description' => __( 'Social description', 'admintrace-activity-logger' ),
+			'rank_math_title'                   => __( 'SEO title', 'admintrace-activity-logger' ),
+			'rank_math_description'             => __( 'SEO description', 'admintrace-activity-logger' ),
+			'rank_math_focus_keyword'           => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
+			'rank_math_canonical_url'           => __( 'Canonical URL', 'admintrace-activity-logger' ),
+			'rank_math_facebook_title'          => __( 'Social title', 'admintrace-activity-logger' ),
+			'rank_math_facebook_description'    => __( 'Social description', 'admintrace-activity-logger' ),
+			'rank_math_twitter_title'           => __( 'Twitter title', 'admintrace-activity-logger' ),
+			'rank_math_twitter_description'     => __( 'Twitter description', 'admintrace-activity-logger' ),
+		);
+		return isset( $labels[ $key ] ) ? $labels[ $key ] : '';
+	}
+
+	/**
 	 * Whether a meta key is worth recording.
 	 *
 	 * @param string $key Meta key.
@@ -496,7 +526,7 @@ class Content_Logger extends Logger {
 	 */
 	private function track_meta_key( $key ) {
 		$key = (string) $key;
-		if ( in_array( $key, array( '_thumbnail_id', '_wp_page_template' ), true ) ) {
+		if ( in_array( $key, array( '_thumbnail_id', '_wp_page_template' ), true ) || '' !== $this->seo_label( $key ) ) {
 			return true;
 		}
 		if ( '' === $key || '_' === substr( $key, 0, 1 ) ) {
@@ -527,6 +557,18 @@ class Content_Logger extends Logger {
 					'to'              => $new ? '#' . absint( $new ) : __( 'None', 'admintrace-activity-logger' ),
 					'from_attachment' => absint( $old ),
 					'to_attachment'   => absint( $new ),
+				)
+			);
+			return;
+		}
+		$seo = $this->seo_label( $key );
+		if ( '' !== $seo ) {
+			$this->change(
+				$post->ID,
+				array(
+					'field' => $seo,
+					'from'  => is_scalar( $old ) ? Text::plain( $old, 120 ) : __( 'Changed', 'admintrace-activity-logger' ),
+					'to'    => is_scalar( $new ) ? Text::plain( $new, 120 ) : __( 'Updated', 'admintrace-activity-logger' ),
 				)
 			);
 			return;

@@ -29,6 +29,34 @@
 	color: #3d4a42;
 }
 
+.srah-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin: 0 0 16px;
+}
+
+.srah-nav a {
+	display: inline-block;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: #e7eeea;
+	color: #1d3c34;
+	text-decoration: none;
+}
+
+.srah-nav a[aria-current="page"] {
+	background: #1d3c34;
+	color: #fff;
+}
+
+img.srah-avatar {
+	display: block;
+	border-radius: 50%;
+	object-fit: cover;
+	box-shadow: 0 0 0 3px #f0f0f1;
+}
+
 .srah-mark {
 	width: 44px;
 	height: 44px;
@@ -500,6 +528,21 @@
 .srah-panel-head h2 {
 	margin: 0 0 4px;
 	font-size: 16px;
+}
+
+.srah-recent {
+	margin: 0;
+	padding: 8px 22px 18px 40px;
+}
+
+.srah-recent li {
+	margin: 0 0 8px;
+}
+
+.srah-recent time {
+	display: inline-block;
+	min-width: 12em;
+	color: #3d4a42;
 }
 
 .srah-panel-head p,

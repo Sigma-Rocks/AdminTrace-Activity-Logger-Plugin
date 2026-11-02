@@ -134,7 +134,7 @@ class Recorder {
 		$action   = isset( $event['action'] ) ? Text::key( $event['action'], 64, 'custom.event' ) : 'custom.event';
 		$logger   = isset( $event['logger'] ) ? Text::key( $event['logger'], 32, 'api' ) : 'api';
 		$summary  = Text::plain( isset( $event['summary'] ) ? $event['summary'] : '', 500 );
-		if ( '' === $summary ) {
+		if ( '' === $summary || ! Settings::action_enabled( $action ) ) {
 			return 0;
 		}
 
@@ -153,7 +153,8 @@ class Recorder {
 
 		$user_login   = Text::plain( isset( $event['user_login'] ) ? $event['user_login'] : '', 60 );
 		$user_display = Text::plain( isset( $event['user_display'] ) ? $event['user_display'] : '', 191 );
-		if ( $user_id > 0 && ( '' === $user_login || '' === $user_display ) ) {
+		$user_role    = Text::plain( isset( $event['user_role'] ) ? $event['user_role'] : '', 60 );
+		if ( $user_id > 0 && ( '' === $user_login || '' === $user_display || '' === $user_role ) ) {
 			$user = get_userdata( $user_id );
 			if ( $user instanceof \WP_User ) {
 				if ( '' === $user_login ) {
@@ -161,6 +162,9 @@ class Recorder {
 				}
 				if ( '' === $user_display ) {
 					$user_display = Text::plain( $user->display_name, 191 );
+				}
+				if ( '' === $user_role && ! empty( $user->roles ) ) {
+					$user_role = Text::plain( implode( ', ', $user->roles ), 60 );
 				}
 			}
 		}
@@ -180,9 +184,14 @@ class Recorder {
 		}
 
 		$created = isset( $event['created_gmt'] ) ? (string) $event['created_gmt'] : '';
+		$ms      = isset( $event['created_ms'] ) ? (int) $event['created_ms'] : -1;
 		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $created ) ) {
 			$created = gmdate( 'Y-m-d H:i:s' );
+			$ms      = (int) floor( fmod( microtime( true ), 1 ) * 1000 );
+		} elseif ( $ms < 0 ) {
+			$ms = 0;
 		}
+		$ms = max( 0, min( 999, $ms ) );
 
 		$context = Context::clean( isset( $event['context'] ) ? $event['context'] : array() );
 		$encoded = wp_json_encode( $context );
@@ -193,9 +202,11 @@ class Recorder {
 		$row = array(
 			'blog_id'      => get_current_blog_id(),
 			'created_gmt'  => $created,
+			'created_ms'   => $ms,
 			'user_id'      => $user_id,
 			'user_login'   => $user_login,
 			'user_display' => $user_display,
+			'user_role'    => $user_role,
 			'initiator'    => $initiator,
 			'ip_masked'    => $ip,
 			'severity'     => $severity,
@@ -283,7 +294,7 @@ class Recorder {
 		}
 
 		$updated = $wpdb->update(
-			$table,
+			Installer::table(),
 			array(
 				'created_gmt' => $row['created_gmt'],
 				'ip_masked'   => $row['ip_masked'],
@@ -312,7 +323,7 @@ class Recorder {
 		$ok = $wpdb->insert(
 			Installer::table(),
 			$row,
-			array( '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' )
+			array( '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' )
 		);
 
 		if ( false !== $ok ) {
@@ -320,7 +331,10 @@ class Recorder {
 		}
 
 		$error = (string) $wpdb->last_error;
-		if ( self::$retried || ( false === stripos( $error, 'srah_events' ) && false === stripos( $error, 'ah_events' ) ) ) {
+		$repairable = false !== stripos( $error, 'srah_events' )
+			|| false !== stripos( $error, 'ah_events' )
+			|| false !== stripos( $error, 'unknown column' );
+		if ( self::$retried || ! $repairable ) {
 			return false;
 		}
 
@@ -330,7 +344,7 @@ class Recorder {
 		$ok = $wpdb->insert(
 			Installer::table(),
 			$row,
-			array( '%d', '%s', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' )
+			array( '%d', '%s', '%d', '%d', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' )
 		);
 
 		return false !== $ok;

@@ -27,6 +27,7 @@ function srah_uninstall_site() {
 
 	wp_clear_scheduled_hook( 'srah_prune' );
 	wp_clear_scheduled_hook( 'srah_digest' );
+	wp_clear_scheduled_hook( 'srah_watch' );
 	wp_clear_scheduled_hook( 'advance_history_prune' );
 	wp_clear_scheduled_hook( 'advance_history_digest' );
 
@@ -44,6 +45,10 @@ function srah_uninstall_site() {
 			'srah_backfilled',
 			'srah_update_fingerprint',
 			'srah_fail_window',
+			'srah_file_baseline',
+			'srah_table_baseline',
+			'srah_watch_ran',
+			'srah_watch_note',
 			'srah_legacy_prefix_done',
 			'advance_history_settings',
 			'advance_history_db_version',

@@ -39,6 +39,7 @@ class Installer {
 				Capabilities::grant_roles();
 				Retention::ensure_scheduled();
 				Notifications::ensure_scheduled();
+				Watch::ensure_scheduled();
 				self::backfill();
 				Recorder::log(
 					array(
@@ -78,6 +79,7 @@ class Installer {
 				);
 				Retention::unschedule();
 				Notifications::unschedule();
+				Watch::unschedule();
 			}
 		);
 	}
@@ -127,9 +129,11 @@ class Installer {
 			id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 			blog_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			created_gmt datetime NOT NULL,
+			created_ms smallint(5) unsigned NOT NULL DEFAULT 0,
 			user_id bigint(20) unsigned NOT NULL DEFAULT 0,
 			user_login varchar(60) NOT NULL DEFAULT '',
 			user_display varchar(191) NOT NULL DEFAULT '',
+			user_role varchar(60) NOT NULL DEFAULT '',
 			initiator varchar(20) NOT NULL DEFAULT 'user',
 			ip_masked varchar(45) NOT NULL DEFAULT '',
 			severity varchar(16) NOT NULL DEFAULT 'info',

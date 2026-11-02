@@ -14,6 +14,7 @@ use SigmaRocks\AdvanceHistory\Loggers\Core_Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Integration_Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Media_Logger;
+use SigmaRocks\AdvanceHistory\Loggers\Network_Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Menu_Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Plugin_Logger;
 use SigmaRocks\AdvanceHistory\Loggers\Privacy_Logger;
@@ -62,6 +63,7 @@ class Logger_Registry {
 				Commerce_Logger::class,
 				Integration_Logger::class,
 				Security_Logger::class,
+				Network_Logger::class,
 			)
 		);
 

@@ -34,6 +34,7 @@ class Plugin {
 		add_action( 'wp_initialize_site', array( Installer::class, 'on_new_site' ) );
 		Capabilities::register();
 		Retention::register();
+		Watch::register();
 		Notifications::register();
 		Privacy::register();
 		Feed::register();

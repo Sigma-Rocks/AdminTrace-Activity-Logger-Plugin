@@ -4,7 +4,7 @@ Tags: activity-log, audit-log, user-activity, security, woocommerce
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/paypalme/sigmarocks
@@ -21,7 +21,8 @@ Activate it and recording starts at once. Search, filters, a timeline, a table, 
 
 * Logins, logouts, and failed logins. A failed login says whether the password was wrong or the username does not exist.
 * Second-factor sign-in when the Two Factor plugin accepts a code, including the method name. Rejected second-factor checks are recorded without the code.
-* Password resets, role changes, deleted accounts, and application passwords. The secret itself is never stored.
+* Password resets, role changes, deleted accounts, and application passwords. The secret itself is never stored. Ending the other login sessions for an account is recorded.
+* On a multisite network: sites created, deleted, or archived, and users added to or removed from a site.
 * Denied admin screens, Site Health changes, and plugin or theme file edits after WordPress has written the file.
 * Network addresses are masked by default. The plugin does not look up a city, a host, or a map.
 
@@ -38,6 +39,7 @@ Activate it and recording starts at once. Search, filters, a timeline, a table, 
 * Theme install, update, switch, deletion, and automatic-update toggles.
 * WordPress core updates, language packs, automatic updates, and a notice when the number of available updates changes.
 * A curated set of settings, including the site title, permalinks, the homepage, comment rules, and the privacy policy page. Options that look like passwords or API keys are skipped.
+* Yoast SEO and Rank Math on-page title, description, and social fields. Other private fields stay out.
 
 = WooCommerce activity log =
 
@@ -65,6 +67,11 @@ These events are recorded when the other plugin is active and fires its public h
 * A private RSS feed that stays off until an administrator enables it
 * CSV and JSON export of the current filters, up to 5,000 rows
 * REST API and WP-CLI, including a way for other plugins to add events with `srah_log()`
+* Separate screens for event ID switches, the file and database scan, and profile photos
+
+= Files and database =
+
+A daily scan can record PHP, JavaScript, and CSS files that were added, changed, or deleted under plugins, themes, and uploads, plus wp-config.php and .htaccess. It can also record when a database table for this site is created or dropped. The first scan only saves a baseline. File contents and SQL are not stored. WordPress core folders are not hashed.
 
 = How long it is kept =
 
@@ -76,7 +83,7 @@ Multisite keeps a separate journal on each site.
 
 = Privacy =
 
-The journal stays on this site. Profile marks are initials drawn by the plugin, so it does not call Gravatar. It does not set a tracking cookie or call an analytics service. The email digest, the failed-login alert, and the HTTPS webhook stay off until an administrator turns them on. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
+The journal stays on this site. Profile marks are initials drawn by the plugin. Profile photos from Gravatar stay off until you turn them on under Display. Each event stores the acting user’s role and the time to the millisecond. It does not set a tracking cookie or call an analytics service. The email digest, the failed-login alert, and the HTTPS webhook stay off until an administrator turns them on. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
 
 = What this activity log does not do =
 
@@ -112,11 +119,11 @@ Yes, by default. There is a setting to keep the journal instead. Deactivation do
 
 = Does it send data anywhere? =
 
-The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. The private feed is off until it is enabled. The plugin does not contact Gravatar, an address lookup, or an analytics service.
+The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. The private feed is off until it is enabled. Gravatar photos stay off until Display is changed. The plugin does not look up addresses or call an analytics service.
 
 = Does it load profile images from Gravatar? =
 
-No. Each person is shown as an initial drawn by the plugin. It does not contact Gravatar or any other avatar service.
+Not unless you turn that on under Display. The default is an initial drawn on the site, with no request to Gravatar.
 
 = Does it record WooCommerce orders? =
 
@@ -141,6 +148,16 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 3. The same journal as a table, including the account that made each change.
 
 == Changelog ==
+
+= 1.0.6 =
+* Ending another user’s login sessions is recorded.
+* Multisite records site creation, deletion, archive or spam changes, and users added to or removed from a site.
+* A scan records added, changed, and deleted files, and created or dropped database tables. It runs when wp-admin is open, about once a minute, and when a plugin or theme is installed, activated, or deleted. Scan now checks immediately. The first scan only saves a baseline.
+* Yoast SEO and Rank Math on-page fields are recorded. Other private meta is still skipped.
+* Events, Files and database, and Display are separate screens. Individual event IDs can be turned off.
+* Each row stores the acting user’s role and the time to the millisecond.
+* The journal table is upgraded again when those columns are missing, so new events are saved.
+* Profile photos from Gravatar can be turned on. Initials stay the default.
 
 = 1.0.5 =
 * The directory description now lists the activity log, audit trail, and WooCommerce coverage in the words people search for.

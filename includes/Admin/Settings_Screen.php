@@ -43,9 +43,11 @@ class Settings_Screen {
 					</div>
 				</div>
 			</header>
+			<?php Screen::nav(); ?>
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="srah-settings">
 				<?php wp_nonce_field( 'srah_save_settings' ); ?>
 				<input type="hidden" name="action" value="srah_save_settings">
+				<input type="hidden" name="settings_section" value="general">
 
 				<div class="srah-settings-grid">
 					<section class="srah-panel">
@@ -193,7 +195,7 @@ class Settings_Screen {
 				<section class="srah-panel">
 					<header class="srah-panel-head">
 						<h2><?php esc_html_e( 'Recorders', 'admintrace-activity-logger' ); ?></h2>
-						<p><?php esc_html_e( 'Turn a recorder off to stop new events of that kind. Existing events stay in the journal.', 'admintrace-activity-logger' ); ?></p>
+						<p><?php esc_html_e( 'Turn a recorder off to stop new events of that kind. Existing events stay in the journal. Individual event IDs are on the Events page.', 'admintrace-activity-logger' ); ?></p>
 					</header>
 					<div class="srah-logger-grid">
 						<?php foreach ( Logger_Registry::all() as $id => $logger ) : ?>
@@ -267,6 +269,11 @@ class Settings_Screen {
 	 */
 	public static function input_from_request() {
 		$post    = wp_unslash( $_POST );
+		$section = isset( $post['settings_section'] ) ? sanitize_key( $post['settings_section'] ) : 'general';
+		$post['settings_section'] = $section;
+		if ( 'general' !== $section ) {
+			return $post;
+		}
 		$enabled = isset( $post['loggers'] ) && is_array( $post['loggers'] ) ? $post['loggers'] : array();
 		$enabled = array_map( 'sanitize_key', $enabled );
 		$disabled = array();

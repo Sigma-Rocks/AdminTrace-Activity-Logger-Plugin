@@ -52,7 +52,7 @@ class User_Logger extends Logger {
 	 * @return string
 	 */
 	public function description() {
-		return __( 'Logins, logouts, failed logins, second-factor checks, profile changes, roles, and application passwords.', 'admintrace-activity-logger' );
+		return __( 'Logins, logouts, ended sessions, failed logins, second-factor checks, profile changes, roles, and application passwords.', 'admintrace-activity-logger' );
 	}
 
 	/**
@@ -76,6 +76,46 @@ class User_Logger extends Logger {
 		$this->listen( 'application_password_did_authenticate', 'on_app_password_login', 2 );
 		$this->listen( 'two_factor_user_authenticated', 'on_two_factor', 2 );
 		$this->listen( 'two_factor_login_nonce_failed', 'on_two_factor_nonce', 2 );
+		$this->listen( 'wp_ajax_destroy_sessions', 'on_destroy_sessions', 1, 0 );
+	}
+
+	/**
+	 * Someone ended login sessions from a user profile.
+	 *
+	 * Runs before WordPress destroys the tokens. A failed nonce is ignored.
+	 */
+	public function on_destroy_sessions() {
+		if ( empty( $_POST['user_id'] ) || empty( $_POST['nonce'] ) ) {
+			return;
+		}
+		$user_id = absint( wp_unslash( $_POST['user_id'] ) );
+		$nonce   = sanitize_text_field( wp_unslash( $_POST['nonce'] ) );
+		if ( ! $user_id || ! wp_verify_nonce( $nonce, 'update-user_' . $user_id ) || ! current_user_can( 'edit_user', $user_id ) ) {
+			return;
+		}
+		$user = get_userdata( $user_id );
+		if ( ! $user instanceof \WP_User ) {
+			return;
+		}
+		$self = get_current_user_id() === (int) $user->ID;
+		$this->log(
+			array(
+				'summary'      => $self
+					? __( 'Ended the other login sessions for this account.', 'admintrace-activity-logger' )
+					: sprintf(
+						/* translators: %s: username. */
+						__( 'Ended every login session for "%s".', 'admintrace-activity-logger' ),
+						Text::plain( $user->user_login, 60 )
+					),
+				'category'     => 'security',
+				'action'       => 'user.sessions_ended',
+				'severity'     => 'warning',
+				'object_type'  => 'user',
+				'object_id'    => (int) $user->ID,
+				'object_title' => $user->user_login,
+				'context'      => array( 'everywhere' => ! $self ),
+			)
+		);
 	}
 
 	/**

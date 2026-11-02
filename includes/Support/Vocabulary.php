@@ -39,6 +39,9 @@ class Vocabulary {
 			'commerce'    => __( 'Commerce', 'admintrace-activity-logger' ),
 			'integration' => __( 'Integrations', 'admintrace-activity-logger' ),
 			'journal'     => __( 'Journal', 'admintrace-activity-logger' ),
+			'network'     => __( 'Multisite', 'admintrace-activity-logger' ),
+			'files'       => __( 'Files', 'admintrace-activity-logger' ),
+			'database'    => __( 'Database', 'admintrace-activity-logger' ),
 			'system'      => __( 'System', 'admintrace-activity-logger' ),
 		);
 	}

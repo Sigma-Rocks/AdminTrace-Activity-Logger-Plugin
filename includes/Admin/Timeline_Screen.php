@@ -186,6 +186,7 @@ class Timeline_Screen {
 				</div>
 			</div>
 		</header>
+		<?php Screen::nav(); ?>
 		<?php
 	}
 
@@ -316,7 +317,7 @@ class Timeline_Screen {
 		echo '</tr></thead><tbody>';
 		foreach ( $rows as $row ) {
 			$row  = Access::present( $row, $include_ip );
-			$when = \SigmaRocks\AdvanceHistory\Support\Time::display( $row['created_gmt'] );
+			$when = \SigmaRocks\AdvanceHistory\Support\Time::display( $row['created_gmt'], isset( $row['created_ms'] ) ? (int) $row['created_ms'] : 0 );
 			echo '<tr>';
 			echo '<td><time datetime="' . esc_attr( $when['iso'] ) . '">' . esc_html( $when['primary'] ) . '</time></td>';
 			echo '<td>' . esc_html( Vocabulary::severity_label( $row['severity'] ) ) . '</td>';

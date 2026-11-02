@@ -7,6 +7,7 @@
 
 namespace SigmaRocks\AdvanceHistory\Admin;
 
+use SigmaRocks\AdvanceHistory\Settings;
 use SigmaRocks\AdvanceHistory\Support\Diff;
 use SigmaRocks\AdvanceHistory\Support\Time;
 use SigmaRocks\AdvanceHistory\Support\Vocabulary;
@@ -39,6 +40,9 @@ class Renderer {
 	public static function actor( array $row ) {
 		if ( ! empty( $row['user_id'] ) ) {
 			$name = '' !== $row['user_display'] ? $row['user_display'] : $row['user_login'];
+			if ( ! empty( $row['user_role'] ) ) {
+				$name .= ' · ' . $row['user_role'];
+			}
 			return $name;
 		}
 		$initiators = Vocabulary::initiators();
@@ -57,6 +61,21 @@ class Renderer {
 	 */
 	public static function avatar( array $row, $size = 36 ) {
 		$size   = max( 16, min( 96, (int) $size ) );
+		if ( ! empty( Settings::all()['use_gravatar'] ) && ! empty( $row['user_id'] ) && function_exists( 'get_avatar' ) ) {
+			$html = get_avatar(
+				(int) $row['user_id'],
+				$size,
+				'',
+				'',
+				array(
+					'class'         => 'srah-avatar srah-avatar-gravatar',
+					'force_display' => true,
+				)
+			);
+			if ( is_string( $html ) && '' !== $html ) {
+				return $html;
+			}
+		}
 		$name   = self::actor( $row );
 		$letter = function_exists( 'mb_substr' ) ? mb_substr( $name, 0, 1, 'UTF-8' ) : substr( $name, 0, 1 );
 		$letter = strtoupper( (string) $letter );
@@ -88,7 +107,7 @@ class Renderer {
 		);
 		$severity = isset( $row['severity'] ) ? $row['severity'] : 'info';
 		$category = isset( $row['category'] ) ? $row['category'] : 'system';
-		$when     = Time::display( isset( $row['created_gmt'] ) ? $row['created_gmt'] : '' );
+		$when     = Time::display( isset( $row['created_gmt'] ) ? $row['created_gmt'] : '', isset( $row['created_ms'] ) ? (int) $row['created_ms'] : 0 );
 		$id       = isset( $row['id'] ) ? (int) $row['id'] : 0;
 		?>
 		<article class="srah-event srah-severity-<?php echo esc_attr( $severity ); ?>" id="srah-event-<?php echo esc_attr( (string) $id ); ?>">
@@ -211,7 +230,7 @@ class Renderer {
 			<dl class="srah-facts">
 				<div>
 					<dt><?php esc_html_e( 'When', 'admintrace-activity-logger' ); ?></dt>
-					<dd><?php echo esc_html( Time::display( $row['created_gmt'] )['local'] ); ?> UTC <?php echo esc_html( $row['created_gmt'] ); ?></dd>
+					<dd><?php echo esc_html( Time::display( $row['created_gmt'], isset( $row['created_ms'] ) ? (int) $row['created_ms'] : 0 )['local'] ); ?> UTC <?php echo esc_html( $row['created_gmt'] . ( ! empty( $row['created_ms'] ) ? sprintf( '.%03d', (int) $row['created_ms'] ) : '.000' ) ); ?></dd>
 				</div>
 				<div>
 					<dt><?php esc_html_e( 'Action', 'admintrace-activity-logger' ); ?></dt>

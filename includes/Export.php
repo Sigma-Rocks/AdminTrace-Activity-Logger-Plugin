@@ -79,15 +79,17 @@ class Export {
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		echo "\xEF\xBB\xBF";
 		$out     = fopen( 'php://output', 'w' );
-		$headers = array( 'id', 'created_gmt', 'user_login', 'user_display', 'initiator', 'ip_masked', 'severity', 'category', 'action', 'object_type', 'object_id', 'object_title', 'summary', 'context' );
+		$headers = array( 'id', 'created_gmt', 'created_ms', 'user_login', 'user_display', 'user_role', 'initiator', 'ip_masked', 'severity', 'category', 'action', 'object_type', 'object_id', 'object_title', 'summary', 'context' );
 		fputcsv( $out, $headers, ',', '"', '\\' );
 		foreach ( $rows as $row ) {
 			$context = isset( $row['context'] ) ? wp_json_encode( $row['context'] ) : '';
 			$line    = array(
 				isset( $row['id'] ) ? $row['id'] : '',
 				isset( $row['created_gmt'] ) ? $row['created_gmt'] : '',
+				isset( $row['created_ms'] ) ? $row['created_ms'] : 0,
 				isset( $row['user_login'] ) ? $row['user_login'] : '',
 				isset( $row['user_display'] ) ? $row['user_display'] : '',
+				isset( $row['user_role'] ) ? $row['user_role'] : '',
 				isset( $row['initiator'] ) ? $row['initiator'] : '',
 				isset( $row['ip_masked'] ) ? $row['ip_masked'] : '',
 				isset( $row['severity'] ) ? $row['severity'] : '',

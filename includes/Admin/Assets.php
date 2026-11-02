@@ -35,7 +35,7 @@ class Assets {
 		self::enqueue_menu_icon();
 
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		$ours = in_array( $page, array( 'admintrace-activity-logger', 'admintrace-activity-logger-settings' ), true );
+		$ours = 'admintrace-activity-logger' === $page || 0 === strpos( $page, 'admintrace-activity-logger-' );
 		$related = in_array( $hook, array( 'index.php', 'post.php', 'post-new.php' ), true );
 		if ( ! $ours && ! $related ) {
 			return;
