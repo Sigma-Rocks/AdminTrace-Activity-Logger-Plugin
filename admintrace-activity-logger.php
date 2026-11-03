@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'SRAH_VERSION', '1.0.6' );
-define( 'SRAH_DB_VERSION', '3' );
+define( 'SRAH_DB_VERSION', '4' );
 define( 'SRAH_FILE', __FILE__ );
 define( 'SRAH_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SRAH_URL', plugin_dir_url( __FILE__ ) );

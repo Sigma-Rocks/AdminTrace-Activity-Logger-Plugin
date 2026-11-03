@@ -35,6 +35,7 @@ class Plugin {
 		add_filter( 'wpmu_drop_tables', array( Installer::class, 'drop_site_table' ), 10, 2 );
 		Capabilities::register();
 		Retention::register();
+		Email_Log::register();
 		Watch::register();
 		Notifications::register();
 		Privacy::register();

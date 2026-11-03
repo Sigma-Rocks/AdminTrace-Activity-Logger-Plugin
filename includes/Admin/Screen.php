@@ -32,6 +32,7 @@ class Screen {
 			$items['admintrace-activity-logger-events']   = __( 'Events', 'admintrace-activity-logger' );
 			$items['admintrace-activity-logger-files']    = __( 'Files and database', 'admintrace-activity-logger' );
 			$items['admintrace-activity-logger-display']  = __( 'Display', 'admintrace-activity-logger' );
+			$items['admintrace-activity-logger-email']    = __( 'Email log', 'admintrace-activity-logger' );
 			$items['admintrace-activity-logger-settings'] = __( 'Settings', 'admintrace-activity-logger' );
 		}
 		$current = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- marks the current tab only.

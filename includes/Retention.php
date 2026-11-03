@@ -87,6 +87,8 @@ class Retention {
 			}
 		}
 
+		Email_Log::prune( $days );
+
 		do_action( 'srah_pruned', $total, $days );
 		return $total;
 	}

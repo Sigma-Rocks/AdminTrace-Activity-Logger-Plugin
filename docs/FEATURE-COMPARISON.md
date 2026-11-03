@@ -20,7 +20,7 @@ Simple History’s FAQ says the log can be exported, while the Premium section m
 | Filtered CSV/JSON export | Docs disagree | Premium | Included, 5,000 rows per download |
 | Email digest | Weekly email is documented in the free readme | Instant alerts are Premium | Daily or weekly plain-text digest, plus email for critical events |
 | Webhook / forwarding | — | Log Forwarding add-on (files, syslog, Datadog, Splunk, webhook) | One administrator-set HTTPS webhook. Syslog and vendor log drains are not included |
-| Outgoing HTTP and email monitor | — | Debug and Monitor add-on | Not included, to avoid storing secrets |
+| Outgoing HTTP and email monitor | — | Debug and Monitor add-on | HTTP requests are left out. Outgoing email is a separate table on the Email log screen and stays off until an administrator enables it |
 | REST API and WP-CLI | Yes | — | Yes |
 | RSS feed | Yes, secret feed | — | Off until enabled. The address is a secret |
 | Custom events | Logging API | GUI for manual entries is Premium | `srah_log()` and a journal note form |

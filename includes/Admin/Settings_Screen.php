@@ -141,7 +141,7 @@ class Settings_Screen {
 					<section class="srah-panel">
 						<header class="srah-panel-head">
 							<h2><?php esc_html_e( 'Email and webhook', 'admintrace-activity-logger' ); ?></h2>
-							<p><?php esc_html_e( 'Nothing leaves the site until you add a recipient or an HTTPS webhook.', 'admintrace-activity-logger' ); ?></p>
+							<p><?php esc_html_e( 'Nothing leaves the site until you add a recipient or an HTTPS webhook. The email log is a separate page and stays off until you turn it on.', 'admintrace-activity-logger' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=admintrace-activity-logger-email' ) ); ?>"><?php esc_html_e( 'Open the email log', 'admintrace-activity-logger' ); ?></a></p>
 						</header>
 						<div class="srah-fields srah-fields-2">
 							<p class="srah-field">

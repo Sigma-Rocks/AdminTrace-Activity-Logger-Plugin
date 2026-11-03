@@ -38,6 +38,8 @@ function srah_uninstall_site() {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall removes the plugin's own table and options.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}srah_events" );
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall removes the plugin's own table and options.
+	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}srah_email_log" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall removes the plugin's own table and options.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}ah_events" );
 
 	foreach (
@@ -53,6 +55,7 @@ function srah_uninstall_site() {
 			'srah_watch_note',
 			'srah_legacy_prefix_done',
 			'srah_legacy_table_done',
+			'srah_email_table',
 			'advance_history_settings',
 			'advance_history_db_version',
 			'advance_history_backfilled',

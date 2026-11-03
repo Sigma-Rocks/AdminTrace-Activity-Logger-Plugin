@@ -5,6 +5,7 @@
  * @package AdvanceHistory
  */
 
+use SigmaRocks\AdvanceHistory\Email_Log;
 use SigmaRocks\AdvanceHistory\Installer;
 use SigmaRocks\AdvanceHistory\Query;
 use SigmaRocks\AdvanceHistory\Settings;
@@ -42,6 +43,7 @@ abstract class Srah_Test_Case extends WP_UnitTestCase {
 			)
 		);
 		$this->settings( array() );
+		Email_Log::reset_request_state();
 		add_filter( 'wp_redirect', array( $this, 'throw_redirect' ), PHP_INT_MAX );
 		reset_phpmailer_instance();
 	}

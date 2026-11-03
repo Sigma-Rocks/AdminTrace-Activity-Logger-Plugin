@@ -111,6 +111,7 @@ class Installer {
 		global $wpdb;
 		$tables   = (array) $tables;
 		$tables[] = $wpdb->get_blog_prefix( (int) $site_id ) . 'srah_events';
+		$tables[] = Email_Log::table( (int) $site_id );
 		return $tables;
 	}
 
@@ -169,6 +170,7 @@ class Installer {
 		) {$charset};";
 
 		dbDelta( $sql );
+		Email_Log::install();
 		update_option( 'srah_db_version', SRAH_DB_VERSION, true );
 	}
 

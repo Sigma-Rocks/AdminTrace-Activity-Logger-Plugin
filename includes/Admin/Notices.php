@@ -19,11 +19,12 @@ class Notices {
 	/**
 	 * Queue a notice and redirect.
 	 *
-	 * @param string $type    success, warning, or error.
-	 * @param string $text    Plain text.
-	 * @param string $page    Admin page slug to return to.
+	 * @param string $type         success, warning, or error.
+	 * @param string $text         Plain text.
+	 * @param string $page         Admin page slug to return to.
+	 * @param bool   $keep_referer Whether the previous AdminTrace URL may replace $page.
 	 */
-	public static function redirect( $type, $text, $page = 'admintrace-activity-logger' ) {
+	public static function redirect( $type, $text, $page = 'admintrace-activity-logger', $keep_referer = true ) {
 		set_transient(
 			self::key(),
 			array(
@@ -35,7 +36,7 @@ class Notices {
 
 		$target = admin_url( 'admin.php?page=' . sanitize_key( $page ) );
 		$ref    = wp_get_referer();
-		if ( is_string( $ref ) && false !== strpos( $ref, 'page=admintrace-activity-logger' ) ) {
+		if ( $keep_referer && is_string( $ref ) && false !== strpos( $ref, 'page=admintrace-activity-logger' ) ) {
 			$target = $ref;
 		}
 		wp_safe_redirect( $target );

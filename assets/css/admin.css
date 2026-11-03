@@ -709,9 +709,19 @@ img.srah-avatar {
 	background: #fff7f8;
 }
 
-.srah-danger .srah-toggle {
-	border: 0;
-	padding: 0;
+.srah-danger-check {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-weight: 500;
+}
+
+.srah-danger-check input {
+	width: 1rem;
+	height: 1rem;
+	margin: 0;
+	flex: 0 0 auto;
 }
 
 .srah-segment {
@@ -814,6 +824,311 @@ img.srah-avatar {
 		width: 32px;
 		height: 32px;
 	}
+}
+
+.srah-email-meta {
+	margin: 0;
+	padding: 8px 22px 18px;
+}
+
+.srah-email-meta div {
+	margin: 0 0 8px;
+}
+
+.srah-table-wrap {
+	margin: 0 0 16px;
+	overflow: auto;
+	background: #fffcf7;
+	border: 1px solid #e4dccb;
+	border-radius: 14px;
+}
+
+.srah-table-wrap .srah-table {
+	margin: 0;
+	border: 0;
+	box-shadow: none;
+}
+
+.srah-email-table td,
+.srah-email-table th {
+	vertical-align: top;
+	overflow-wrap: break-word;
+}
+
+.srah-email-table th {
+	white-space: nowrap;
+}
+
+.srah-email-table.widefat thead td.check-column,
+.srah-email-table.widefat tbody th.check-column {
+	width: 46px;
+	padding: 12px 8px 12px 14px;
+	vertical-align: middle;
+	text-align: left;
+}
+
+.srah-email-table .check-column label {
+	position: static;
+	display: flex;
+	align-items: center;
+	width: auto;
+	height: auto;
+}
+
+.srah-email-table .check-column input {
+	margin: 0;
+}
+
+.srah-email-message {
+	margin: 0 22px 18px;
+	padding: 16px;
+	overflow: auto;
+	max-height: 480px;
+	border: 1px solid #e4dccb;
+	border-radius: 8px;
+	background: #fff;
+}
+
+.srah-email-message pre {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.srah-email-open {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: #2271b1;
+	cursor: pointer;
+	font: inherit;
+	font-weight: 600;
+	text-align: left;
+	text-decoration: underline;
+}
+
+.srah-email-open:hover,
+.srah-email-open:focus {
+	color: #135e96;
+}
+
+body.srah-modal-open {
+	overflow: hidden;
+}
+
+.srah-modal[hidden],
+.srah-email-tabs[hidden],
+.srah-email-frame[hidden],
+.srah-email-plain[hidden],
+.srah-email-source[hidden],
+.srah-email-status[hidden],
+.srah-modal-headers[hidden],
+.srah-modal-foot[hidden],
+.srah-resend-note[hidden] {
+	display: none !important;
+}
+
+.srah-modal {
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+}
+
+.srah-modal-backdrop {
+	position: absolute;
+	inset: 0;
+	background: rgba(28, 36, 48, 0.55);
+}
+
+.srah-modal-dialog {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	width: min(1040px, 100%);
+	height: calc(100vh - 32px);
+	max-height: calc(100vh - 32px);
+	overflow: hidden;
+	background: #fffcf7;
+	border: 1px solid #e4dccb;
+	border-radius: 16px;
+	box-shadow: 0 18px 50px rgba(28, 36, 48, 0.28);
+}
+
+.srah-modal-head {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 16px 18px;
+	background: #fffcf7;
+	border-bottom: 1px solid #e4dccb;
+}
+
+.srah-modal-head h2 {
+	margin: 0;
+	font-size: 18px;
+	line-height: 1.35;
+	overflow-wrap: anywhere;
+}
+
+.srah-modal-close {
+	flex: 0 0 auto;
+	width: 32px;
+	height: 32px;
+	margin-left: auto;
+	border: 0;
+	border-radius: 999px;
+	background: #e7eeea;
+	color: #1c2430;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.srah-modal-close:hover,
+.srah-modal-close:focus {
+	background: #d5e2db;
+}
+
+.srah-modal-meta {
+	display: flex;
+	flex: 0 0 auto;
+	flex-wrap: wrap;
+	gap: 4px 16px;
+	padding: 10px 18px;
+	color: #3d4a42;
+	background: #f7f3ea;
+	border-bottom: 1px solid #e4dccb;
+}
+
+.srah-modal-meta p {
+	margin: 0;
+}
+
+.srah-modal-error {
+	flex-basis: 100%;
+	color: #8a2424;
+}
+
+.srah-email-tabs {
+	display: flex;
+	flex: 0 0 auto;
+	gap: 4px;
+	margin: 0;
+	padding: 10px 18px 0;
+	background: #f3f4f6;
+}
+
+.srah-email-tab {
+	margin: 0;
+	padding: 8px 14px;
+	border: 1px solid transparent;
+	border-radius: 8px 8px 0 0;
+	background: transparent;
+	color: #3d4a42;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.srah-email-tab.is-active {
+	border-color: #e4dccb;
+	border-bottom-color: #fff;
+	background: #fff;
+	color: #1d3c34;
+}
+
+.srah-modal-preview {
+	flex: 1 1 auto;
+	min-height: 0;
+	margin: 0;
+	overflow: auto;
+	background: #f3f4f6;
+}
+
+.srah-email-status {
+	margin: 0;
+	padding: 48px 16px;
+	text-align: center;
+	color: #3d4a42;
+}
+
+.srah-email-frame {
+	display: block;
+	width: 100%;
+	min-height: 100%;
+	border: 0;
+	background: #fff;
+}
+
+.srah-email-plain,
+.srah-email-source {
+	box-sizing: border-box;
+	min-height: 100%;
+	margin: 0;
+	padding: 16px 18px;
+	overflow: auto;
+	white-space: pre-wrap;
+	background: #fff;
+}
+
+.srah-email-source {
+	background: #1c2430;
+	color: #f7f3ea;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.srah-modal-headers {
+	flex: 0 0 auto;
+	margin: 0;
+	padding: 8px 18px 10px;
+	background: #fffcf7;
+	border-top: 1px solid #e4dccb;
+}
+
+.srah-modal-headers pre {
+	margin: 8px 0 0;
+	padding: 12px;
+	overflow: auto;
+	max-height: 140px;
+	white-space: pre-wrap;
+	background: #fff;
+	border: 1px solid #e4dccb;
+	border-radius: 8px;
+}
+
+.srah-modal-foot {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	gap: 8px;
+	margin: 0;
+	padding: 12px 18px;
+	background: #fffcf7;
+	border-top: 1px solid #e4dccb;
+}
+
+.srah-resend-note {
+	margin: 0;
+	color: #6b5330;
+}
+
+.srah-modal-buttons {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	gap: 8px;
+}
+
+.srah-modal-buttons form,
+.srah-modal-buttons .submit {
+	margin: 0;
+	padding: 0;
 }
 
 @media print {

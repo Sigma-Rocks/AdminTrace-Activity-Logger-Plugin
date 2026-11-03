@@ -42,6 +42,7 @@ Each test runs in a database transaction that is rolled back. Mail goes to the t
 | `test-export.php` | JSON body, CSV formula neutralizing, editor scope, handler nonce and capability |
 | `test-feed.php` | Token rules, feed URL, RSS output without addresses or markup |
 | `test-notifications.php` | Digest off and on, recipient fallback, critical alerts, failed-login alerts, webhook payload and threshold, digest schedule kept when another section is saved |
+| `test-email-log.php` | Separate email table, enable switch, message storage, failed sends, retention, privacy export and erase |
 | `test-privacy.php` | Exporter and eraser registration, export paging, erasing by user and by failed-login name, privacy policy text |
 | `test-woocommerce.php` | Order status, refund, stock, price, shop manager access |
 | `test-multisite.php` | New site table and schedule, separate journals, network events on the main site, table drop, network activation, super admin capabilities |
@@ -90,6 +91,13 @@ Before you start:
 
 1. Use a staging site, not the live site. Make sure its user table has no real customer or staff email addresses, or that outgoing mail is caught (for example by Mailpit, MailHog, or an SMTP plugin in test mode).
 2. Set **Settings → General → Administration Email Address**, or the plugin’s own alert and digest addresses, to a mailbox you control.
+
+Email log (off by default):
+
+1. Open AdminTrace → Email log. Leave the switch off and trigger any site email, such as a password reset. The log stays empty.
+2. Turn **Enable email log** on and save. Send the test digest from Settings. The email log shows the recipient, subject, and body. The activity journal does not contain that body.
+3. Open the row and confirm the message matches what arrived. Delete it. The activity journal records that a saved email was deleted and does not copy the message.
+4. Turn the email log off again. The next site email is not added. Rows already saved stay until you delete them or retention removes them.
 
 Email digest:
 

@@ -135,7 +135,7 @@ These are left out on purpose:
 - Hiding the plugin from the plugin list.
 - IP geolocation or other calls to outside lookup services.
 - Forwarding to syslog, Datadog, or Splunk. Use the webhook if you need a copy elsewhere.
-- A monitor of every outgoing HTTP request or email, which would risk storing secrets.
+- A monitor of outgoing HTTP requests, which would risk storing secrets. Outgoing email can be saved in its own table from the Email log screen. That switch stays off until an administrator turns it on.
 - WordPress.org checksum scans. Core updates are recorded without an extra remote check.
 - Item-level logs for WP Crontrol. The cron array is large and noisy.
 

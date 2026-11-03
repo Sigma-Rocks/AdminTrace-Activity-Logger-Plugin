@@ -60,6 +60,7 @@ class Settings {
 			'webhook_url'              => '',
 			'webhook_min_severity'     => 'off',
 			'feed_enabled'             => 0,
+			'email_log_enabled'        => 0,
 			'feed_token'               => '',
 			'delete_data_on_uninstall' => 1,
 			'menu_location'            => 'toplevel',
@@ -154,6 +155,10 @@ class Settings {
 		}
 		if ( 'display' === $section ) {
 			$base['use_gravatar'] = empty( $input['use_gravatar'] ) ? 0 : 1;
+			return $base;
+		}
+		if ( 'email_log' === $section ) {
+			$base['email_log_enabled'] = empty( $input['email_log_enabled'] ) ? 0 : 1;
 			return $base;
 		}
 

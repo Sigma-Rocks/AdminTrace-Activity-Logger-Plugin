@@ -94,7 +94,7 @@ The journal stays on this site. Profile marks are initials drawn by the plugin. 
 * It does not hide itself from the Plugins screen.
 * It does not scan core files against WordPress.org checksums.
 * It does not forward events to syslog, Datadog, or Splunk. One HTTPS webhook is available.
-* It does not record the body of outgoing HTTP requests or emails.
+* It does not record the body of outgoing HTTP requests. Outgoing email is stored in a separate table only after an administrator turns the email log on.
 * It does not keep a separate log of WP Crontrol cron events.
 
 == Installation ==
@@ -133,6 +133,10 @@ Not unless you turn that on under Display. The default is an initial drawn on th
 
 Yes, when WooCommerce is active. Order status changes, coupon codes, refunds, stock changes, and product price or SKU edits are written to the same activity log. Customer email addresses are not stored.
 
+= Does it log outgoing email? =
+
+Only after an administrator opens Email log and turns it on. Saved emails go in `{prefix}srah_email_log`, a different table from the activity journal. The journal does not receive message bodies. The log stores the recipient, subject, headers, file names, and body, and it follows the same retention period as the journal. It is off by default because messages can include password-reset links.
+
 = Can I export the activity log? =
 
 Yes. CSV and JSON export follow the filters currently on the journal and stop at 5,000 rows. Cells that start with `=`, `+`, `-`, or `@` are prefixed so a spreadsheet does not treat them as formulas.
@@ -156,6 +160,7 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 == Changelog ==
 
 = Unreleased =
+* Email log is a separate screen and table. It stays off until an administrator enables it, and it saves outgoing mail apart from the activity journal.
 * A Donate link on the Plugins screen and on AdminTrace pages uses the same PayPal link as this readme.
 * The description asks people to open a support ticket for an issue or a feature request.
 * Administrators can again select events in the journal and delete them, after a confirmation. A combined card deletes all of its repeats.

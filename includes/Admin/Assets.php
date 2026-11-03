@@ -68,7 +68,18 @@ class Assets {
 			'admintrace-activity-logger-admin',
 			'srahAdmin',
 			array(
-				'copied' => __( 'Copied', 'admintrace-activity-logger' ),
+				'copied'       => __( 'Copied', 'admintrace-activity-logger' ),
+				'emailPreview' => wp_create_nonce( 'srah_email_preview' ),
+				'emailLoading' => __( 'Loading the email…', 'admintrace-activity-logger' ),
+				'emailMissing' => __( 'That email could not be loaded.', 'admintrace-activity-logger' ),
+				'emailLabels'  => array(
+					'to'     => __( 'To', 'admintrace-activity-logger' ),
+					'when'   => __( 'When', 'admintrace-activity-logger' ),
+					'status' => __( 'Result', 'admintrace-activity-logger' ),
+					'error'  => __( 'Error', 'admintrace-activity-logger' ),
+					'files'  => __( 'Files', 'admintrace-activity-logger' ),
+					'sender' => __( 'Sent during a visit by', 'admintrace-activity-logger' ),
+				),
 			)
 		);
 	}
