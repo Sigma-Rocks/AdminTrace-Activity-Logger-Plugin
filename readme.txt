@@ -17,6 +17,8 @@ AdminTrace Activity Logger is a WordPress activity log for sites that need a cle
 
 Activate it and recording starts at once. Search, filters, a timeline, a table, CSV and JSON export, email digests, and retention settings are included. There is no paid upgrade.
 
+If you find an issue, or want another feature, please [open a support ticket](https://wordpress.org/support/plugin/admintrace-activity-logger/).
+
 = Security and user activity =
 
 * Logins, logouts, and failed logins. A failed login says whether the password was wrong or the username does not exist.
@@ -155,6 +157,7 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 
 = Unreleased =
 * A Donate link on the Plugins screen and on AdminTrace pages uses the same PayPal link as this readme.
+* The description asks people to open a support ticket for an issue or a feature request.
 * Administrators can again select events in the journal and delete them, after a confirmation. A combined card deletes all of its repeats.
 * The daily retention task now deletes expired events. It previously kept everything.
 * Pages for non-administrators no longer run out of memory when the capability check repeated itself.
