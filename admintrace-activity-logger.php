@@ -24,6 +24,7 @@ define( 'SRAH_DB_VERSION', '3' );
 define( 'SRAH_FILE', __FILE__ );
 define( 'SRAH_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SRAH_URL', plugin_dir_url( __FILE__ ) );
+define( 'SRAH_DONATE_URL', 'https://www.paypal.com/paypalme/sigmarocks' );
 
 require_once SRAH_PATH . 'includes/Autoloader.php';
 

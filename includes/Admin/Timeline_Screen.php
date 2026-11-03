@@ -109,7 +109,7 @@ class Timeline_Screen {
 		if ( $manage ) {
 			self::note_form();
 		}
-		echo '<p class="srah-credit"><a href="' . esc_url( 'https://sigmarocks.com' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'AdminTrace Activity Logger by Sigma Rocks', 'admintrace-activity-logger' ) . '</a></p>';
+		Screen::credit();
 		echo '</div>';
 	}
 

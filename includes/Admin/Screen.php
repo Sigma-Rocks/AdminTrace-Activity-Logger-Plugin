@@ -45,4 +45,15 @@ class Screen {
 		}
 		echo '</nav>';
 	}
+
+	/**
+	 * Author and donation links for the plugin’s own screens.
+	 */
+	public static function credit() {
+		echo '<p class="srah-credit">';
+		echo '<a href="' . esc_url( 'https://sigmarocks.com' ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'AdminTrace Activity Logger by Sigma Rocks', 'admintrace-activity-logger' ) . '</a>';
+		echo ' <span aria-hidden="true">·</span> ';
+		echo '<a href="' . esc_url( SRAH_DONATE_URL ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Donate', 'admintrace-activity-logger' ) . '</a>';
+		echo '</p>';
+	}
 }

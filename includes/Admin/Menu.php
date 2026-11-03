@@ -110,6 +110,7 @@ class Menu {
 		if ( current_user_can( Capabilities::VIEW ) ) {
 			array_unshift( $links, '<a href="' . esc_url( admin_url( 'admin.php?page=admintrace-activity-logger' ) ) . '">' . esc_html__( 'Journal', 'admintrace-activity-logger' ) . '</a>' );
 		}
+		$links[] = '<a href="' . esc_url( SRAH_DONATE_URL ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'Donate', 'admintrace-activity-logger' ) . '</a>';
 		return $links;
 	}
 

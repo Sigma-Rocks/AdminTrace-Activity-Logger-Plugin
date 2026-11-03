@@ -95,6 +95,7 @@ class Files_Screen {
 					</ul>
 				</section>
 			<?php endif; ?>
+			<?php Screen::credit(); ?>
 		</div>
 		<?php
 	}

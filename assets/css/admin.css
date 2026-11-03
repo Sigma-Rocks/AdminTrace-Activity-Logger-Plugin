@@ -23,9 +23,13 @@
 	align-items: center;
 }
 
-.srah-brand p,
-.srah-credit {
+.srah-brand p {
 	margin: 0;
+	color: #3d4a42;
+}
+
+.srah-credit {
+	margin: 18px 0 0;
 	color: #3d4a42;
 }
 

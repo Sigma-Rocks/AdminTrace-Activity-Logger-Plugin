@@ -258,6 +258,7 @@ class Settings_Screen {
 					</form>
 				</div>
 			</section>
+			<?php Screen::credit(); ?>
 		</div>
 		<?php
 	}

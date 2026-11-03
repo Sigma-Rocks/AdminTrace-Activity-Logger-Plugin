@@ -57,6 +57,7 @@ class Display_Screen {
 					<?php submit_button( __( 'Save display settings', 'admintrace-activity-logger' ), 'primary', 'submit', false ); ?>
 				</div>
 			</form>
+			<?php Screen::credit(); ?>
 		</div>
 		<?php
 	}
