@@ -143,9 +143,11 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 
 == Screenshots ==
 
-1. The activity journal, with search, filters, and a post edit shown as added and removed lines.
+1. The activity journal, with the page navigation, search, filters, and a post edit shown as added and removed lines.
 2. Settings for how long events are kept, who can read them, and optional email or webhook alerts.
-3. The same journal as a table, including the account that made each change.
+3. The same journal as a table, including the account and role for each change.
+4. Individual event switches. A whole recorder can still be turned off from Settings.
+5. File and database scan settings, with recent added, changed, and deleted files.
 
 == Changelog ==
 
