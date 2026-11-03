@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: AdminTrace Activity Logger
- * Description: WordPress activity log and audit trail for content, users, plugins, themes, orders, and settings. If you find an issue, or want another feature, please open a support ticket.
+ * Description: WordPress activity log and audit trail for content, users, plugins, themes, orders, settings, and an optional email log. If you find an issue, or want another feature, please open a support ticket.
  * Version: 1.0.6
  * Requires at least: 6.2
  * Requires PHP: 7.4

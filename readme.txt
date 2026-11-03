@@ -9,7 +9,7 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/paypalme/sigmarocks
 
-WordPress activity log and audit trail. See who changed content, users, plugins, themes, settings, and WooCommerce orders.
+WordPress activity log and audit trail. See who changed content, users, plugins, themes, settings, and WooCommerce orders. Optional email log.
 
 == Description ==
 
@@ -46,6 +46,12 @@ If you find an issue, or want another feature, please [open a support ticket](ht
 = WooCommerce activity log =
 
 When WooCommerce is active, the same journal records order status, coupon codes used on an order, refunds, stock, product price and SKU changes, and store settings such as currency. Customer email addresses are not stored.
+
+= WordPress email log =
+
+Outgoing mail is optional and stays off until an administrator turns it on. When the email log is on, messages sent by WordPress, WooCommerce, and other plugins through `wp_mail` are saved on their own Email log screen, in a separate table from the activity journal.
+
+Each saved email keeps the recipient, subject, time, and result (sent, failed, or not confirmed), along with the headers, attachment file names, and the message. Search by recipient or subject, and filter by result. Open a subject to preview the message in a popup. Rich email shows the rendered message, and HTML shows the source. The same preview can resend that message to the same recipient. File attachments are not sent again. Message bodies stay out of the activity journal. The log is off by default because a saved message can include a password-reset link. Saved emails follow the same retention period as the journal.
 
 = Other plugins =
 
@@ -135,7 +141,7 @@ Yes, when WooCommerce is active. Order status changes, coupon codes, refunds, st
 
 = Does it log outgoing email? =
 
-Only after an administrator opens Email log and turns it on. Saved emails go in `{prefix}srah_email_log`, a different table from the activity journal. The journal does not receive message bodies. The log stores the recipient, subject, headers, file names, and body, and it follows the same retention period as the journal. It is off by default because messages can include password-reset links.
+Only after an administrator opens Email log and turns it on. Saved emails go in `{prefix}srah_email_log`, a different table from the activity journal. The journal does not receive message bodies. The log stores the recipient, subject, headers, file names, and body, and it follows the same retention period as the journal. It is off by default because messages can include password-reset links. Open a subject to preview the rendered email or the HTML source, and resend that message to the same recipient. Attachments are not included when you resend.
 
 = Can I export the activity log? =
 
@@ -156,11 +162,12 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 3. The same journal as a table, including the account and role for each change.
 4. Individual event switches. A whole recorder can still be turned off from Settings.
 5. File and database scan settings, with recent added, changed, and deleted files.
+6. The email log, with search, result filters, and saved outgoing messages. Open a subject to preview the rich email or the HTML source.
 
 == Changelog ==
 
 = Unreleased =
-* Email log is a separate screen and table. It stays off until an administrator enables it, and it saves outgoing mail apart from the activity journal.
+* Email log is a separate screen and table. It stays off until an administrator enables it, and it saves outgoing mail apart from the activity journal. A subject opens a preview of the rich email or the HTML source, and that message can be resent.
 * A Donate link on the Plugins screen and on AdminTrace pages uses the same PayPal link as this readme.
 * The description asks people to open a support ticket for an issue or a feature request.
 * Administrators can again select events in the journal and delete them, after a confirmation. A combined card deletes all of its repeats.

@@ -58,6 +58,8 @@ The scan hashes PHP, JavaScript, CSS, and HTML files in plugins, themes, and mus
 
 The digest and webhook are off by default. Two alert emails are on by default and go to the alert address, or the site admin address when none is set: failed logins crossing the threshold (can be turned off), and every critical event.
 
+Outgoing mail can be saved on the Email log screen, in its own table, separate from the activity journal. That switch stays off until an administrator turns it on, because a saved message can include a password-reset link. Search by recipient or subject, filter by result, and open a subject to preview the rendered email or the HTML source. The preview can resend the message to the same recipient. File attachments are not sent again. Message bodies are not copied into the journal. Saved emails follow the same retention period as the journal.
+
 ## Command palette
 
 WordPress 6.9 and newer list admin menu pages in the command palette, so the AdminTrace screens appear there. The plugin does not register commands.
