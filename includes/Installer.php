@@ -101,13 +101,27 @@ class Installer {
 	}
 
 	/**
+	 * Drop a deleted site's journal along with its core tables.
+	 *
+	 * @param string[] $tables  Tables core will drop.
+	 * @param int      $site_id Deleted site ID.
+	 * @return string[]
+	 */
+	public static function drop_site_table( $tables, $site_id ) {
+		global $wpdb;
+		$tables   = (array) $tables;
+		$tables[] = $wpdb->get_blog_prefix( (int) $site_id ) . 'srah_events';
+		return $tables;
+	}
+
+	/**
 	 * Create or upgrade the table when the schema version changes.
 	 */
 	public static function maybe_upgrade() {
 		self::migrate_legacy_storage();
 		self::rename_legacy_table();
 		$installed = get_option( 'srah_db_version' );
-		if ( (string) $installed === (string) SRAH_DB_VERSION ) {
+		if ( (string) SRAH_DB_VERSION === (string) $installed ) {
 			return;
 		}
 		self::install();
@@ -182,22 +196,22 @@ class Installer {
 			if ( ! $post instanceof \WP_Post ) {
 				continue;
 			}
-			$author = get_the_author_meta( 'display_name', $post->post_author );
+			$author = get_the_author_meta( 'display_name', (int) $post->post_author );
 			Recorder::log(
 				array(
 					/* translators: 1: content title, 2: author display name, 3: status. */
-					'summary'     => sprintf( __( 'Noted from existing content: "%1$s" (%3$s), last edited by %2$s. This was recorded when AdminTrace Activity Logger was activated, not as a live edit.', 'admintrace-activity-logger' ), $post->post_title, $author ? $author : __( 'unknown author', 'admintrace-activity-logger' ), $post->post_status ),
-					'category'    => 'content',
-					'action'      => 'content.snapshot',
-					'severity'    => 'info',
-					'logger'      => 'system',
-					'initiator'   => 'system',
-					'user_id'     => 0,
-					'object_type' => 'content',
-					'object_id'   => (int) $post->ID,
-					'object_title'=> $post->post_title,
-					'created_gmt' => $post->post_modified_gmt,
-					'context'     => array(
+					'summary'      => sprintf( __( 'Noted from existing content: "%1$s" (%3$s), last edited by %2$s. This was recorded when AdminTrace Activity Logger was activated, not as a live edit.', 'admintrace-activity-logger' ), $post->post_title, $author ? $author : __( 'unknown author', 'admintrace-activity-logger' ), $post->post_status ),
+					'category'     => 'content',
+					'action'       => 'content.snapshot',
+					'severity'     => 'info',
+					'logger'       => 'system',
+					'initiator'    => 'system',
+					'user_id'      => 0,
+					'object_type'  => 'content',
+					'object_id'    => (int) $post->ID,
+					'object_title' => $post->post_title,
+					'created_gmt'  => $post->post_modified_gmt,
+					'context'      => array(
 						'post_type'              => $post->post_type,
 						'recorded_on_activation' => true,
 					),
@@ -221,8 +235,7 @@ class Installer {
 				)
 			);
 			foreach ( $sites as $site ) {
-				$blog_id = is_object( $site ) ? (int) $site->blog_id : (int) $site;
-				switch_to_blog( $blog_id );
+				switch_to_blog( (int) $site );
 				call_user_func( $callback );
 				restore_current_blog();
 			}
@@ -265,13 +278,16 @@ class Installer {
 			'advance_history_dismiss_welcome' => 'srah_dismiss_welcome',
 			'advance_history_view'            => 'srah_view',
 		);
-		foreach ( $meta as $old => $new ) {
+		// One-time rename of two legacy keys; runs once, guarded by srah_legacy_prefix_done.
+		// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.DirectDatabaseQuery
+		foreach ( $meta as $old_key => $new_key ) {
 			$wpdb->update(
 				$wpdb->usermeta,
-				array( 'meta_key' => $new ),
-				array( 'meta_key' => $old )
+				array( 'meta_key' => $new_key ),
+				array( 'meta_key' => $old_key )
 			);
 		}
+		// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.DirectDatabaseQuery
 
 		$role = get_role( 'administrator' );
 		if ( $role ) {
@@ -305,25 +321,30 @@ class Installer {
 	private static function rename_legacy_table() {
 		global $wpdb;
 
+		if ( get_option( 'srah_legacy_table_done' ) ) {
+			return;
+		}
+
 		$table  = self::table();
 		$legacy = $wpdb->prefix . 'ah_events';
 		if ( $table === $legacy ) {
 			return;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-time check and rename of the legacy events table.
 		$has_new = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
-		if ( $has_new === $table ) {
-			return;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-time check and rename of the legacy events table.
+		$has_old = $has_new === $table ? null : $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $legacy ) ) );
+		if ( $has_new !== $table && $has_old === $legacy ) {
+			if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $legacy ) || ! preg_match( '/^[A-Za-z0-9_]+$/', $table ) ) {
+				return;
+			}
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- one-time check and rename of the legacy events table.
+			if ( false === $wpdb->query( $wpdb->prepare( 'RENAME TABLE %i TO %i', $legacy, $table ) ) ) {
+				return;
+			}
 		}
 
-		$has_old = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $legacy ) ) );
-		if ( $has_old !== $legacy ) {
-			return;
-		}
-		if ( ! preg_match( '/^[A-Za-z0-9_]+$/', $legacy ) || ! preg_match( '/^[A-Za-z0-9_]+$/', $table ) ) {
-			return;
-		}
-
-		$wpdb->query( "RENAME TABLE `{$legacy}` TO `{$table}`" );
+		update_option( 'srah_legacy_table_done', 1, true );
 	}
 }

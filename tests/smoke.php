@@ -68,7 +68,7 @@ function srah_assert( $condition, $message ) {
 		echo "ok  {$message}\n";
 		return;
 	}
-	$failures++;
+	++$failures;
 	echo "FAIL {$message}\n";
 }
 
@@ -178,13 +178,13 @@ srah_assert( 'https://example.com/hook' === Url::public_https( 'https://example.
 
 $settings = Settings::sanitize(
 	array(
-		'retention_days'       => 99999,
-		'per_page'             => 15,
-		'ip_mode'              => 'full',
-		'webhook_url'          => 'http://example.com/hook',
-		'alert_threshold'      => 1,
-		'email_digest'         => 'monthly',
-		'disabled_loggers'     => array( 'user', '@@@' ),
+		'retention_days'           => 99999,
+		'per_page'                 => 15,
+		'ip_mode'                  => 'full',
+		'webhook_url'              => 'http://example.com/hook',
+		'alert_threshold'          => 1,
+		'email_digest'             => 'monthly',
+		'disabled_loggers'         => array( 'user', '@@@' ),
 		'delete_data_on_uninstall' => '1',
 	),
 	array( 'feed_token' => 'abc123' )
@@ -203,11 +203,51 @@ srah_assert( 'created_gmt' === $order['column'] && 'DESC' === $order['direction'
 
 $grouped = Groups::collapse(
 	array(
-		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:08', 'context' => array() ),
-		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:05', 'context' => array() ),
-		array( 'summary' => 'Threshold reached', 'action' => 'security.login_threshold', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:13:05', 'context' => array() ),
-		array( 'summary' => 'Failed login for "ada"', 'action' => 'user.login_failed', 'user_id' => 0, 'object_type' => '', 'object_id' => 0, 'created_gmt' => '2026-10-22 11:10:19', 'context' => array() ),
-		array( 'summary' => 'Logged in as "ada".', 'action' => 'user.login', 'user_id' => 1, 'object_type' => 'user', 'object_id' => 1, 'created_gmt' => '2026-10-22 08:06:24', 'context' => array() ),
+		array(
+			'summary'     => 'Failed login for "ada"',
+			'action'      => 'user.login_failed',
+			'user_id'     => 0,
+			'object_type' => '',
+			'object_id'   => 0,
+			'created_gmt' => '2026-10-22 11:13:08',
+			'context'     => array(),
+		),
+		array(
+			'summary'     => 'Failed login for "ada"',
+			'action'      => 'user.login_failed',
+			'user_id'     => 0,
+			'object_type' => '',
+			'object_id'   => 0,
+			'created_gmt' => '2026-10-22 11:13:05',
+			'context'     => array(),
+		),
+		array(
+			'summary'     => 'Threshold reached',
+			'action'      => 'security.login_threshold',
+			'user_id'     => 0,
+			'object_type' => '',
+			'object_id'   => 0,
+			'created_gmt' => '2026-10-22 11:13:05',
+			'context'     => array(),
+		),
+		array(
+			'summary'     => 'Failed login for "ada"',
+			'action'      => 'user.login_failed',
+			'user_id'     => 0,
+			'object_type' => '',
+			'object_id'   => 0,
+			'created_gmt' => '2026-10-22 11:10:19',
+			'context'     => array(),
+		),
+		array(
+			'summary'     => 'Logged in as "ada".',
+			'action'      => 'user.login',
+			'user_id'     => 1,
+			'object_type' => 'user',
+			'object_id'   => 1,
+			'created_gmt' => '2026-10-22 08:06:24',
+			'context'     => array(),
+		),
 	)
 );
 srah_assert( 3 === count( $grouped ), 'repeated events collapse into one row' );

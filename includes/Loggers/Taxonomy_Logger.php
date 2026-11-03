@@ -139,9 +139,9 @@ class Taxonomy_Logger extends Logger {
 		if ( ! $term || is_wp_error( $term ) ) {
 			return;
 		}
-		$key  = $taxonomy . ':' . (int) $term_id;
-		$old  = isset( $this->previous[ $key ] ) ? $this->previous[ $key ] : array();
-		$new  = array(
+		$key     = $taxonomy . ':' . (int) $term_id;
+		$old     = isset( $this->previous[ $key ] ) ? $this->previous[ $key ] : array();
+		$new     = array(
 			'name'        => (string) $term->name,
 			'slug'        => (string) $term->slug,
 			'description' => Text::plain( $term->description, 200 ),
@@ -192,10 +192,10 @@ class Taxonomy_Logger extends Logger {
 	/**
 	 * Term deleted.
 	 *
-	 * @param int      $term_id Term ID.
-	 * @param int      $tt_id   Term taxonomy ID.
-	 * @param string   $taxonomy Taxonomy.
-	 * @param \WP_Term $deleted Deleted term.
+	 * @param int    $term_id Term ID.
+	 * @param int    $tt_id   Term taxonomy ID.
+	 * @param string $taxonomy Taxonomy.
+	 * @param mixed  $deleted Deleted term. Core passes a WP_Term, or a WP_Error when the term could not be read.
 	 */
 	public function on_deleted( $term_id, $tt_id, $taxonomy, $deleted ) {
 		unset( $tt_id );

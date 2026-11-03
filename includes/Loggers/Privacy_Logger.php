@@ -108,7 +108,7 @@ class Privacy_Logger extends Logger {
 	 */
 	public function on_confirmed( $request_id ) {
 		$request = function_exists( 'wp_get_user_request' ) ? wp_get_user_request( $request_id ) : null;
-		$action  = ( $request && isset( $request->action_name ) ) ? sanitize_key( $request->action_name ) : 'request';
+		$action  = ( $request instanceof \WP_User_Request ) ? sanitize_key( $request->action_name ) : 'request';
 		$this->log(
 			array(
 				'summary'     => sprintf(

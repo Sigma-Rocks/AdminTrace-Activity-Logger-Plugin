@@ -1,6 +1,13 @@
 # Kept in the plugin folder. Omitted from the WordPress.org upload zip.
 .git
 tests
+vendor
+composer.json
+composer.lock
+phpcs.xml.dist
+phpstan.neon.dist
+phpunit.xml.dist
+phpunit-multisite.xml.dist
 
 # Directory page files. Upload these to the SVN assets directory after approval.
 assets/banner-772x250.png
@@ -10,6 +17,8 @@ assets/icon-256x256.png
 assets/screenshot-1.png
 assets/screenshot-2.png
 assets/screenshot-3.png
+assets/screenshot-4.png
+assets/screenshot-5.png
 
 .DS_Store
 **/.DS_Store

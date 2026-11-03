@@ -51,7 +51,12 @@ class Admin_Bar {
 			)
 		);
 
-		$args = Access::constrain( array( 'per_page' => 5, 'page' => 1 ) );
+		$args = Access::constrain(
+			array(
+				'per_page' => 5,
+				'page'     => 1,
+			)
+		);
 		$rows = Groups::collapse( Query::recent( 8, $args ) );
 		if ( ! $rows ) {
 			$bar->add_node(

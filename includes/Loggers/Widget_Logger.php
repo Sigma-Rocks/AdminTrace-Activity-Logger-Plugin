@@ -53,14 +53,14 @@ class Widget_Logger extends Logger {
 	/**
 	 * Sidebar assignments changed.
 	 *
-	 * @param mixed $old Previous value.
-	 * @param mixed $new New value.
+	 * @param mixed  $old Previous value.
+	 * @param mixed  $new_value New value.
 	 * @param string $option Option name.
 	 */
-	public function on_sidebars( $old, $new, $option = '' ) {
+	public function on_sidebars( $old, $new_value, $option = '' ) {
 		unset( $option );
 		$before  = $this->flat( $old );
-		$after   = $this->flat( $new );
+		$after   = $this->flat( $new_value );
 		$added   = array_values( array_diff( $after, $before ) );
 		$removed = array_values( array_diff( $before, $after ) );
 		if ( ! $added && ! $removed ) {

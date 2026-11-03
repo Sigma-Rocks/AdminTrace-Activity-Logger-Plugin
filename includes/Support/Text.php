@@ -24,10 +24,10 @@ class Text {
 	 * @return string
 	 */
 	public static function plain( $text, $limit = 500 ) {
-		$text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
-		$text = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text );
-		$text = preg_replace( '/\s+/u', ' ', (string) $text );
-		$text = trim( (string) $text );
+		$text  = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
+		$text  = preg_replace( '/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/u', '', $text );
+		$text  = preg_replace( '/\s+/u', ' ', (string) $text );
+		$text  = trim( (string) $text );
 		$limit = max( 0, (int) $limit );
 
 		if ( function_exists( 'mb_substr' ) && function_exists( 'mb_strlen' ) ) {

@@ -94,6 +94,12 @@ class Network_Logger extends Logger {
 		if ( ! $site instanceof \WP_Site ) {
 			return;
 		}
+		// wpmu_delete_blog() switches into the deleted site, whose journal table has just been dropped.
+		$main   = (int) get_main_site_id();
+		$switch = get_current_blog_id() !== $main;
+		if ( $switch ) {
+			switch_to_blog( $main );
+		}
 		$this->log(
 			array(
 				'summary'      => sprintf(
@@ -109,24 +115,27 @@ class Network_Logger extends Logger {
 				'object_title' => $this->address( $site ),
 			)
 		);
+		if ( $switch ) {
+			restore_current_blog();
+		}
 	}
 
 	/**
 	 * Site flags changed.
 	 *
-	 * @param \WP_Site $new New site.
-	 * @param \WP_Site $old Previous site.
+	 * @param mixed $new_value New site. Core passes a WP_Site.
+	 * @param mixed $old       Previous site. Core passes a WP_Site.
 	 */
-	public function on_updated( $new, $old ) {
-		if ( ! $new instanceof \WP_Site || ! $old instanceof \WP_Site ) {
+	public function on_updated( $new_value, $old ) {
+		if ( ! $new_value instanceof \WP_Site || ! $old instanceof \WP_Site ) {
 			return;
 		}
 		$changes = array();
 		foreach ( array( 'archived', 'deleted', 'spam' ) as $flag ) {
-			if ( (string) $new->$flag === (string) $old->$flag ) {
+			if ( (string) $new_value->$flag === (string) $old->$flag ) {
 				continue;
 			}
-			$changes[] = $flag . ':' . (string) $old->$flag . '>' . (string) $new->$flag;
+			$changes[] = $flag . ':' . (string) $old->$flag . '>' . (string) $new_value->$flag;
 		}
 		if ( ! $changes ) {
 			return;
@@ -136,15 +145,15 @@ class Network_Logger extends Logger {
 				'summary'      => sprintf(
 					/* translators: 1: site address, 2: changed flags. */
 					__( 'Updated the site %1$s (%2$s).', 'admintrace-activity-logger' ),
-					$this->address( $new ),
+					$this->address( $new_value ),
 					implode( ', ', $changes )
 				),
 				'category'     => 'network',
 				'action'       => 'network.site_updated',
 				'severity'     => 'warning',
 				'object_type'  => 'site',
-				'object_id'    => (int) $new->blog_id,
-				'object_title' => $this->address( $new ),
+				'object_id'    => (int) $new_value->blog_id,
+				'object_title' => $this->address( $new_value ),
 				'context'      => array( 'changes' => $changes ),
 			)
 		);
@@ -158,7 +167,7 @@ class Network_Logger extends Logger {
 	 * @param int    $blog_id Site ID.
 	 */
 	public function on_user_added( $user_id, $role, $blog_id ) {
-		$user = get_userdata( $user_id );
+		$user  = get_userdata( $user_id );
 		$login = $user ? $user->user_login : (string) absint( $user_id );
 		$this->log(
 			array(
@@ -186,7 +195,7 @@ class Network_Logger extends Logger {
 	 * @param int $blog_id Site ID.
 	 */
 	public function on_user_removed( $user_id, $blog_id ) {
-		$user = get_userdata( $user_id );
+		$user  = get_userdata( $user_id );
 		$login = $user ? $user->user_login : (string) absint( $user_id );
 		$this->log(
 			array(
@@ -213,8 +222,8 @@ class Network_Logger extends Logger {
 	 * @return string
 	 */
 	private function address( $site ) {
-		$path = isset( $site->path ) ? (string) $site->path : '/';
-		$domain = isset( $site->domain ) ? (string) $site->domain : '';
+		$path   = (string) $site->path;
+		$domain = (string) $site->domain;
 		return Text::plain( $domain . $path, 180 );
 	}
 

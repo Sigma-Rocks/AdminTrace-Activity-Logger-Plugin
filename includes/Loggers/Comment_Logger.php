@@ -71,16 +71,16 @@ class Comment_Logger extends Logger {
 	/**
 	 * Status change.
 	 *
-	 * @param string     $new     New status.
-	 * @param string     $old     Old status.
+	 * @param string      $new_value     New status.
+	 * @param string      $old     Old status.
 	 * @param \WP_Comment $comment Comment.
 	 */
-	public function on_transition( $new, $old, $comment ) {
-		if ( $new === $old || ! $comment instanceof \WP_Comment ) {
+	public function on_transition( $new_value, $old, $comment ) {
+		if ( $new_value === $old || ! $comment instanceof \WP_Comment ) {
 			return;
 		}
-		$severity = in_array( $new, array( 'spam', 'trash', 'delete' ), true ) ? 'warning' : 'info';
-		$this->store( $comment, 'comment.' . sanitize_key( $new ), $new, $severity, $old );
+		$severity = in_array( $new_value, array( 'spam', 'trash', 'delete' ), true ) ? 'warning' : 'info';
+		$this->store( $comment, 'comment.' . sanitize_key( $new_value ), $new_value, $severity, $old );
 	}
 
 	/**

@@ -95,7 +95,7 @@ class Menu_Logger extends Logger {
 		$after   = $this->item_titles( $menu_id );
 		$count   = count( $after );
 		$menu    = wp_get_nav_menu_object( $menu_id );
-		$name    = ( $menu && ! is_wp_error( $menu ) ) ? $menu->name : (string) $menu_id;
+		$name    = ( $menu instanceof \WP_Term ) ? $menu->name : (string) $menu_id;
 		$added   = array();
 		$removed = array();
 		if ( isset( $this->before_items[ $menu_id ] ) ) {
@@ -143,10 +143,12 @@ class Menu_Logger extends Logger {
 	 * Remember menu item titles before the menu screen writes them.
 	 */
 	public function snapshot_items() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- read-only snapshot; core verifies the menu form's nonce before it saves.
 		if ( ! $this->enabled() || empty( $_POST['menu'] ) || ! is_scalar( $_POST['menu'] ) ) {
 			return;
 		}
 		$menu_id = absint( wp_unslash( $_POST['menu'] ) );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( $menu_id ) {
 			$this->before_items[ $menu_id ] = $this->item_titles( $menu_id );
 		}
@@ -226,7 +228,7 @@ class Menu_Logger extends Logger {
 	 */
 	private function store( $menu_id, $action, $pattern, $severity ) {
 		$menu = wp_get_nav_menu_object( $menu_id );
-		$name = ( $menu && ! is_wp_error( $menu ) ) ? $menu->name : (string) $menu_id;
+		$name = ( $menu instanceof \WP_Term ) ? $menu->name : (string) $menu_id;
 		$this->log(
 			array(
 				'summary'      => sprintf( $pattern, $name ),

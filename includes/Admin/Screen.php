@@ -29,12 +29,12 @@ class Screen {
 			'admintrace-activity-logger' => __( 'Journal', 'admintrace-activity-logger' ),
 		);
 		if ( current_user_can( Capabilities::MANAGE ) ) {
-			$items['admintrace-activity-logger-events']  = __( 'Events', 'admintrace-activity-logger' );
-			$items['admintrace-activity-logger-files']   = __( 'Files and database', 'admintrace-activity-logger' );
-			$items['admintrace-activity-logger-display'] = __( 'Display', 'admintrace-activity-logger' );
+			$items['admintrace-activity-logger-events']   = __( 'Events', 'admintrace-activity-logger' );
+			$items['admintrace-activity-logger-files']    = __( 'Files and database', 'admintrace-activity-logger' );
+			$items['admintrace-activity-logger-display']  = __( 'Display', 'admintrace-activity-logger' );
 			$items['admintrace-activity-logger-settings'] = __( 'Settings', 'admintrace-activity-logger' );
 		}
-		$current = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		$current = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- marks the current tab only.
 		echo '<nav class="srah-nav" aria-label="' . esc_attr__( 'AdminTrace pages', 'admintrace-activity-logger' ) . '">';
 		foreach ( $items as $slug => $label ) {
 			$url = menu_page_url( $slug, false );

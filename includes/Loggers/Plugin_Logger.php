@@ -134,7 +134,7 @@ class Plugin_Logger extends Logger {
 		} elseif ( ! empty( $extra['plugin'] ) && is_string( $extra['plugin'] ) ) {
 			$files = array( $extra['plugin'] );
 		} elseif ( is_object( $upgrader ) && ! empty( $upgrader->result['destination_name'] ) ) {
-			$files = array( (string) $upgrader->result['destination_name'] );
+			$files = array( $this->main_file( (string) $upgrader->result['destination_name'] ) );
 		}
 		foreach ( $files as $file ) {
 			if ( 'install' === $action ) {
@@ -154,10 +154,10 @@ class Plugin_Logger extends Logger {
 	 * Auto-update list changed on this site.
 	 *
 	 * @param mixed $old Previous plugin files.
-	 * @param mixed $new New plugin files.
+	 * @param mixed $new_value New plugin files.
 	 */
-	public function on_auto_update( $old, $new ) {
-		$this->diff_auto_updates( $old, $new );
+	public function on_auto_update( $old, $new_value ) {
+		$this->diff_auto_updates( $old, $new_value );
 	}
 
 	/**
@@ -166,25 +166,25 @@ class Plugin_Logger extends Logger {
 	 * The site-option hook passes the option name first.
 	 *
 	 * @param mixed $option Ignored option name.
-	 * @param mixed $new    New plugin files.
+	 * @param mixed $new_value    New plugin files.
 	 * @param mixed $old    Previous plugin files.
 	 */
-	public function on_site_auto_update( $option, $new, $old ) {
+	public function on_site_auto_update( $option, $new_value, $old ) {
 		unset( $option );
-		$this->diff_auto_updates( $old, $new );
+		$this->diff_auto_updates( $old, $new_value );
 	}
 
 	/**
 	 * Record plugins whose auto-update flag flipped.
 	 *
 	 * @param mixed $old Previous plugin files.
-	 * @param mixed $new New plugin files.
+	 * @param mixed $new_value New plugin files.
 	 */
-	private function diff_auto_updates( $old, $new ) {
-		$old = is_array( $old ) ? $old : array();
-		$new = is_array( $new ) ? $new : array();
-		$enabled  = array_values( array_diff( $new, $old ) );
-		$disabled = array_values( array_diff( $old, $new ) );
+	private function diff_auto_updates( $old, $new_value ) {
+		$old       = is_array( $old ) ? $old : array();
+		$new_value = is_array( $new_value ) ? $new_value : array();
+		$enabled   = array_values( array_diff( $new_value, $old ) );
+		$disabled  = array_values( array_diff( $old, $new_value ) );
 		if ( count( $enabled ) + count( $disabled ) > 12 ) {
 			$this->log(
 				array(
@@ -293,12 +293,34 @@ class Plugin_Logger extends Logger {
 			}
 		}
 		$path = WP_PLUGIN_DIR . '/' . ltrim( (string) $plugin, '/' );
-		if ( function_exists( 'get_plugin_data' ) && is_readable( $path ) ) {
+		if ( function_exists( 'get_plugin_data' ) && is_file( $path ) && is_readable( $path ) ) {
 			$data            = get_plugin_data( $path, false, false );
 			$meta['name']    = ! empty( $data['Name'] ) ? $data['Name'] : $name;
 			$meta['version'] = ! empty( $data['Version'] ) ? $data['Version'] : '';
 			$meta['author']  = ! empty( $data['Author'] ) ? wp_strip_all_tags( $data['Author'] ) : '';
 		}
 		return $meta;
+	}
+
+	/**
+	 * Main plugin file inside an installed plugin folder.
+	 *
+	 * @param string $folder Folder name below the plugins directory.
+	 * @return string Plugin file relative to the plugins directory, or the folder when none is found.
+	 */
+	private function main_file( $folder ) {
+		$folder = trim( $folder, '/' );
+		if ( '' === $folder || ! is_dir( WP_PLUGIN_DIR . '/' . $folder ) ) {
+			return $folder;
+		}
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		wp_clean_plugins_cache( false );
+		$found = get_plugins( '/' . $folder );
+		if ( empty( $found ) ) {
+			return $folder;
+		}
+		return $folder . '/' . (string) key( $found );
 	}
 }

@@ -44,7 +44,12 @@ class Dashboard_Widget {
 	 * Widget body.
 	 */
 	public static function render() {
-		$args   = Access::constrain( array( 'per_page' => 6, 'page' => 1 ) );
+		$args   = Access::constrain(
+			array(
+				'per_page' => 6,
+				'page'     => 1,
+			)
+		);
 		$rows   = Groups::collapse( Query::recent( 6, $args ) );
 		$scoped = ! current_user_can( Capabilities::MANAGE );
 		$stats  = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );

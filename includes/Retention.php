@@ -22,8 +22,15 @@ class Retention {
 	 * Register the cron callback and make sure it is scheduled.
 	 */
 	public static function register() {
-		add_action( self::HOOK, array( __CLASS__, 'prune' ) );
+		add_action( self::HOOK, array( __CLASS__, 'scheduled_prune' ), 10, 0 );
 		add_action( 'init', array( __CLASS__, 'ensure_scheduled' ) );
+	}
+
+	/**
+	 * Cron callback. Cron passes an empty string as the first argument, so prune() is called without one.
+	 */
+	public static function scheduled_prune() {
+		self::prune();
 	}
 
 	/**
@@ -47,6 +54,7 @@ class Retention {
 	 *
 	 * A retention of 0 keeps events until someone deletes them.
 	 *
+	 * @param int|null $days Days to keep. Null uses the saved setting.
 	 * @return int Rows deleted.
 	 */
 	public static function prune( $days = null ) {
@@ -64,6 +72,7 @@ class Retention {
 		$total  = 0;
 
 		for ( $loop = 0; $loop < 20; $loop++ ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 			$wpdb->query(
 				$wpdb->prepare(
 					'DELETE FROM %i WHERE created_gmt < %s LIMIT 2000',
@@ -89,6 +98,7 @@ class Retention {
 	 */
 	public static function delete_all() {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$wpdb->query(
 			$wpdb->prepare(
 				'DELETE FROM %i WHERE blog_id = %d',
@@ -116,6 +126,7 @@ class Retention {
 
 		$deleted = 0;
 		foreach ( $ids as $id ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 			$wpdb->query(
 				$wpdb->prepare(
 					'DELETE FROM %i WHERE blog_id = %d AND id = %d',

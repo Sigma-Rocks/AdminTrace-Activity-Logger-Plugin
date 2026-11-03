@@ -200,7 +200,7 @@ class Integration_Logger extends Logger {
 	/**
 	 * Post duplicated.
 	 *
-	 * @param int $new_id New post ID.
+	 * @param int   $new_id New post ID.
 	 * @param mixed $post Original post.
 	 */
 	public function on_duplicate( $new_id, $post ) {

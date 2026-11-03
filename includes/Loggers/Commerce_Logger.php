@@ -75,12 +75,12 @@ class Commerce_Logger extends Logger {
 	 * @param mixed  $order    Order object.
 	 */
 	public function on_status( $order_id, $from, $to, $order ) {
-		$number = $this->order_number( $order, $order_id );
-		$total  = ( is_object( $order ) && method_exists( $order, 'get_total' ) ) ? $order->get_total() : '';
+		$number   = $this->order_number( $order, $order_id );
+		$total    = ( is_object( $order ) && method_exists( $order, 'get_total' ) ) ? $order->get_total() : '';
 		$currency = ( is_object( $order ) && method_exists( $order, 'get_currency' ) ) ? $order->get_currency() : '';
-		$placed  = in_array( (string) $from, array( '', 'checkout-draft', 'new', 'auto-draft' ), true );
-		$coupons = $this->coupon_codes( $order );
-		$summary = $placed
+		$placed   = in_array( (string) $from, array( '', 'checkout-draft', 'new', 'auto-draft' ), true );
+		$coupons  = $this->coupon_codes( $order );
+		$summary  = $placed
 			? sprintf(
 				/* translators: 1: order number, 2: status. */
 				__( 'Placed order %1$s (%2$s).', 'admintrace-activity-logger' ),
@@ -159,10 +159,10 @@ class Commerce_Logger extends Logger {
 		if ( ! is_object( $product ) || ! method_exists( $product, 'get_id' ) ) {
 			return;
 		}
-		$id = (int) $product->get_id();
+		$id                        = (int) $product->get_id();
 		$this->stock_logged[ $id ] = true;
-		$qty = method_exists( $product, 'get_stock_quantity' ) ? $product->get_stock_quantity() : '';
-		$name = method_exists( $product, 'get_name' ) ? $product->get_name() : (string) $id;
+		$qty                       = method_exists( $product, 'get_stock_quantity' ) ? $product->get_stock_quantity() : '';
+		$name                      = method_exists( $product, 'get_name' ) ? $product->get_name() : (string) $id;
 		$this->log(
 			array(
 				'summary'      => sprintf(
@@ -199,7 +199,7 @@ class Commerce_Logger extends Logger {
 		if ( array( 'stock_status' ) === $interesting && ! empty( $this->stock_logged[ $id ] ) ) {
 			return;
 		}
-		$name = method_exists( $product, 'get_name' ) ? $product->get_name() : (string) $id;
+		$name    = method_exists( $product, 'get_name' ) ? $product->get_name() : (string) $id;
 		$context = array( 'fields' => $interesting );
 		if ( in_array( 'sku', $interesting, true ) && method_exists( $product, 'get_sku' ) ) {
 			$context['sku'] = (string) $product->get_sku();

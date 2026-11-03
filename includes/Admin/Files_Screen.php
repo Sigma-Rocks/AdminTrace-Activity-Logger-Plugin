@@ -69,7 +69,7 @@ class Files_Screen {
 					</header>
 					<div class="srah-toggles">
 						<label class="srah-toggle"><input type="checkbox" name="file_watch" value="1" <?php checked( $settings['file_watch'] ); ?>> <span><strong><?php esc_html_e( 'Watch files on disk', 'admintrace-activity-logger' ); ?></strong><span class="description"><?php esc_html_e( 'Plugins, themes, must-use plugins, wp-config.php, and .htaccess. PHP, CSS, JavaScript, and HTML templates are included. WordPress core folders are not hashed.', 'admintrace-activity-logger' ); ?></span></span></label>
-						<label class="srah-toggle"><input type="checkbox" name="file_watch_uploads" value="1" <?php checked( $settings['file_watch_uploads'] ); ?>> <span><strong><?php esc_html_e( 'Include text files in uploads', 'admintrace-activity-logger' ); ?></strong><span class="description"><?php esc_html_e( 'JSON, XML, text, SVG, and HTML. Images and archives are skipped.', 'admintrace-activity-logger' ); ?></span></span></label>
+						<label class="srah-toggle"><input type="checkbox" name="file_watch_uploads" value="1" <?php checked( $settings['file_watch_uploads'] ); ?>> <span><strong><?php esc_html_e( 'Include text files in uploads', 'admintrace-activity-logger' ); ?></strong><span class="description"><?php esc_html_e( 'PHP, JSON, XML, text, SVG, and HTML. JavaScript, CSS, images, and archives are skipped.', 'admintrace-activity-logger' ); ?></span></span></label>
 						<label class="srah-toggle"><input type="checkbox" name="table_watch" value="1" <?php checked( $settings['table_watch'] ); ?>> <span><strong><?php esc_html_e( 'Watch database tables', 'admintrace-activity-logger' ); ?></strong><span class="description"><?php esc_html_e( 'Records when a table with this site’s prefix is created or dropped. Queries and row data are not stored.', 'admintrace-activity-logger' ); ?></span></span></label>
 					</div>
 				</section>
@@ -80,7 +80,7 @@ class Files_Screen {
 			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<?php wp_nonce_field( 'srah_watch_now' ); ?>
 				<input type="hidden" name="action" value="srah_watch_now">
-				<?php submit_button( __( 'Scan now', 'admintrace-activity-logger' ), 'secondary', 'submit', false ); ?>
+				<?php submit_button( __( 'Scan now', 'admintrace-activity-logger' ), 'secondary', 'submit', false, array( 'id' => 'srah-scan-now' ) ); ?>
 			</form>
 			<?php if ( $recent ) : ?>
 				<section class="srah-panel">
@@ -107,6 +107,7 @@ class Files_Screen {
 	private static function recent() {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT created_gmt, created_ms, summary FROM %i WHERE blog_id = %d AND action IN (%s, %s, %s, %s, %s) ORDER BY id DESC LIMIT 8',

@@ -68,7 +68,7 @@ class Security_Logger extends Logger {
 	 * Admin page denied.
 	 */
 	public function on_denied() {
-		$uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$uri  = isset( $_SERVER['REQUEST_URI'] ) ? esc_url_raw( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 		$path = wp_parse_url( (string) $uri, PHP_URL_PATH );
 		$this->log(
 			array(
@@ -87,11 +87,11 @@ class Security_Logger extends Logger {
 	 * Site Health counts changed.
 	 *
 	 * @param mixed $old Previous JSON.
-	 * @param mixed $new New JSON.
+	 * @param mixed $new_value New JSON.
 	 */
-	public function on_health( $old, $new ) {
+	public function on_health( $old, $new_value ) {
 		$before = $this->health_counts( $old );
-		$after  = $this->health_counts( $new );
+		$after  = $this->health_counts( $new_value );
 		if ( $before === $after ) {
 			return;
 		}
@@ -129,17 +129,19 @@ class Security_Logger extends Logger {
 	 * Snapshot a plugin or theme file before WordPress writes it.
 	 */
 	public function watch_request() {
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- read-only snapshot; core verifies the file editor nonce before it writes.
 		if ( ! $this->enabled() || empty( $_POST ) ) {
 			return;
 		}
 		$post = wp_unslash( $_POST );
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		$file = isset( $post['file'] ) ? (string) $post['file'] : '';
 		if ( '' === $file || ! function_exists( 'validate_file' ) || 0 !== validate_file( $file ) ) {
 			return;
 		}
 
-		$path = '';
-		$kind = '';
+		$path  = '';
+		$kind  = '';
 		$label = '';
 		if ( ! empty( $post['plugin'] ) ) {
 			$plugin = (string) $post['plugin'];
@@ -167,7 +169,7 @@ class Security_Logger extends Logger {
 			return;
 		}
 
-		$hash = is_readable( $path ) ? hash_file( 'sha256', $path ) : '';
+		$hash            = is_readable( $path ) ? hash_file( 'sha256', $path ) : '';
 		$this->watches[] = array(
 			'path'  => $path,
 			'file'  => $file,

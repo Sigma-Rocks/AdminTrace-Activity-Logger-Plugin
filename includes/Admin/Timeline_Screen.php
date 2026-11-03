@@ -50,16 +50,23 @@ class Timeline_Screen {
 			);
 		}
 
-		$filters  = self::filters();
-		$args     = Access::constrain( self::query_args( $filters ) );
-		$result   = Query::search( $args );
-		$manage   = current_user_can( Capabilities::MANAGE );
-		$scoped   = ! $manage;
-		$stats    = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );
-		$pages    = max( 1, (int) ceil( $result['total'] / $filters['per_page'] ) );
+		$filters   = self::filters();
+		$args      = Access::constrain( self::query_args( $filters ) );
+		$result    = Query::search( $args );
+		$manage    = current_user_can( Capabilities::MANAGE );
+		$scoped    = ! $manage;
+		$stats     = Query::stats( $scoped, $scoped ? Vocabulary::viewer_categories() : array() );
+		$pages     = max( 1, (int) ceil( $result['total'] / $filters['per_page'] ) );
 		$highlight = null;
 		if ( $filters['event'] ) {
-			$found = Query::search( Access::constrain( array( 'id' => $filters['event'], 'per_page' => 1 ) ) );
+			$found     = Query::search(
+				Access::constrain(
+					array(
+						'id'       => $filters['event'],
+						'per_page' => 1,
+					)
+				)
+			);
 			$highlight = isset( $found['rows'][0] ) ? Access::present( $found['rows'][0], ! empty( $args['include_ip'] ) ) : false;
 		}
 
@@ -75,17 +82,28 @@ class Timeline_Screen {
 			echo '</div>';
 		}
 		self::filter_form( $filters, $manage );
-		$rows = Groups::collapse( $result['rows'] );
+		$rows    = Groups::collapse( $result['rows'] );
+		$can_del = $rows && current_user_can( Capabilities::DELETE );
+		if ( $can_del ) {
+			echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '">';
+			wp_nonce_field( 'srah_delete' );
+			echo '<input type="hidden" name="action" value="srah_delete">';
+			echo '<div class="srah-bulk"><label><input type="checkbox" data-srah-select-all> ' . esc_html__( 'Select all on this page', 'admintrace-activity-logger' ) . '</label>';
+			echo '<button class="button" type="submit" data-srah-confirm="' . esc_attr__( 'Delete the selected events? This cannot be undone.', 'admintrace-activity-logger' ) . '">' . esc_html__( 'Delete selected', 'admintrace-activity-logger' ) . '</button></div>';
+		}
 		if ( ! $rows ) {
 			echo '<div class="srah-empty"><h2>' . esc_html__( 'Nothing recorded yet', 'admintrace-activity-logger' ) . '</h2><p>' . esc_html__( 'New changes will appear here. Existing posts and pages are noted once, when the plugin is activated.', 'admintrace-activity-logger' ) . '</p></div>';
 		} elseif ( 'table' === $filters['view'] ) {
-			self::table( $rows, ! empty( $args['include_ip'] ) );
+			self::table( $rows, ! empty( $args['include_ip'] ), $can_del );
 		} else {
 			echo '<div class="srah-timeline">';
 			foreach ( $rows as $row ) {
-				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ) );
+				Renderer::card( Access::present( $row, ! empty( $args['include_ip'] ) ), array( 'checkbox' => $can_del ) );
 			}
 			echo '</div>';
+		}
+		if ( $can_del ) {
+			echo '</form>';
 		}
 		self::pagination( $filters, $pages );
 		if ( $manage ) {
@@ -102,7 +120,7 @@ class Timeline_Screen {
 	 */
 	public static function filters() {
 		$settings = Settings::all();
-		$get      = wp_unslash( $_GET );
+		$get      = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only filters, each sanitized below.
 		$view     = isset( $get['view'] ) && 'table' === $get['view'] ? 'table' : '';
 		if ( '' === $view ) {
 			$view = ( 'table' === $settings['default_view'] ) ? 'table' : 'timeline';
@@ -159,7 +177,7 @@ class Timeline_Screen {
 							'action' => 'srah_export',
 							'format' => 'csv',
 						),
-						array_filter( self::query_args( $filters ) )
+						self::url_filters( $filters )
 					),
 					admin_url( 'admin-post.php' )
 				),
@@ -241,7 +259,10 @@ class Timeline_Screen {
 				<select id="srah-category" name="category">
 					<option value=""><?php esc_html_e( 'All categories', 'admintrace-activity-logger' ); ?></option>
 					<?php foreach ( Vocabulary::categories() as $key => $label ) : ?>
-						<?php if ( ! $manage && ! in_array( $key, Vocabulary::viewer_categories(), true ) ) { continue; } ?>
+						<?php
+						if ( ! $manage && ! in_array( $key, Vocabulary::viewer_categories(), true ) ) {
+							continue; }
+						?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $filters['category'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
@@ -270,10 +291,10 @@ class Timeline_Screen {
 					<?php
 					wp_dropdown_users(
 						array(
-							'name'              => 'user_id',
-							'id'                => 'srah-user',
-							'show_option_all'   => __( 'All accounts', 'admintrace-activity-logger' ),
-							'selected'          => $filters['user_id'],
+							'name'            => 'user_id',
+							'id'              => 'srah-user',
+							'show_option_all' => __( 'All accounts', 'admintrace-activity-logger' ),
+							'selected'        => $filters['user_id'],
 						)
 					);
 					?>
@@ -304,11 +325,15 @@ class Timeline_Screen {
 	/**
 	 * Compact table.
 	 *
-	 * @param array $rows Rows.
+	 * @param array $rows       Rows.
 	 * @param bool  $include_ip Whether masked IPs are shown.
+	 * @param bool  $checkboxes Whether rows can be selected for deletion.
 	 */
-	private static function table( array $rows, $include_ip ) {
+	private static function table( array $rows, $include_ip, $checkboxes = false ) {
 		echo '<table class="widefat striped srah-table"><thead><tr>';
+		if ( $checkboxes ) {
+			echo '<td class="check-column"><span class="screen-reader-text">' . esc_html__( 'Select', 'admintrace-activity-logger' ) . '</span></td>';
+		}
 		echo '<th scope="col">' . esc_html__( 'When', 'admintrace-activity-logger' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Severity', 'admintrace-activity-logger' ) . '</th>';
 		echo '<th scope="col">' . esc_html__( 'Category', 'admintrace-activity-logger' ) . '</th>';
@@ -319,6 +344,14 @@ class Timeline_Screen {
 			$row  = Access::present( $row, $include_ip );
 			$when = \SigmaRocks\AdvanceHistory\Support\Time::display( $row['created_gmt'], isset( $row['created_ms'] ) ? (int) $row['created_ms'] : 0 );
 			echo '<tr>';
+			if ( $checkboxes ) {
+				$label = sprintf(
+					/* translators: %s: event summary. */
+					__( 'Select: %s', 'admintrace-activity-logger' ),
+					$row['summary']
+				);
+				echo '<th scope="row" class="check-column"><label><span class="screen-reader-text">' . esc_html( $label ) . '</span><input class="srah-event-check" type="checkbox" name="event_ids[]" value="' . esc_attr( Renderer::selection( $row ) ) . '"></label></th>';
+			}
 			echo '<td><time datetime="' . esc_attr( $when['iso'] ) . '">' . esc_html( $when['primary'] ) . '</time></td>';
 			echo '<td>' . esc_html( Vocabulary::severity_label( $row['severity'] ) ) . '</td>';
 			echo '<td>' . esc_html( Vocabulary::category_label( $row['category'] ) ) . '</td>';
@@ -350,7 +383,7 @@ class Timeline_Screen {
 		if ( $pages < 2 ) {
 			return;
 		}
-		$base = self::view_url( $filters, $filters['view'] );
+		$base  = self::view_url( $filters, $filters['view'] );
 		$links = paginate_links(
 			array(
 				'base'      => add_query_arg( 'paged', '%#%', $base ),
@@ -422,7 +455,26 @@ class Timeline_Screen {
 			'page' => 'admintrace-activity-logger',
 			'view' => $view,
 		);
-		foreach ( array( 'search' => 's', 'category' => 'category', 'severity' => 'severity', 'initiator' => 'initiator', 'user_id' => 'user_id', 'after' => 'after', 'before' => 'before' ) as $from => $to ) {
+		return add_query_arg( array_merge( $args, self::url_filters( $filters ) ), admin_url( 'admin.php' ) );
+	}
+
+	/**
+	 * Active filters as the URL parameters that filters() reads.
+	 *
+	 * @param array $filters Filters.
+	 * @return array
+	 */
+	private static function url_filters( array $filters ) {
+		$args = array();
+		foreach ( array(
+			'search'    => 's',
+			'category'  => 'category',
+			'severity'  => 'severity',
+			'initiator' => 'initiator',
+			'user_id'   => 'user_id',
+			'after'     => 'after',
+			'before'    => 'before',
+		) as $from => $to ) {
 			if ( ! empty( $filters[ $from ] ) ) {
 				$args[ $to ] = $filters[ $from ];
 			}
@@ -430,6 +482,6 @@ class Timeline_Screen {
 		if ( ! empty( $filters['exclude'] ) ) {
 			$args['exclude_me'] = 1;
 		}
-		return add_query_arg( $args, admin_url( 'admin.php' ) );
+		return $args;
 	}
 }

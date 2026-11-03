@@ -39,7 +39,7 @@ class Groups {
 				continue;
 			}
 
-			$bundle = array( $rows[ $index ] );
+			$bundle         = array( $rows[ $index ] );
 			$used[ $index ] = true;
 			$tail           = self::stamp( $rows[ $index ] );
 
@@ -51,9 +51,9 @@ class Groups {
 				if ( ! $tail || ! $stamp || ( $tail - $stamp ) > self::WINDOW ) {
 					break;
 				}
-				$bundle[]       = $rows[ $next ];
-				$used[ $next ]  = true;
-				$tail           = $stamp;
+				$bundle[]      = $rows[ $next ];
+				$used[ $next ] = true;
+				$tail          = $stamp;
 			}
 
 			$grouped[] = self::pack( $bundle );
@@ -87,7 +87,7 @@ class Groups {
 	 * @return int
 	 */
 	private static function stamp( array $row ) {
-		$gmt = isset( $row['created_gmt'] ) ? (string) $row['created_gmt'] : '';
+		$gmt  = isset( $row['created_gmt'] ) ? (string) $row['created_gmt'] : '';
 		$time = strtotime( $gmt . ' UTC' );
 		return $time ? (int) $time : 0;
 	}
@@ -102,8 +102,12 @@ class Groups {
 		$lead  = $bundle[0];
 		$count = 0;
 		$times = array();
+		$ids   = array();
 
 		foreach ( $bundle as $row ) {
+			if ( ! empty( $row['id'] ) ) {
+				$ids[] = (int) $row['id'];
+			}
 			$context = isset( $row['context'] ) && is_array( $row['context'] ) ? $row['context'] : array();
 			$stored  = isset( $context['repeat_count'] ) ? (int) $context['repeat_count'] : 1;
 			$count  += max( 1, $stored );
@@ -117,9 +121,10 @@ class Groups {
 			}
 		}
 
-		$times = array_values( array_filter( array_unique( $times ) ) );
+		$times                = array_values( array_filter( array_unique( $times ) ) );
 		$lead['repeat_count'] = $count;
 		$lead['repeat_times'] = array_slice( $times, 0, 12 );
+		$lead['group_ids']    = $ids;
 
 		return $lead;
 	}

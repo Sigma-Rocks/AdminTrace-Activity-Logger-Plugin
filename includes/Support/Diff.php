@@ -18,12 +18,12 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Diff {
 
-	const MAX_INPUT = 20000;
-	const MAX_WORDS = 12;
-	const MAX_LINES = 180;
-	const MAX_CELLS = 36000;
-	const MAX_HUNKS = 26;
-	const CONTEXT  = 2;
+	const MAX_INPUT  = 20000;
+	const MAX_WORDS  = 12;
+	const MAX_LINES  = 180;
+	const MAX_CELLS  = 36000;
+	const MAX_HUNKS  = 26;
+	const CONTEXT    = 2;
 	const LINE_WIDTH = 240;
 
 	/**
@@ -120,11 +120,11 @@ class Diff {
 	 * @return array
 	 */
 	private static function plain_lines( $html ) {
-		$text = (string) $html;
-		$text = preg_replace( '/<\s*br\s*\/?\s*>/i', "\n", $text );
-		$text = preg_replace( '/<\/(p|div|h[1-6]|li|tr|blockquote|pre|figcaption)>/i', "\n", $text );
-		$text = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
-		$text = str_replace( array( "\r\n", "\r" ), "\n", (string) $text );
+		$text  = (string) $html;
+		$text  = preg_replace( '/<\s*br\s*\/?\s*>/i', "\n", $text );
+		$text  = preg_replace( '/<\/(p|div|h[1-6]|li|tr|blockquote|pre|figcaption)>/i', "\n", $text );
+		$text  = html_entity_decode( wp_strip_all_tags( (string) $text ), ENT_QUOTES, 'UTF-8' );
+		$text  = str_replace( array( "\r\n", "\r" ), "\n", (string) $text );
 		$parts = explode( "\n", $text );
 		$lines = array();
 
@@ -157,8 +157,8 @@ class Diff {
 			return array( $line );
 		}
 
-		$words  = preg_split( '/\s+/u', $line );
-		$chunks = array();
+		$words   = preg_split( '/\s+/u', $line );
+		$chunks  = array();
 		$current = '';
 		if ( ! is_array( $words ) ) {
 			return array( self::clip( $line ) );
@@ -169,7 +169,7 @@ class Diff {
 			if ( '' === $word ) {
 				continue;
 			}
-			$next = '' === $current ? $word : $current . ' ' . $word;
+			$next        = '' === $current ? $word : $current . ' ' . $word;
 			$next_length = function_exists( 'mb_strlen' ) ? mb_strlen( $next ) : strlen( $next );
 			if ( '' !== $current && $next_length > self::LINE_WIDTH ) {
 				$chunks[] = $current;
@@ -231,8 +231,8 @@ class Diff {
 					$dp[ $i ][ $j ] = $dp[ $i + 1 ][ $j + 1 ] + 1;
 					continue;
 				}
-				$down = $dp[ $i + 1 ][ $j ];
-				$right = $dp[ $i ][ $j + 1 ];
+				$down           = $dp[ $i + 1 ][ $j ];
+				$right          = $dp[ $i ][ $j + 1 ];
 				$dp[ $i ][ $j ] = $down >= $right ? $down : $right;
 			}
 		}
@@ -429,13 +429,15 @@ class Diff {
 	 */
 	private static function difference( $from, $to ) {
 		$diff = array();
+		$size = 0;
 		foreach ( $from as $word => $count ) {
 			$left = $count - ( isset( $to[ $word ] ) ? $to[ $word ] : 0 );
-			while ( $left > 0 && count( $diff ) < self::MAX_WORDS ) {
+			while ( $left > 0 && $size < self::MAX_WORDS ) {
 				$diff[] = (string) $word;
+				++$size;
 				--$left;
 			}
-			if ( count( $diff ) >= self::MAX_WORDS ) {
+			if ( $size >= self::MAX_WORDS ) {
 				break;
 			}
 		}

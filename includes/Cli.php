@@ -51,6 +51,8 @@ class Cli {
 	 * [--format=<format>]
 	 * : table, json, or csv. Default table.
 	 *
+	 * @subcommand list
+	 *
 	 * @param array $args       Positional arguments.
 	 * @param array $assoc_args Named arguments.
 	 */
@@ -58,10 +60,10 @@ class Cli {
 		unset( $args );
 		$this->assert_allowed( Capabilities::VIEW );
 
-		$query = $this->query_args( $assoc_args );
+		$query             = $this->query_args( $assoc_args );
 		$query['per_page'] = isset( $assoc_args['limit'] ) ? (int) $assoc_args['limit'] : 20;
-		$result = Query::search( $query );
-		$rows   = array();
+		$result            = Query::search( $query );
+		$rows              = array();
 		foreach ( $result['rows'] as $row ) {
 			$rows[] = Access::present( $row, ! empty( $query['include_ip'] ) );
 		}

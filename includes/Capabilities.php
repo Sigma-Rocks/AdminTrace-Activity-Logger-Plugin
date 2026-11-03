@@ -34,7 +34,7 @@ class Capabilities {
 	 * @param array    $allcaps All capabilities for the user.
 	 * @param string[] $caps    Requested capabilities.
 	 * @param array    $args    Extra arguments.
-	 * @param \WP_User $user    User being checked.
+	 * @param mixed    $user    User being checked. Core passes a WP_User; other callers may not.
 	 * @return array
 	 */
 	public static function grant( $allcaps, $caps, $args, $user ) {
@@ -43,7 +43,8 @@ class Capabilities {
 		$roles   = ( $user instanceof \WP_User ) ? (array) $user->roles : array();
 		$user_id = ( $user instanceof \WP_User ) ? (int) $user->ID : 0;
 
-		if ( in_array( 'administrator', $roles, true ) || ( function_exists( 'is_super_admin' ) && is_super_admin( $user_id ) ) ) {
+		// On a single site is_super_admin() calls has_cap(), which would run this filter again.
+		if ( in_array( 'administrator', $roles, true ) || ( is_multisite() && is_super_admin( $user_id ) ) ) {
 			$allcaps[ self::VIEW ]   = true;
 			$allcaps[ self::MANAGE ] = true;
 			$allcaps[ self::EXPORT ] = true;

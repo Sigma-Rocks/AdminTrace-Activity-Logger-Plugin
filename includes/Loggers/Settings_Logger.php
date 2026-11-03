@@ -63,10 +63,10 @@ class Settings_Logger extends Logger {
 	 *
 	 * @param string $option Option name.
 	 * @param mixed  $old    Old value.
-	 * @param mixed  $new    New value.
+	 * @param mixed  $new_value    New value.
 	 */
-	public function on_updated( $option, $old, $new ) {
-		$this->record( $option, $old, $new, false );
+	public function on_updated( $option, $old, $new_value ) {
+		$this->record( $option, $old, $new_value, false );
 	}
 
 	/**
@@ -115,26 +115,26 @@ class Settings_Logger extends Logger {
 	 *
 	 * @param string $option Option name.
 	 * @param mixed  $old    Old value.
-	 * @param mixed  $new    New value.
+	 * @param mixed  $new_value    New value.
 	 * @param bool   $added  Whether the option was added.
 	 */
-	private function record( $option, $old, $new, $added ) {
+	private function record( $option, $old, $new_value, $added ) {
 		$option = (string) $option;
 		if ( $this->blocked( $option ) || ! in_array( $option, $this->tracked(), true ) ) {
 			return;
 		}
-		if ( ! $added && $old === $new ) {
+		if ( ! $added && $old === $new_value ) {
 			return;
 		}
 
 		$change = array(
 			'field' => $option,
 			'from'  => $this->display_value( $old ),
-			'to'    => $this->display_value( $new ),
+			'to'    => $this->display_value( $new_value ),
 		);
 		if ( 'site_icon' === $option ) {
 			$change['from_attachment'] = absint( $old );
-			$change['to_attachment']   = absint( $new );
+			$change['to_attachment']   = absint( $new_value );
 		}
 
 		$category = ( 0 === strpos( $option, 'woocommerce_' ) ) ? 'commerce' : 'settings';

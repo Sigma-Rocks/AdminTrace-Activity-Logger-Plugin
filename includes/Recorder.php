@@ -66,7 +66,10 @@ class Recorder {
 		if ( self::$suspended > 0 || self::$inside ) {
 			return 0;
 		}
-		if ( function_exists( 'wp_installing' ) && wp_installing() ) {
+		// wpmu_create_blog() turns installing mode on and never turns it off, so network events must pass.
+		// Inside a switch the new site is still being set up and has no table yet.
+		$network = isset( $event['category'] ) && 'network' === $event['category'] && ! ( is_multisite() && ms_is_switched() );
+		if ( function_exists( 'wp_installing' ) && wp_installing() && ! $network ) {
 			return 0;
 		}
 
@@ -250,6 +253,7 @@ class Recorder {
 			return 0;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$existing = $wpdb->get_row(
 			$wpdb->prepare(
 				'SELECT id, context, created_gmt FROM %i WHERE blog_id = %d AND action = %s AND summary = %s AND user_id = %d AND object_type = %s AND object_id = %d ORDER BY id DESC LIMIT 1',
@@ -280,9 +284,9 @@ class Recorder {
 			return 0;
 		}
 
-		$times   = isset( $previous['repeat_times'] ) && is_array( $previous['repeat_times'] ) ? $previous['repeat_times'] : array( $existing['created_gmt'] );
-		$times[] = $row['created_gmt'];
-		$context = $incoming;
+		$times                   = isset( $previous['repeat_times'] ) && is_array( $previous['repeat_times'] ) ? $previous['repeat_times'] : array( $existing['created_gmt'] );
+		$times[]                 = $row['created_gmt'];
+		$context                 = $incoming;
 		$context['repeat_count'] = ( isset( $previous['repeat_count'] ) ? (int) $previous['repeat_count'] : 1 ) + 1;
 		$context['first_gmt']    = gmdate( 'Y-m-d H:i:s', $first );
 		$context['last_gmt']     = $row['created_gmt'];
@@ -293,6 +297,7 @@ class Recorder {
 			return 0;
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$updated = $wpdb->update(
 			Installer::table(),
 			array(
@@ -320,6 +325,7 @@ class Recorder {
 	private static function insert( array $row ) {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$ok = $wpdb->insert(
 			Installer::table(),
 			$row,
@@ -330,7 +336,7 @@ class Recorder {
 			return true;
 		}
 
-		$error = (string) $wpdb->last_error;
+		$error      = (string) $wpdb->last_error;
 		$repairable = false !== stripos( $error, 'srah_events' )
 			|| false !== stripos( $error, 'ah_events' )
 			|| false !== stripos( $error, 'unknown column' );
@@ -341,6 +347,7 @@ class Recorder {
 		self::$retried = true;
 		Installer::install();
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$ok = $wpdb->insert(
 			Installer::table(),
 			$row,

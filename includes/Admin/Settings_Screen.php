@@ -243,18 +243,18 @@ class Settings_Screen {
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<?php wp_nonce_field( 'srah_test_email' ); ?>
 						<input type="hidden" name="action" value="srah_test_email">
-						<?php submit_button( __( 'Send a test digest', 'admintrace-activity-logger' ), 'secondary', 'submit', false ); ?>
+						<?php submit_button( __( 'Send a test digest', 'admintrace-activity-logger' ), 'secondary', 'submit', false, array( 'id' => 'srah-test-email' ) ); ?>
 					</form>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<?php wp_nonce_field( 'srah_prune' ); ?>
 						<input type="hidden" name="action" value="srah_prune">
-						<?php submit_button( __( 'Apply retention now', 'admintrace-activity-logger' ), 'secondary', 'submit', false ); ?>
+						<?php submit_button( __( 'Apply retention now', 'admintrace-activity-logger' ), 'secondary', 'submit', false, array( 'id' => 'srah-prune-now' ) ); ?>
 					</form>
 					<form class="srah-danger" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<?php wp_nonce_field( 'srah_delete_all' ); ?>
 						<input type="hidden" name="action" value="srah_delete_all">
 						<label class="srah-toggle"><input type="checkbox" name="confirm_delete_all" value="1" required> <span><?php esc_html_e( 'Clear every event on this site', 'admintrace-activity-logger' ); ?></span></label>
-						<?php submit_button( __( 'Clear journal', 'admintrace-activity-logger' ), 'delete', 'submit', false ); ?>
+						<?php submit_button( __( 'Clear journal', 'admintrace-activity-logger' ), 'delete', 'submit', false, array( 'id' => 'srah-clear-journal' ) ); ?>
 					</form>
 				</div>
 			</section>
@@ -268,14 +268,14 @@ class Settings_Screen {
 	 * @return array
 	 */
 	public static function input_from_request() {
-		$post    = wp_unslash( $_POST );
-		$section = isset( $post['settings_section'] ) ? sanitize_key( $post['settings_section'] ) : 'general';
+		$post                     = wp_unslash( $_POST ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- called from Menu::save_settings() after authorize(); Settings::sanitize() cleans every field.
+		$section                  = isset( $post['settings_section'] ) ? sanitize_key( $post['settings_section'] ) : 'general';
 		$post['settings_section'] = $section;
 		if ( 'general' !== $section ) {
 			return $post;
 		}
-		$enabled = isset( $post['loggers'] ) && is_array( $post['loggers'] ) ? $post['loggers'] : array();
-		$enabled = array_map( 'sanitize_key', $enabled );
+		$enabled  = isset( $post['loggers'] ) && is_array( $post['loggers'] ) ? $post['loggers'] : array();
+		$enabled  = array_map( 'sanitize_key', $enabled );
 		$disabled = array();
 		foreach ( Logger_Registry::all() as $id => $logger ) {
 			unset( $logger );

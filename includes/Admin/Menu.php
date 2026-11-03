@@ -77,16 +77,16 @@ class Menu {
 	/**
 	 * Pages for events, files, and display.
 	 *
-	 * @param string $parent Parent menu slug.
+	 * @param string $parent_slug Parent menu slug.
 	 */
-	private static function extra_pages( $parent ) {
+	private static function extra_pages( $parent_slug ) {
 		$pages = array(
 			array( __( 'Events', 'admintrace-activity-logger' ), 'admintrace-activity-logger-events', array( Events_Screen::class, 'render' ) ),
 			array( __( 'Files and database', 'admintrace-activity-logger' ), 'admintrace-activity-logger-files', array( Files_Screen::class, 'render' ) ),
 			array( __( 'Display', 'admintrace-activity-logger' ), 'admintrace-activity-logger-display', array( Display_Screen::class, 'render' ) ),
 		);
 		foreach ( $pages as $page ) {
-			add_submenu_page( $parent, $page[0], $page[0], Capabilities::MANAGE, $page[1], $page[2] );
+			add_submenu_page( $parent_slug, $page[0], $page[0], Capabilities::MANAGE, $page[1], $page[2] );
 		}
 	}
 
@@ -150,7 +150,12 @@ class Menu {
 		$before = Settings::all();
 		$clean  = Settings::sanitize( Settings_Screen::input_from_request(), $before );
 		Settings::update( $clean );
-		Notifications::reschedule();
+		// Saving another section must not push the next digest back.
+		if ( $before['email_digest'] !== $clean['email_digest'] ) {
+			Notifications::reschedule();
+		} else {
+			Notifications::ensure_scheduled();
+		}
 
 		$changed = array();
 		foreach ( $clean as $key => $value ) {
@@ -184,7 +189,7 @@ class Menu {
 		self::authorize( Capabilities::EXPORT, 'srah_export' );
 		$filters = Timeline_Screen::filters();
 		$args    = Access::constrain( Timeline_Screen::query_args( $filters ) );
-		$format  = isset( $_REQUEST['format'] ) ? sanitize_key( wp_unslash( $_REQUEST['format'] ) ) : 'csv';
+		$format  = isset( $_REQUEST['format'] ) ? sanitize_key( wp_unslash( $_REQUEST['format'] ) ) : 'csv'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- authorize() verified the nonce.
 		Export::send( $format, $args );
 	}
 
@@ -193,8 +198,10 @@ class Menu {
 	 */
 	public static function delete_selected() {
 		self::authorize( Capabilities::DELETE, 'srah_delete' );
-		$ids = isset( $_POST['event_ids'] ) ? (array) wp_unslash( $_POST['event_ids'] ) : array();
-		$deleted = Retention::delete_ids( $ids );
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verified the nonce.
+		$raw = isset( $_POST['event_ids'] ) ? array_map( 'sanitize_text_field', (array) wp_unslash( $_POST['event_ids'] ) ) : array();
+		// A combined card posts its row IDs as one comma-separated value.
+		$deleted = Retention::delete_ids( wp_parse_id_list( implode( ',', $raw ) ) );
 		if ( ! $deleted ) {
 			Notices::redirect( 'warning', __( 'Select at least one event to delete.', 'admintrace-activity-logger' ) );
 		}
@@ -202,7 +209,7 @@ class Menu {
 			'success',
 			sprintf(
 				/* translators: %d: number of deleted events. */
-				__( 'Deleted %d events.', 'admintrace-activity-logger' ),
+				_n( 'Deleted %d event.', 'Deleted %d events.', $deleted, 'admintrace-activity-logger' ),
 				$deleted
 			)
 		);
@@ -213,7 +220,7 @@ class Menu {
 	 */
 	public static function delete_all() {
 		self::authorize( Capabilities::DELETE, 'srah_delete_all' );
-		if ( empty( $_POST['confirm_delete_all'] ) ) {
+		if ( empty( $_POST['confirm_delete_all'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing -- authorize() verified the nonce.
 			Notices::redirect( 'error', __( 'Confirm deletion before clearing the journal.', 'admintrace-activity-logger' ), 'admintrace-activity-logger-settings' );
 		}
 		$deleted = Retention::delete_all();
@@ -250,18 +257,20 @@ class Menu {
 	 */
 	public static function note() {
 		self::authorize( Capabilities::MANAGE, 'srah_note' );
-		$summary  = isset( $_POST['summary'] ) ? wp_unslash( $_POST['summary'] ) : '';
+		// phpcs:disable WordPress.Security.NonceVerification.Missing -- authorize() verified the nonce.
+		$summary  = isset( $_POST['summary'] ) ? sanitize_textarea_field( wp_unslash( $_POST['summary'] ) ) : '';
 		$severity = isset( $_POST['severity'] ) ? sanitize_key( wp_unslash( $_POST['severity'] ) ) : 'info';
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
 		if ( ! isset( Vocabulary::severities()[ $severity ] ) ) {
 			$severity = 'info';
 		}
 		$id = Recorder::log(
 			array(
-				'summary'   => $summary,
-				'category'  => 'journal',
-				'action'    => 'journal.note',
-				'severity'  => $severity,
-				'logger'    => 'journal',
+				'summary'  => $summary,
+				'category' => 'journal',
+				'action'   => 'journal.note',
+				'severity' => $severity,
+				'logger'   => 'journal',
 			)
 		);
 		if ( ! $id ) {

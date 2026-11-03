@@ -34,12 +34,12 @@ class Time {
 			);
 		}
 
-		$format = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
-		$local  = function_exists( 'wp_date' ) ? wp_date( $format, $timestamp ) : gmdate( 'Y-m-d H:i:s', $timestamp );
-		$ms     = max( 0, min( 999, (int) $ms ) );
+		$format   = get_option( 'date_format' ) . ' ' . get_option( 'time_format' );
+		$local    = function_exists( 'wp_date' ) ? wp_date( $format, $timestamp ) : gmdate( 'Y-m-d H:i:s', $timestamp );
+		$ms       = max( 0, min( 999, (int) $ms ) );
 		$fraction = sprintf( '.%03d', $ms );
 		$local   .= $fraction;
-		$diff   = human_time_diff( $timestamp, time() );
+		$diff     = human_time_diff( $timestamp, time() );
 		/* translators: %s: amount of time, such as "3 hours". */
 		$relative = sprintf( __( '%s ago', 'admintrace-activity-logger' ), $diff );
 		$primary  = ( time() - $timestamp ) > ( 7 * DAY_IN_SECONDS ) ? $local : $relative;

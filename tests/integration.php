@@ -41,7 +41,7 @@ function srah_check( $ok, $message ) {
 		echo "ok  {$message}\n";
 		return;
 	}
-	$failures++;
+	++$failures;
 	fwrite( STDERR, "FAIL {$message}\n" );
 }
 
@@ -50,8 +50,8 @@ $table = \SigmaRocks\AdvanceHistory\Installer::table();
 $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->esc_like( $table ) ) );
 srah_check( $found === $table, 'event table exists' );
 
-$original = \SigmaRocks\AdvanceHistory\Settings::all();
-$tweaked  = $original;
+$original                        = \SigmaRocks\AdvanceHistory\Settings::all();
+$tweaked                         = $original;
 $tweaked['alert_failed_logins']  = 0;
 $tweaked['webhook_url']          = '';
 $tweaked['webhook_min_severity'] = 'off';
@@ -161,18 +161,19 @@ try {
 	delete_transient( 'srah_fail_logins' );
 	$wpdb->query(
 		$wpdb->prepare(
-			"DELETE FROM {$table} WHERE action = %s AND created_gmt >= %s",
+			'DELETE FROM %i WHERE action = %s AND created_gmt >= %s',
+			$table,
 			'security.login_threshold',
 			$started
 		)
 	);
 	$flood = '%' . $wpdb->esc_like( 'srah-flood-' ) . '%';
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE summary LIKE %s", $flood ) );
+	$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE summary LIKE %s', $table, $flood ) );
 	if ( $ids ) {
 		\SigmaRocks\AdvanceHistory\Retention::delete_ids( $ids );
 	}
 	$like = '%' . $wpdb->esc_like( $username ) . '%';
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$table} WHERE user_login = %s OR summary LIKE %s", $username, $like ) );
+	$wpdb->query( $wpdb->prepare( 'DELETE FROM %i WHERE user_login = %s OR summary LIKE %s', $table, $username, $like ) );
 }
 
 echo $failures ? "{$failures} integration checks failed\n" : "all integration checks passed\n";

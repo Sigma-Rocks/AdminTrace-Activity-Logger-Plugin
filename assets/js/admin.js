@@ -33,24 +33,28 @@
 					button.textContent = previous;
 				}, 1600);
 			};
+			var fallback = function () {
+				var area = document.createElement('textarea');
+				area.value = text;
+				area.setAttribute('readonly', 'readonly');
+				area.style.position = 'absolute';
+				area.style.left = '-9999px';
+				document.body.appendChild(area);
+				area.select();
+				try {
+					if (document.execCommand('copy')) {
+						done();
+					}
+				} catch (error) {
+					// Copying is unavailable; the text stays selectable on the page.
+				}
+				document.body.removeChild(area);
+			};
 			if (navigator.clipboard && navigator.clipboard.writeText) {
-				navigator.clipboard.writeText(text).then(done);
+				navigator.clipboard.writeText(text).then(done, fallback);
 				return;
 			}
-			var area = document.createElement('textarea');
-			area.value = text;
-			area.setAttribute('readonly', 'readonly');
-			area.style.position = 'absolute';
-			area.style.left = '-9999px';
-			document.body.appendChild(area);
-			area.select();
-			try {
-				document.execCommand('copy');
-				done();
-			} catch (error) {
-				return;
-			}
-			document.body.removeChild(area);
+			fallback();
 		});
 	});
 }());

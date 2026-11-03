@@ -61,7 +61,7 @@ These events are recorded when the other plugin is active and fires its public h
 * The activity journal, with search plus filters for category, severity, source, account, and date
 * Timeline and table views
 * A Dashboard widget and an admin-bar list
-* The WordPress command palette on WordPress 6.9 and newer, alongside the other admin screens
+* On WordPress 6.9 and newer, the journal screens can be opened from the WordPress command palette, because core lists every admin menu page there. The plugin does not add commands of its own.
 * A panel on the post editing screen for that post’s history
 * A plain-text daily or weekly email digest, and an email when failed logins cross a threshold
 * A private RSS feed that stays off until an administrator enables it
@@ -71,11 +71,13 @@ These events are recorded when the other plugin is active and fires its public h
 
 = Files and database =
 
-A daily scan can record PHP, JavaScript, and CSS files that were added, changed, or deleted under plugins, themes, and uploads, plus wp-config.php and .htaccess. It can also record when a database table for this site is created or dropped. The first scan only saves a baseline. File contents and SQL are not stored. WordPress core folders are not hashed.
+A scan can record files that were added, changed, or deleted. It covers PHP, JavaScript, CSS, and HTML files in plugins, themes, and must-use plugins, PHP drop-ins in wp-content, and wp-config.php, .htaccess, and .user.ini in the site root. Each plugin or theme is limited to 6,000 files and the whole scan to 20,000. Uploads are left out unless you turn them on under Files and database. Then PHP, JSON, XML, text, SVG, and HTML files in uploads are included. JavaScript, CSS, images, and archives in uploads are not scanned.
+
+The scan runs when an administrator opens wp-admin (at most once a minute, and every time on the AdminTrace screens), after a plugin or theme is installed, activated, deleted, or switched, once a day from WP-Cron, and when you click Scan now. It can also record when a database table with this site’s prefix is created or dropped. The first scan only saves a baseline. File contents and SQL are not stored. WordPress core folders are not hashed.
 
 = How long it is kept =
 
-Events are kept for 90 days by default. Choose any period from 0 days, which keeps rows until you delete them, through 10 years. Administrators can delete selected rows or clear the journal for the current site.
+Events are kept for 90 days by default. Choose any period from 0 days, which keeps rows until you delete them, through 10 years. Administrators can tick events in the journal (timeline or table) and delete them after a confirmation, delete one event through the REST API, or clear the journal for the current site from Settings. Deleting a combined card removes every repeat it stands for.
 
 Editors and shop managers can be allowed to see content activity. They do not see security events or network addresses. Shop managers can also see WooCommerce events.
 
@@ -83,7 +85,7 @@ Multisite keeps a separate journal on each site.
 
 = Privacy =
 
-The journal stays on this site. Profile marks are initials drawn by the plugin. Profile photos from Gravatar stay off until you turn them on under Display. Each event stores the acting user’s role and the time to the millisecond. It does not set a tracking cookie or call an analytics service. The email digest, the failed-login alert, and the HTTPS webhook stay off until an administrator turns them on. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
+The journal stays on this site. Profile marks are initials drawn by the plugin. Profile photos from Gravatar stay off until you turn them on under Display. Each event stores the acting user’s role and the time to the millisecond. It does not set a tracking cookie or call an analytics service. The email digest and the HTTPS webhook stay off until an administrator turns them on. Two emails are on by default and go to the site administration address, or to the alert address you set: one when failed logins cross the threshold (this can be turned off), and one for each critical event. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
 
 = What this activity log does not do =
 
@@ -119,7 +121,7 @@ Yes, by default. There is a setting to keep the journal instead. Deactivation do
 
 = Does it send data anywhere? =
 
-The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. The private feed is off until it is enabled. Gravatar photos stay off until Display is changed. The plugin does not look up addresses or call an analytics service.
+The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. Critical events are also emailed to the alert address. The private feed is off until it is enabled. Gravatar photos stay off until Display is changed. The plugin does not look up addresses or call an analytics service.
 
 = Does it load profile images from Gravatar? =
 
@@ -150,6 +152,19 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 5. File and database scan settings, with recent added, changed, and deleted files.
 
 == Changelog ==
+
+= Unreleased =
+* Administrators can again select events in the journal and delete them, after a confirmation. A combined card deletes all of its repeats.
+* The daily retention task now deletes expired events. It previously kept everything.
+* Pages for non-administrators no longer run out of memory when the capability check repeated itself.
+* Webhook payloads include the event ID. Exports keep the search and “hide my events” filters.
+* Theme and plugin uploads are recorded with their names. Saving a post no longer records an unchanged featured image, and edits are no longer labelled as new posts.
+* Journal counts are cached separately for administrators and editors.
+* Multisite records site creation, records site deletion in the main journal, and drops the deleted site’s table.
+* Saving an unrelated settings section no longer moves the next digest.
+* REST list responses include X-WP-TotalPages.
+* Events recorded in the same second keep their order, so journal pages no longer repeat or skip them.
+* The readme describes the file scan, alert emails, and command palette accurately.
 
 = 1.0.6 =
 * Ending another user’s login sessions is recorded.

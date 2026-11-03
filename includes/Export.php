@@ -71,14 +71,34 @@ class Export {
 		if ( 'json' === $format ) {
 			header( 'Content-Type: application/json; charset=utf-8' );
 			header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
-			echo wp_json_encode( $rows, JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT );
+			echo self::json( $rows ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- a JSON download; json() escapes tags, ampersands, and quotes.
 			exit;
 		}
 
 		header( 'Content-Type: text/csv; charset=utf-8' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
 		echo "\xEF\xBB\xBF";
-		$out     = fopen( 'php://output', 'w' );
+		self::write_csv( fopen( 'php://output', 'w' ), $rows );
+		exit;
+	}
+
+	/**
+	 * JSON body of an export.
+	 *
+	 * @param array $rows Rows from collect().
+	 * @return string
+	 */
+	public static function json( array $rows ) {
+		return (string) wp_json_encode( $rows, JSON_PRETTY_PRINT | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT );
+	}
+
+	/**
+	 * Write the CSV header and rows to a stream.
+	 *
+	 * @param resource $out  Writable stream.
+	 * @param array    $rows Rows from collect().
+	 */
+	public static function write_csv( $out, array $rows ) {
 		$headers = array( 'id', 'created_gmt', 'created_ms', 'user_login', 'user_display', 'user_role', 'initiator', 'ip_masked', 'severity', 'category', 'action', 'object_type', 'object_id', 'object_title', 'summary', 'context' );
 		fputcsv( $out, $headers, ',', '"', '\\' );
 		foreach ( $rows as $row ) {
@@ -103,6 +123,5 @@ class Export {
 			);
 			fputcsv( $out, array_map( array( Csv::class, 'cell' ), $line ), ',', '"', '\\' );
 		}
-		exit;
 	}
 }

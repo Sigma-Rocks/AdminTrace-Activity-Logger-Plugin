@@ -36,34 +36,34 @@ class Settings {
 	 */
 	public static function defaults() {
 		return array(
-			'retention_days'             => 90,
-			'per_page'                   => 25,
-			'ip_mode'                    => 'masked',
-			'trust_proxy'                => 0,
-			'log_failed_logins'          => 1,
-			'editors_can_view_content'   => 0,
-			'excluded_roles'             => array(),
-			'excluded_user_ids'          => array(),
-			'disabled_loggers'           => array(),
-			'disabled_actions'           => array(),
-			'file_watch'                 => 1,
-			'file_watch_uploads'         => 0,
-			'table_watch'                => 1,
-			'use_gravatar'               => 0,
-			'dashboard_widget'           => 1,
-			'admin_bar'                  => 1,
-			'email_digest'               => 'off',
-			'digest_email'               => '',
-			'alert_failed_logins'        => 1,
-			'alert_threshold'            => 5,
-			'alert_email'                => '',
-			'webhook_url'                => '',
-			'webhook_min_severity'       => 'off',
-			'feed_enabled'               => 0,
-			'feed_token'                 => '',
-			'delete_data_on_uninstall'   => 1,
-			'menu_location'              => 'toplevel',
-			'default_view'               => 'timeline',
+			'retention_days'           => 90,
+			'per_page'                 => 25,
+			'ip_mode'                  => 'masked',
+			'trust_proxy'              => 0,
+			'log_failed_logins'        => 1,
+			'editors_can_view_content' => 0,
+			'excluded_roles'           => array(),
+			'excluded_user_ids'        => array(),
+			'disabled_loggers'         => array(),
+			'disabled_actions'         => array(),
+			'file_watch'               => 1,
+			'file_watch_uploads'       => 0,
+			'table_watch'              => 1,
+			'use_gravatar'             => 0,
+			'dashboard_widget'         => 1,
+			'admin_bar'                => 1,
+			'email_digest'             => 'off',
+			'digest_email'             => '',
+			'alert_failed_logins'      => 1,
+			'alert_threshold'          => 5,
+			'alert_email'              => '',
+			'webhook_url'              => '',
+			'webhook_min_severity'     => 'off',
+			'feed_enabled'             => 0,
+			'feed_token'               => '',
+			'delete_data_on_uninstall' => 1,
+			'menu_location'            => 'toplevel',
+			'default_view'             => 'timeline',
 		);
 	}
 
@@ -159,35 +159,35 @@ class Settings {
 
 		$clean = ( 'general' === $section ) ? $base : $defaults;
 
-		$days = isset( $input['retention_days'] ) ? (int) $input['retention_days'] : $defaults['retention_days'];
+		$days                    = isset( $input['retention_days'] ) ? (int) $input['retention_days'] : $defaults['retention_days'];
 		$clean['retention_days'] = min( 3650, max( 0, $days ) );
 
-		$per_page = isset( $input['per_page'] ) ? (int) $input['per_page'] : 25;
+		$per_page          = isset( $input['per_page'] ) ? (int) $input['per_page'] : 25;
 		$clean['per_page'] = in_array( $per_page, array( 10, 25, 50, 100 ), true ) ? $per_page : 25;
 
-		$clean['ip_mode']     = ( isset( $input['ip_mode'] ) && 'off' === $input['ip_mode'] ) ? 'off' : 'masked';
-		$clean['trust_proxy'] = empty( $input['trust_proxy'] ) ? 0 : 1;
-		$clean['log_failed_logins'] = empty( $input['log_failed_logins'] ) ? 0 : 1;
+		$clean['ip_mode']                  = ( isset( $input['ip_mode'] ) && 'off' === $input['ip_mode'] ) ? 'off' : 'masked';
+		$clean['trust_proxy']              = empty( $input['trust_proxy'] ) ? 0 : 1;
+		$clean['log_failed_logins']        = empty( $input['log_failed_logins'] ) ? 0 : 1;
 		$clean['editors_can_view_content'] = empty( $input['editors_can_view_content'] ) ? 0 : 1;
-		$clean['dashboard_widget'] = empty( $input['dashboard_widget'] ) ? 0 : 1;
-		$clean['admin_bar'] = empty( $input['admin_bar'] ) ? 0 : 1;
-		$clean['alert_failed_logins'] = empty( $input['alert_failed_logins'] ) ? 0 : 1;
+		$clean['dashboard_widget']         = empty( $input['dashboard_widget'] ) ? 0 : 1;
+		$clean['admin_bar']                = empty( $input['admin_bar'] ) ? 0 : 1;
+		$clean['alert_failed_logins']      = empty( $input['alert_failed_logins'] ) ? 0 : 1;
 		$clean['delete_data_on_uninstall'] = empty( $input['delete_data_on_uninstall'] ) ? 0 : 1;
-		$clean['feed_enabled'] = empty( $input['feed_enabled'] ) ? 0 : 1;
+		$clean['feed_enabled']             = empty( $input['feed_enabled'] ) ? 0 : 1;
 
-		$threshold = isset( $input['alert_threshold'] ) ? (int) $input['alert_threshold'] : 5;
+		$threshold                = isset( $input['alert_threshold'] ) ? (int) $input['alert_threshold'] : 5;
 		$clean['alert_threshold'] = min( 50, max( 3, $threshold ) );
 
-		$digest = isset( $input['email_digest'] ) ? (string) $input['email_digest'] : 'off';
+		$digest                = isset( $input['email_digest'] ) ? (string) $input['email_digest'] : 'off';
 		$clean['email_digest'] = in_array( $digest, array( 'off', 'daily', 'weekly' ), true ) ? $digest : 'off';
 
-		$location = isset( $input['menu_location'] ) ? (string) $input['menu_location'] : 'toplevel';
+		$location               = isset( $input['menu_location'] ) ? (string) $input['menu_location'] : 'toplevel';
 		$clean['menu_location'] = in_array( $location, array( 'toplevel', 'dashboard', 'tools' ), true ) ? $location : 'toplevel';
 
-		$view = isset( $input['default_view'] ) ? (string) $input['default_view'] : 'timeline';
+		$view                  = isset( $input['default_view'] ) ? (string) $input['default_view'] : 'timeline';
 		$clean['default_view'] = ( 'table' === $view ) ? 'table' : 'timeline';
 
-		$severity = isset( $input['webhook_min_severity'] ) ? (string) $input['webhook_min_severity'] : 'off';
+		$severity                      = isset( $input['webhook_min_severity'] ) ? (string) $input['webhook_min_severity'] : 'off';
 		$clean['webhook_min_severity'] = in_array( $severity, array( 'off', 'info', 'notice', 'warning', 'critical' ), true ) ? $severity : 'off';
 
 		$clean['digest_email'] = self::email_or_blank( isset( $input['digest_email'] ) ? $input['digest_email'] : '' );

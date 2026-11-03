@@ -148,7 +148,7 @@ class Media_Logger extends Logger {
 	 */
 	public function on_image_change( $image, $changes ) {
 		try {
-			$post_id = isset( $_REQUEST['postid'] ) ? absint( wp_unslash( $_REQUEST['postid'] ) ) : 0;
+			$post_id = isset( $_REQUEST['postid'] ) ? absint( wp_unslash( $_REQUEST['postid'] ) ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- runs inside core's image editor request, which checks its own nonce.
 			if ( $post_id && 'attachment' === get_post_type( $post_id ) ) {
 				$ops = array();
 				foreach ( (array) $changes as $change ) {
@@ -179,9 +179,9 @@ class Media_Logger extends Logger {
 		if ( ! $post instanceof \WP_Post ) {
 			return;
 		}
-		$file = get_attached_file( $post_id );
-		$mime = get_post_mime_type( $post_id );
-		$ops  = isset( $this->operations[ $post_id ] ) ? $this->operations[ $post_id ] : array();
+		$file    = get_attached_file( $post_id );
+		$mime    = get_post_mime_type( $post_id );
+		$ops     = isset( $this->operations[ $post_id ] ) ? $this->operations[ $post_id ] : array();
 		$summary = sprintf( $pattern, $post->post_title );
 		if ( $ops && 'media.edited' === $action ) {
 			$summary .= ' ' . sprintf(

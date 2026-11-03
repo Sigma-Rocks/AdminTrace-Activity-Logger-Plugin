@@ -34,8 +34,8 @@ class Assets {
 	public static function enqueue( $hook ) {
 		self::enqueue_menu_icon();
 
-		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
-		$ours = 'admintrace-activity-logger' === $page || 0 === strpos( $page, 'admintrace-activity-logger-' );
+		$page    = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- chooses which assets load.
+		$ours    = 'admintrace-activity-logger' === $page || 0 === strpos( $page, 'admintrace-activity-logger-' );
 		$related = in_array( $hook, array( 'index.php', 'post.php', 'post-new.php' ), true );
 		if ( ! $ours && ! $related ) {
 			return;

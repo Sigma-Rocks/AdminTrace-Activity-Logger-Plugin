@@ -31,20 +31,43 @@ class Feed {
 	 * Render the feed when a valid token is presented.
 	 */
 	public static function maybe_render() {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- the private feed is authenticated by its secret token.
 		if ( ! isset( $_GET['srah_feed'] ) ) {
 			return;
 		}
 
-		$settings = Settings::all();
-		$token    = isset( $_GET['token'] ) ? (string) wp_unslash( $_GET['token'] ) : '';
-		$stored   = (string) $settings['feed_token'];
-		$valid    = ! empty( $settings['feed_enabled'] ) && '' !== $stored && '' !== $token && hash_equals( $stored, $token );
+		$token = isset( $_GET['token'] ) ? sanitize_text_field( wp_unslash( $_GET['token'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		if ( ! $valid ) {
+		if ( ! self::token_matches( $token ) ) {
 			status_header( 404 );
 			exit;
 		}
 
+		nocache_headers();
+		header( 'Content-Type: application/rss+xml; charset=' . get_option( 'blog_charset' ) );
+		header( 'X-Robots-Tag: noindex, nofollow', true );
+		self::render();
+		exit;
+	}
+
+	/**
+	 * Whether the feed is on and the token is the stored secret.
+	 *
+	 * @param string $token Token from the request.
+	 * @return bool
+	 */
+	public static function token_matches( $token ) {
+		$settings = Settings::all();
+		$stored   = (string) $settings['feed_token'];
+		$token    = (string) $token;
+		return ! empty( $settings['feed_enabled'] ) && '' !== $stored && '' !== $token && hash_equals( $stored, $token );
+	}
+
+	/**
+	 * Print the RSS document for the 50 newest events.
+	 */
+	public static function render() {
 		$result = Query::search(
 			array(
 				'per_page'       => 50,
@@ -53,10 +76,6 @@ class Feed {
 				'internal_limit' => true,
 			)
 		);
-
-		nocache_headers();
-		header( 'Content-Type: application/rss+xml; charset=' . get_option( 'blog_charset' ) );
-		header( 'X-Robots-Tag: noindex, nofollow', true );
 
 		echo '<?xml version="1.0" encoding="' . esc_attr( get_option( 'blog_charset' ) ) . '"?>';
 		echo '<rss version="2.0"><channel>';
@@ -80,7 +99,6 @@ class Feed {
 		}
 
 		echo '</channel></rss>';
-		exit;
 	}
 
 	/**
@@ -96,7 +114,7 @@ class Feed {
 		return add_query_arg(
 			array(
 				'srah_feed' => 1,
-				'token'                => $settings['feed_token'],
+				'token'     => $settings['feed_token'],
 			),
 			home_url( '/' )
 		);

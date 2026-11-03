@@ -65,14 +65,14 @@ class Core_Logger extends Logger {
 	public function on_core_updated( $version ) {
 		$this->log(
 			array(
-				'summary'   => sprintf(
+				'summary'  => sprintf(
 					/* translators: %s: WordPress version. */
 					__( 'Updated WordPress to %s.', 'admintrace-activity-logger' ),
 					Text::plain( $version, 20 )
 				),
-				'category'  => 'core',
-				'action'    => 'core.updated',
-				'severity'  => 'notice',
+				'category' => 'core',
+				'action'   => 'core.updated',
+				'severity' => 'notice',
 			)
 		);
 	}
@@ -114,7 +114,7 @@ class Core_Logger extends Logger {
 		if ( ! is_array( $results ) ) {
 			return;
 		}
-		$ok = 0;
+		$ok     = 0;
 		$failed = 0;
 		foreach ( $results as $group ) {
 			if ( ! is_array( $group ) ) {
@@ -288,5 +288,4 @@ class Core_Logger extends Logger {
 		}
 		return '';
 	}
-
 }

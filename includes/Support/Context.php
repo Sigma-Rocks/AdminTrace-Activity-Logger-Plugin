@@ -39,7 +39,7 @@ class Context {
 		if ( function_exists( 'wp_json_encode' ) ) {
 			$json = wp_json_encode( $clean );
 		} else {
-			$json = json_encode( $clean );
+			$json = json_encode( $clean ); // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode -- used only when WordPress is not loaded, as in tests/smoke.php.
 		}
 		if ( ! is_string( $json ) || strlen( $json ) > self::MAX_BYTES ) {
 			return array(

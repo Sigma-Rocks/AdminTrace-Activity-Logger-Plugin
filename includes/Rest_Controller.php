@@ -174,7 +174,10 @@ class Rest_Controller {
 		}
 
 		$response = rest_ensure_response( $rows );
-		$response->header( 'X-WP-Total', (int) $result['total'] );
+		$total    = (int) $result['total'];
+		$per_page = max( 1, (int) $args['per_page'] );
+		$response->header( 'X-WP-Total', (string) $total );
+		$response->header( 'X-WP-TotalPages', (string) (int) ceil( $total / $per_page ) );
 		return $response;
 	}
 
@@ -185,7 +188,7 @@ class Rest_Controller {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public static function show( $request ) {
-		$args = Access::constrain(
+		$args   = Access::constrain(
 			array(
 				'id'       => (int) $request['id'],
 				'per_page' => 1,

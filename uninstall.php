@@ -35,7 +35,9 @@ function srah_uninstall_site() {
 		return;
 	}
 
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall removes the plugin's own table and options.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}srah_events" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- uninstall removes the plugin's own table and options.
 	$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}ah_events" );
 
 	foreach (
@@ -50,6 +52,7 @@ function srah_uninstall_site() {
 			'srah_watch_ran',
 			'srah_watch_note',
 			'srah_legacy_prefix_done',
+			'srah_legacy_table_done',
 			'advance_history_settings',
 			'advance_history_db_version',
 			'advance_history_backfilled',
@@ -67,6 +70,7 @@ function srah_uninstall_site() {
 		$wpdb->esc_like( '_transient_timeout_ah_' ) . '%',
 	);
 	foreach ( $names as $like ) {
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- uninstall removes the plugin's own table and options.
 		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $like ) );
 	}
 
@@ -90,15 +94,14 @@ function srah_uninstall_site() {
 }
 
 if ( is_multisite() ) {
-	$sites = get_sites(
+	$srah_sites = get_sites(
 		array(
 			'number' => 0,
 			'fields' => 'ids',
 		)
 	);
-	foreach ( $sites as $site ) {
-		$blog_id = is_object( $site ) ? (int) $site->blog_id : (int) $site;
-		switch_to_blog( $blog_id );
+	foreach ( $srah_sites as $srah_site ) {
+		switch_to_blog( (int) $srah_site );
 		srah_uninstall_site();
 		restore_current_blog();
 	}

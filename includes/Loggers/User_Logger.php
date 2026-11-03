@@ -121,8 +121,8 @@ class User_Logger extends Logger {
 	/**
 	 * Successful login.
 	 *
-	 * @param string   $user_login Username.
-	 * @param \WP_User $user       User.
+	 * @param string $user_login Username.
+	 * @param mixed  $user       User. Core passes a WP_User; other plugins fire wp_login too.
 	 */
 	public function on_login( $user_login, $user ) {
 		$user_id = ( $user instanceof \WP_User ) ? (int) $user->ID : 0;
@@ -134,7 +134,7 @@ class User_Logger extends Logger {
 			$login
 		);
 		if ( $user_id && ! empty( $this->two_factor[ $user_id ] ) ) {
-			$method = $this->two_factor[ $user_id ];
+			$method                = $this->two_factor[ $user_id ];
 			$context['two_factor'] = is_string( $method ) ? $method : 'yes';
 			if ( is_string( $method ) && '' !== $method ) {
 				$summary = sprintf(
@@ -226,7 +226,7 @@ class User_Logger extends Logger {
 		$hit  = $this->count_failure();
 		$skip = $this->throttled( $username );
 		if ( ! $skip ) {
-			$agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? Text::plain( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ), 180 ) : '';
+			$agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? Text::plain( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 180 ) : '';
 			$this->log(
 				array(
 					'summary'    => $summary,
@@ -299,7 +299,7 @@ class User_Logger extends Logger {
 			return;
 		}
 
-		$fields = array(
+		$fields  = array(
 			'user_email'    => __( 'Email', 'admintrace-activity-logger' ),
 			'display_name'  => __( 'Display name', 'admintrace-activity-logger' ),
 			'user_url'      => __( 'Website', 'admintrace-activity-logger' ),
@@ -357,18 +357,18 @@ class User_Logger extends Logger {
 		$user = get_userdata( $user_id );
 		$this->log(
 			array(
-				'summary'     => sprintf(
+				'summary'      => sprintf(
 					/* translators: %s: username. */
 					__( 'Deleted the account "%s".', 'admintrace-activity-logger' ),
 					$user ? $user->user_login : (string) $user_id
 				),
-				'category'    => 'user',
-				'action'      => 'user.deleted',
-				'severity'    => 'warning',
-				'object_type' => 'user',
-				'object_id'   => absint( $user_id ),
-				'object_title'=> $user ? $user->user_login : '',
-				'context'     => array(
+				'category'     => 'user',
+				'action'       => 'user.deleted',
+				'severity'     => 'warning',
+				'object_type'  => 'user',
+				'object_id'    => absint( $user_id ),
+				'object_title' => $user ? $user->user_login : '',
+				'context'      => array(
 					'reassign' => absint( $reassign ),
 				),
 			)
@@ -583,8 +583,8 @@ class User_Logger extends Logger {
 		if ( ! in_array( $reason, array( 'expired', 'mismatch' ), true ) ) {
 			return;
 		}
-		$user  = get_userdata( absint( $user_id ) );
-		$login = $user ? $user->user_login : (string) absint( $user_id );
+		$user    = get_userdata( absint( $user_id ) );
+		$login   = $user ? $user->user_login : (string) absint( $user_id );
 		$summary = ( 'expired' === $reason )
 			? sprintf(
 				/* translators: %s: username. */
@@ -633,13 +633,13 @@ class User_Logger extends Logger {
 	 * Record a role change.
 	 *
 	 * @param int      $user_id User ID.
-	 * @param string[] $new     New roles.
+	 * @param string[] $new_value     New roles.
 	 * @param string[] $old     Old roles.
 	 */
-	private function log_role_change( $user_id, array $new, array $old ) {
-		$user     = get_userdata( $user_id );
-		$login    = $user ? $user->user_login : (string) $user_id;
-		$serious  = in_array( 'administrator', $new, true ) || in_array( 'administrator', $old, true );
+	private function log_role_change( $user_id, array $new_value, array $old ) {
+		$user    = get_userdata( $user_id );
+		$login   = $user ? $user->user_login : (string) $user_id;
+		$serious = in_array( 'administrator', $new_value, true ) || in_array( 'administrator', $old, true );
 		$this->log(
 			array(
 				'summary'     => sprintf(
@@ -657,7 +657,7 @@ class User_Logger extends Logger {
 						array(
 							'field' => __( 'Roles', 'admintrace-activity-logger' ),
 							'from'  => implode( ', ', array_map( 'sanitize_key', $old ) ),
-							'to'    => implode( ', ', array_map( 'sanitize_key', $new ) ),
+							'to'    => implode( ', ', array_map( 'sanitize_key', $new_value ) ),
 						),
 					),
 				),

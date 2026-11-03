@@ -26,15 +26,15 @@ class Autoloader {
 	/**
 	 * Load a class file.
 	 *
-	 * @param string $class Fully qualified class name.
+	 * @param string $class_name Fully qualified class name.
 	 */
-	public static function load( $class ) {
+	public static function load( $class_name ) {
 		$prefix = __NAMESPACE__ . '\\';
-		if ( strpos( $class, $prefix ) !== 0 ) {
+		if ( strpos( $class_name, $prefix ) !== 0 ) {
 			return;
 		}
 
-		$relative = substr( $class, strlen( $prefix ) );
+		$relative = substr( $class_name, strlen( $prefix ) );
 		$path     = __DIR__ . '/' . str_replace( '\\', '/', $relative ) . '.php';
 
 		if ( is_readable( $path ) ) {

@@ -60,7 +60,7 @@ class Renderer {
 	 * @return string
 	 */
 	public static function avatar( array $row, $size = 36 ) {
-		$size   = max( 16, min( 96, (int) $size ) );
+		$size = max( 16, min( 96, (int) $size ) );
 		if ( ! empty( Settings::all()['use_gravatar'] ) && ! empty( $row['user_id'] ) && function_exists( 'get_avatar' ) ) {
 			$html = get_avatar(
 				(int) $row['user_id'],
@@ -92,13 +92,29 @@ class Renderer {
 	}
 
 	/**
+	 * Row IDs a selection checkbox stands for, comma separated.
+	 *
+	 * A collapsed group lists every stored row so deleting it removes all repeats.
+	 *
+	 * @param array $row Event row.
+	 * @return string
+	 */
+	public static function selection( array $row ) {
+		$ids = isset( $row['group_ids'] ) && is_array( $row['group_ids'] ) ? $row['group_ids'] : array();
+		if ( ! $ids && ! empty( $row['id'] ) ) {
+			$ids = array( $row['id'] );
+		}
+		return implode( ',', array_filter( array_map( 'absint', $ids ) ) );
+	}
+
+	/**
 	 * One timeline card.
 	 *
 	 * @param array $row  Event row.
 	 * @param array $args Display arguments.
 	 */
 	public static function card( array $row, array $args = array() ) {
-		$args = wp_parse_args(
+		$args     = wp_parse_args(
 			$args,
 			array(
 				'checkbox' => false,
@@ -116,7 +132,7 @@ class Renderer {
 				<header class="srah-event-top">
 					<?php if ( $args['checkbox'] && $id ) : ?>
 						<label class="srah-check">
-							<input class="srah-event-check" type="checkbox" name="event_ids[]" value="<?php echo esc_attr( (string) $id ); ?>">
+							<input class="srah-event-check" type="checkbox" name="event_ids[]" value="<?php echo esc_attr( self::selection( $row ) ); ?>" aria-describedby="srah-summary-<?php echo esc_attr( (string) $id ); ?>">
 							<span class="screen-reader-text"><?php esc_html_e( 'Select event', 'admintrace-activity-logger' ); ?></span>
 						</label>
 					<?php endif; ?>
@@ -190,12 +206,12 @@ class Renderer {
 	 * @param array $row Event row.
 	 */
 	private static function details( array $row ) {
-		$context = isset( $row['context'] ) && is_array( $row['context'] ) ? $row['context'] : array();
+		$context     = isset( $row['context'] ) && is_array( $row['context'] ) ? $row['context'] : array();
 		$changes     = isset( $context['changes'] ) && is_array( $context['changes'] ) ? $context['changes'] : array();
 		$revision_id = isset( $context['revision_id'] ) ? absint( $context['revision_id'] ) : 0;
 		$post_id     = isset( $row['object_id'] ) ? absint( $row['object_id'] ) : 0;
 		unset( $context['changes'], $context['repeat_count'], $context['repeat_times'], $context['first_gmt'], $context['last_gmt'] );
-		$has_patch   = false;
+		$has_patch = false;
 		foreach ( $changes as $change ) {
 			if ( self::change_lines( $change, $post_id, $revision_id ) ) {
 				$has_patch = true;
@@ -300,7 +316,10 @@ class Renderer {
 			<?php if ( $context ) : ?>
 				<dl class="srah-facts">
 					<?php foreach ( $context as $key => $value ) : ?>
-						<?php if ( is_array( $value ) || is_object( $value ) ) { $value = wp_json_encode( $value ); } ?>
+						<?php
+						if ( is_array( $value ) || is_object( $value ) ) {
+							$value = wp_json_encode( $value ); }
+						?>
 						<div>
 							<dt><?php echo esc_html( (string) $key ); ?></dt>
 							<dd><?php echo esc_html( (string) $value ); ?></dd>
@@ -367,7 +386,7 @@ class Renderer {
 	 */
 	private static function revision_hunks( $post_id, $revision_id ) {
 		static $cache = array();
-		$key = $post_id . ':' . $revision_id;
+		$key          = $post_id . ':' . $revision_id;
 		if ( isset( $cache[ $key ] ) ) {
 			return $cache[ $key ];
 		}

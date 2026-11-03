@@ -32,6 +32,7 @@ class Plugin {
 
 		Installer::maybe_upgrade();
 		add_action( 'wp_initialize_site', array( Installer::class, 'on_new_site' ) );
+		add_filter( 'wpmu_drop_tables', array( Installer::class, 'drop_site_table' ), 10, 2 );
 		Capabilities::register();
 		Retention::register();
 		Watch::register();

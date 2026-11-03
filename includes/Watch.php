@@ -61,7 +61,7 @@ class Watch {
 	 * Register the daily scan and the install hooks.
 	 */
 	public static function register() {
-		add_action( self::HOOK, array( __CLASS__, 'run' ) );
+		add_action( self::HOOK, array( __CLASS__, 'scheduled_run' ), 10, 0 );
 		add_action( 'init', array( __CLASS__, 'ensure_scheduled' ) );
 		add_action( 'admin_init', array( __CLASS__, 'maybe_run' ) );
 		foreach ( array( 'upgrader_process_complete', 'activated_plugin', 'deleted_plugin', 'deleted_theme', 'switch_theme' ) as $hook ) {
@@ -81,11 +81,13 @@ class Watch {
 		if ( ! is_user_logged_in() || ! current_user_can( Capabilities::VIEW ) ) {
 			return;
 		}
+		// phpcs:disable WordPress.Security.NonceVerification -- only decides whether to scan; Scan now verifies its own nonce.
 		if ( isset( $_POST['action'] ) && 'srah_watch_now' === sanitize_key( wp_unslash( $_POST['action'] ) ) ) {
 			return;
 		}
 
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
+		// phpcs:enable WordPress.Security.NonceVerification
 		$ours = 'admintrace-activity-logger' === $page || 0 === strpos( $page, 'admintrace-activity-logger-' );
 		$ran  = (int) get_option( 'srah_watch_ran', 0 );
 		if ( ! $ours && $ran && ( time() - $ran ) < MINUTE_IN_SECONDS ) {
@@ -103,7 +105,14 @@ class Watch {
 			return;
 		}
 		self::$queued = true;
-		add_action( 'shutdown', array( __CLASS__, 'run' ) );
+		add_action( 'shutdown', array( __CLASS__, 'scheduled_run' ), 10, 0 );
+	}
+
+	/**
+	 * Hook callback for the daily event and the queued shutdown scan.
+	 */
+	public static function scheduled_run() {
+		self::run();
 	}
 
 	/**
@@ -175,12 +184,12 @@ class Watch {
 	 * @return string baseline, changed, unchanged, or error.
 	 */
 	public static function files( $include_media = false ) {
-		$previous           = self::file_baseline();
-		self::$known        = is_array( $previous ) ? $previous : array();
-		self::$known_since  = (int) get_option( 'srah_watch_ran', 0 );
-		$found              = self::collect( (bool) $include_media );
-		self::$known        = array();
-		self::$known_since  = 0;
+		$previous          = self::file_baseline();
+		self::$known       = is_array( $previous ) ? $previous : array();
+		self::$known_since = (int) get_option( 'srah_watch_ran', 0 );
+		$found             = self::collect( (bool) $include_media );
+		self::$known       = array();
+		self::$known_since = 0;
 		if ( ! $found ) {
 			return 'error';
 		}
@@ -220,6 +229,7 @@ class Watch {
 	public static function tables() {
 		global $wpdb;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the table scan needs the live table list.
 		$names = $wpdb->get_col( 'SHOW TABLES' );
 		if ( ! is_array( $names ) ) {
 			return 'error';
@@ -381,7 +391,10 @@ class Watch {
 		if ( is_string( $root ) ) {
 			$seen[ $root ] = true;
 		}
-		while ( $queue && count( $files ) < $limit ) {
+		while ( $queue ) {
+			if ( count( $files ) >= $limit ) {
+				break;
+			}
 			$current = array_shift( $queue );
 			$list    = scandir( $current );
 			if ( ! is_array( $list ) ) {
@@ -606,9 +619,10 @@ class Watch {
 		$id      = Recorder::log(
 			array(
 				'summary'   => sprintf(
-					/* translators: 1: table count, 2: first table name. */
 					$created
+						/* translators: 1: table count, 2: first table name. */
 						? __( 'Created %1$d database table(s). First: %2$s.', 'admintrace-activity-logger' )
+						/* translators: 1: table count, 2: first table name. */
 						: __( 'Dropped %1$d database table(s). First: %2$s.', 'admintrace-activity-logger' ),
 					$total,
 					$clean[0]

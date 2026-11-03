@@ -48,7 +48,19 @@ The webhook is the only place event data leaves the site, and only after an admi
 
 The journal supports search, category, severity, source, account, and date filters, plus “hide my events”. Timeline and table views are both included. Each event can be opened for the stored field changes. CSV and JSON export follow the current filters and stop at 5,000 rows. Cells that start with `=`, `+`, `-`, or `@` are prefixed so a spreadsheet does not treat them as formulas.
 
-Administrators can delete selected rows, run retention immediately, or delete the whole journal for the current site.
+Administrators can tick events in the timeline or table and click **Delete selected**, which asks for confirmation first. A combined card (“5 times”) deletes every stored repeat it stands for. Settings also has **Apply retention now** and **Clear journal**, which needs its own confirmation box. Deletion needs the `srah_delete` capability, which only administrators and network super admins get.
+
+## Files and database scan
+
+The scan hashes PHP, JavaScript, CSS, and HTML files in plugins, themes, and must-use plugins (up to 6,000 files each, 20,000 in total), PHP drop-ins in `wp-content`, and `wp-config.php`, `.htaccess`, and `.user.ini` in the site root. Uploads are off by default. When turned on, PHP, JSON, XML, text, SVG, and HTML files in uploads are hashed; JavaScript, CSS, images, and archives there are not. It runs on wp-admin page loads (at most once a minute, every time on AdminTrace screens), after plugin and theme changes, daily through WP-Cron, and from **Scan now**.
+
+## Email
+
+The digest and webhook are off by default. Two alert emails are on by default and go to the alert address, or the site admin address when none is set: failed logins crossing the threshold (can be turned off), and every critical event.
+
+## Command palette
+
+WordPress 6.9 and newer list admin menu pages in the command palette, so the AdminTrace screens appear there. The plugin does not register commands.
 
 ## Multisite
 
@@ -58,7 +70,7 @@ Each site has its own table, using that site’s table prefix. Network activatio
 
 Deactivating leaves the journal in place and clears the scheduled tasks.
 
-Deleting the plugin from the Plugins screen runs `uninstall.php`. By default it drops the event table, removes settings, capabilities, and scheduled tasks. Uncheck **Delete the journal and settings when the plugin is uninstalled** first if the rows should be kept.
+Deleting the plugin from the Plugins screen runs `uninstall.php`. By default it drops the event table, removes settings, capabilities, and scheduled tasks. Turn off **Remove data on uninstall** in Settings first if the rows should be kept. In that case the table, settings, and the administrator role’s AdminTrace capabilities are left in place.
 
 ## Developers
 
@@ -92,7 +104,7 @@ Filters:
 
 Do not call `srah_log()` from `srah_should_log` or `srah_logged`. Those callbacks run while a write is already in progress, and the nested call is ignored.
 
-REST routes, for users who can view or manage the journal:
+REST routes. Reading needs the view capability, POST needs manage, and DELETE needs delete:
 
 - `GET /wp-json/admintrace-activity-logger/v1/events`
 - `GET /wp-json/admintrace-activity-logger/v1/events/{id}`
@@ -136,8 +148,13 @@ Historical sentences stay in the language that was active when they were written
 From the plugin directory:
 
 ```bash
-php tests/smoke.php
-php tests/integration.php
+composer install
+composer lint
+composer phpcs
+composer phpstan
+SRAH_TESTS_WP_CORE_DIR=/path/to/wordpress/ composer test
+SRAH_TESTS_WP_CORE_DIR=/path/to/wordpress/ composer test:multisite
+composer test:legacy
 ```
 
-`integration.php` uses the WordPress site in this project, writes sample rows, renders the admin screens, and deletes those rows. See `docs/TESTING.md` and `docs/FEATURE-COMPARISON.md`.
+The PHPUnit suite uses the WordPress test library from `wp-phpunit/wp-phpunit` and an empty database that it rebuilds on every run (`srah_phpunit` by default). Never point it at a site's database. `integration.php` and `regression.php` use the WordPress site in this project, write sample rows, and delete them again. See `docs/TESTING.md` and `docs/FEATURE-COMPARISON.md`.

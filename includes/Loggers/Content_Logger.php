@@ -77,19 +77,19 @@ class Content_Logger extends Logger {
 	/**
 	 * Remember a status transition.
 	 *
-	 * @param string   $new  New status.
+	 * @param string   $new_value  New status.
 	 * @param string   $old  Old status.
 	 * @param \WP_Post $post Post.
 	 */
-	public function on_transition( $new, $old, $post ) {
-		if ( $this->skip( $post ) || 'auto-draft' === $new ) {
+	public function on_transition( $new_value, $old, $post ) {
+		if ( $this->skip( $post ) || 'auto-draft' === $new_value ) {
 			return;
 		}
 		$this->touch( $post );
 		if ( ! isset( $this->buffer[ $post->ID ]['status_from'] ) ) {
 			$this->buffer[ $post->ID ]['status_from'] = (string) $old;
 		}
-		$this->buffer[ $post->ID ]['status_to'] = (string) $new;
+		$this->buffer[ $post->ID ]['status_to'] = (string) $new_value;
 	}
 
 	/**
@@ -134,15 +134,15 @@ class Content_Logger extends Logger {
 				$after->ID,
 				array(
 					'field' => __( 'Author', 'admintrace-activity-logger' ),
-					'from'  => $this->author_name( $before->post_author ),
-					'to'    => $this->author_name( $after->post_author ),
+					'from'  => $this->author_name( (int) $before->post_author ),
+					'to'    => $this->author_name( (int) $after->post_author ),
 				)
 			);
 		}
 
 		if ( (string) $before->post_content !== (string) $after->post_content ) {
-			$diff  = Diff::summarize( $before->post_content, $after->post_content );
-			$lines = Diff::hunks( $before->post_content, $after->post_content );
+			$diff   = Diff::summarize( $before->post_content, $after->post_content );
+			$lines  = Diff::hunks( $before->post_content, $after->post_content );
 			$change = array(
 				'field'   => __( 'Content', 'admintrace-activity-logger' ),
 				'from'    => sprintf(
@@ -253,7 +253,11 @@ class Content_Logger extends Logger {
 				$post = get_post( $object_id );
 				if ( ! $this->skip( $post ) ) {
 					$old = get_post_meta( $object_id, $meta_key, true );
-					if ( $old !== $meta_value ) {
+					// Meta is stored as text, so 77 and '77' are the same saved value.
+					$same = ( is_scalar( $old ) || null === $old ) && ( is_scalar( $meta_value ) || null === $meta_value )
+						? (string) $old === (string) $meta_value
+						: $old === $meta_value;
+					if ( ! $same ) {
 						$this->remember_meta( $post, $meta_key, $old, $meta_value );
 					}
 				}
@@ -320,10 +324,10 @@ class Content_Logger extends Logger {
 			if ( ! $post instanceof \WP_Post ) {
 				continue;
 			}
-			$from     = isset( $data['status_from'] ) ? (string) $data['status_from'] : '';
-			$to       = isset( $data['status_to'] ) ? (string) $data['status_to'] : $post->post_status;
-			$changes  = isset( $data['changes'] ) && is_array( $data['changes'] ) ? $data['changes'] : array();
-			$changed  = ( '' !== $from && '' !== $to && $from !== $to );
+			$from    = isset( $data['status_from'] ) ? (string) $data['status_from'] : '';
+			$to      = isset( $data['status_to'] ) ? (string) $data['status_to'] : $post->post_status;
+			$changes = isset( $data['changes'] ) && is_array( $data['changes'] ) ? $data['changes'] : array();
+			$changed = ( '' !== $from && '' !== $to && $from !== $to );
 			if ( ! $changed && ! $changes ) {
 				continue;
 			}
@@ -340,7 +344,8 @@ class Content_Logger extends Logger {
 
 			$label = $this->type_label( $post );
 			$title = $post->post_title;
-			if ( in_array( $from, array( '', 'new', 'auto-draft' ), true ) ) {
+			// An empty $from means no status transition ran, so the post already existed.
+			if ( in_array( $from, array( 'new', 'auto-draft' ), true ) ) {
 				$action = 'content.created';
 				if ( 'publish' === $to ) {
 					$summary = sprintf(
@@ -450,8 +455,8 @@ class Content_Logger extends Logger {
 		if ( in_array( $post->post_type, $blocked, true ) ) {
 			return true;
 		}
-		$allowed = array( 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_block', 'wp_font_family', 'wp_font_face', 'product', 'shop_coupon' );
-		$object  = get_post_type_object( $post->post_type );
+		$allowed  = array( 'wp_template', 'wp_template_part', 'wp_global_styles', 'wp_navigation', 'wp_block', 'wp_font_family', 'wp_font_face', 'product', 'shop_coupon' );
+		$object   = get_post_type_object( $post->post_type );
 		$viewable = $object && ( is_post_type_viewable( $object ) || ! empty( $object->show_ui ) );
 		if ( ! $viewable && ! in_array( $post->post_type, $allowed, true ) ) {
 			return true;
@@ -498,22 +503,22 @@ class Content_Logger extends Logger {
 	 */
 	private function seo_label( $key ) {
 		$labels = array(
-			'_yoast_wpseo_title'                => __( 'SEO title', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_metadesc'             => __( 'SEO description', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_focuskw'              => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_canonical'            => __( 'Canonical URL', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_meta-robots-noindex'  => __( 'SEO noindex', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_meta-robots-nofollow' => __( 'SEO nofollow', 'admintrace-activity-logger' ),
-			'_yoast_wpseo_opengraph-title'      => __( 'Social title', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_title'                 => __( 'SEO title', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_metadesc'              => __( 'SEO description', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_focuskw'               => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_canonical'             => __( 'Canonical URL', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_meta-robots-noindex'   => __( 'SEO noindex', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_meta-robots-nofollow'  => __( 'SEO nofollow', 'admintrace-activity-logger' ),
+			'_yoast_wpseo_opengraph-title'       => __( 'Social title', 'admintrace-activity-logger' ),
 			'_yoast_wpseo_opengraph-description' => __( 'Social description', 'admintrace-activity-logger' ),
-			'rank_math_title'                   => __( 'SEO title', 'admintrace-activity-logger' ),
-			'rank_math_description'             => __( 'SEO description', 'admintrace-activity-logger' ),
-			'rank_math_focus_keyword'           => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
-			'rank_math_canonical_url'           => __( 'Canonical URL', 'admintrace-activity-logger' ),
-			'rank_math_facebook_title'          => __( 'Social title', 'admintrace-activity-logger' ),
-			'rank_math_facebook_description'    => __( 'Social description', 'admintrace-activity-logger' ),
-			'rank_math_twitter_title'           => __( 'Twitter title', 'admintrace-activity-logger' ),
-			'rank_math_twitter_description'     => __( 'Twitter description', 'admintrace-activity-logger' ),
+			'rank_math_title'                    => __( 'SEO title', 'admintrace-activity-logger' ),
+			'rank_math_description'              => __( 'SEO description', 'admintrace-activity-logger' ),
+			'rank_math_focus_keyword'            => __( 'SEO focus keyphrase', 'admintrace-activity-logger' ),
+			'rank_math_canonical_url'            => __( 'Canonical URL', 'admintrace-activity-logger' ),
+			'rank_math_facebook_title'           => __( 'Social title', 'admintrace-activity-logger' ),
+			'rank_math_facebook_description'     => __( 'Social description', 'admintrace-activity-logger' ),
+			'rank_math_twitter_title'            => __( 'Twitter title', 'admintrace-activity-logger' ),
+			'rank_math_twitter_description'      => __( 'Twitter description', 'admintrace-activity-logger' ),
 		);
 		return isset( $labels[ $key ] ) ? $labels[ $key ] : '';
 	}
@@ -544,9 +549,9 @@ class Content_Logger extends Logger {
 	 * @param \WP_Post $post Post.
 	 * @param string   $key  Meta key.
 	 * @param mixed    $old  Old value.
-	 * @param mixed    $new  New value.
+	 * @param mixed    $new_value  New value.
 	 */
-	private function remember_meta( $post, $key, $old, $new ) {
+	private function remember_meta( $post, $key, $old, $new_value ) {
 		$this->touch( $post );
 		if ( '_thumbnail_id' === $key ) {
 			$this->change(
@@ -554,9 +559,9 @@ class Content_Logger extends Logger {
 				array(
 					'field'           => __( 'Featured image', 'admintrace-activity-logger' ),
 					'from'            => $old ? '#' . absint( $old ) : __( 'None', 'admintrace-activity-logger' ),
-					'to'              => $new ? '#' . absint( $new ) : __( 'None', 'admintrace-activity-logger' ),
+					'to'              => $new_value ? '#' . absint( $new_value ) : __( 'None', 'admintrace-activity-logger' ),
 					'from_attachment' => absint( $old ),
-					'to_attachment'   => absint( $new ),
+					'to_attachment'   => absint( $new_value ),
 				)
 			);
 			return;
@@ -568,7 +573,7 @@ class Content_Logger extends Logger {
 				array(
 					'field' => $seo,
 					'from'  => is_scalar( $old ) ? Text::plain( $old, 120 ) : __( 'Changed', 'admintrace-activity-logger' ),
-					'to'    => is_scalar( $new ) ? Text::plain( $new, 120 ) : __( 'Updated', 'admintrace-activity-logger' ),
+					'to'    => is_scalar( $new_value ) ? Text::plain( $new_value, 120 ) : __( 'Updated', 'admintrace-activity-logger' ),
 				)
 			);
 			return;
@@ -579,12 +584,12 @@ class Content_Logger extends Logger {
 				array(
 					'field' => __( 'Template', 'admintrace-activity-logger' ),
 					'from'  => Text::plain( wp_basename( (string) $old ), 80 ),
-					'to'    => Text::plain( wp_basename( (string) $new ), 80 ),
+					'to'    => Text::plain( wp_basename( (string) $new_value ), 80 ),
 				)
 			);
 			return;
 		}
-		if ( is_array( $old ) || is_array( $new ) || is_object( $old ) || is_object( $new ) ) {
+		if ( is_array( $old ) || is_array( $new_value ) || is_object( $old ) || is_object( $new_value ) ) {
 			$this->change(
 				$post->ID,
 				array(
@@ -600,7 +605,7 @@ class Content_Logger extends Logger {
 			array(
 				'field' => Text::plain( $key, 40 ),
 				'from'  => Text::plain( $old, 120 ),
-				'to'    => Text::plain( $new, 120 ),
+				'to'    => Text::plain( $new_value, 120 ),
 			)
 		);
 	}
@@ -640,7 +645,7 @@ class Content_Logger extends Logger {
 		$names = array();
 		foreach ( array_slice( $tt_ids, 0, 15 ) as $tt_id ) {
 			$term = get_term_by( 'term_taxonomy_id', $tt_id );
-			if ( $term && ! is_wp_error( $term ) ) {
+			if ( $term instanceof \WP_Term ) {
 				$names[] = $term->name;
 			}
 		}

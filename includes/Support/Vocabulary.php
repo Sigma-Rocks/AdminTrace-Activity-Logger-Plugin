@@ -86,7 +86,7 @@ class Vocabulary {
 		$categories = array( 'content', 'media', 'comment', 'taxonomy' );
 		if ( function_exists( 'wp_get_current_user' ) ) {
 			$user = wp_get_current_user();
-			if ( $user && in_array( 'shop_manager', (array) $user->roles, true ) ) {
+			if ( in_array( 'shop_manager', (array) $user->roles, true ) ) {
 				$categories[] = 'commerce';
 			}
 		}

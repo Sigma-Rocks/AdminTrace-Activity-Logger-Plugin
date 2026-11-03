@@ -48,7 +48,9 @@ class Query {
 		$page     = min( 10000, $page );
 		$offset   = ( $page - 1 ) * $per_page;
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$total = (int) $wpdb->get_var(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $values holds one value per placeholder; the sniff cannot count a spread.
 			$wpdb->prepare(
 				'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND (%d = 0 OR id = %d) AND (%d = 0 OR category = %s) AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) AND (%d = 0 OR severity = %s) AND (%d = 0 OR action = %s) AND (%d = 0 OR initiator = %s) AND (%d = 0 OR logger = %s) AND (%d = 0 OR user_id = %d) AND (%d = 0 OR user_id <> %d) AND (%d = 0 OR object_type = %s) AND (%d = 0 OR object_id = %d) AND (%d = 0 OR created_gmt >= %s) AND (%d = 0 OR created_gmt <= %s) AND (%d = 0 OR (summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s))',
 				$table,
@@ -56,11 +58,13 @@ class Query {
 			)
 		);
 
-		$sort          = self::sort_flags( $order['column'], $order['direction'] );
-		$list_values   = array_merge( array( $table ), $values, $sort, array( $per_page, $offset ) );
-		$rows          = $wpdb->get_results(
+		$sort        = self::sort_flags( $order['column'], $order['direction'] );
+		$list_values = array_merge( array( $table ), $values, $sort, array( $per_page, $offset ) );
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
+		$rows = $wpdb->get_results(
+			// phpcs:ignore WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber -- $list_values holds one value per placeholder; the sniff cannot count a spread.
 			$wpdb->prepare(
-				'SELECT * FROM %i WHERE blog_id = %d AND (%d = 0 OR id = %d) AND (%d = 0 OR category = %s) AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) AND (%d = 0 OR severity = %s) AND (%d = 0 OR action = %s) AND (%d = 0 OR initiator = %s) AND (%d = 0 OR logger = %s) AND (%d = 0 OR user_id = %d) AND (%d = 0 OR user_id <> %d) AND (%d = 0 OR object_type = %s) AND (%d = 0 OR object_id = %d) AND (%d = 0 OR created_gmt >= %s) AND (%d = 0 OR created_gmt <= %s) AND (%d = 0 OR (summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s)) ORDER BY CASE WHEN %d = 1 THEN id END ASC, CASE WHEN %d = 1 THEN id END DESC, CASE WHEN %d = 1 THEN severity END ASC, CASE WHEN %d = 1 THEN severity END DESC, CASE WHEN %d = 1 THEN category END ASC, CASE WHEN %d = 1 THEN category END DESC, CASE WHEN %d = 1 THEN created_gmt END ASC, CASE WHEN %d = 1 THEN created_gmt END DESC LIMIT %d OFFSET %d',
+				'SELECT * FROM %i WHERE blog_id = %d AND (%d = 0 OR id = %d) AND (%d = 0 OR category = %s) AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) AND (%d = 0 OR severity = %s) AND (%d = 0 OR action = %s) AND (%d = 0 OR initiator = %s) AND (%d = 0 OR logger = %s) AND (%d = 0 OR user_id = %d) AND (%d = 0 OR user_id <> %d) AND (%d = 0 OR object_type = %s) AND (%d = 0 OR object_id = %d) AND (%d = 0 OR created_gmt >= %s) AND (%d = 0 OR created_gmt <= %s) AND (%d = 0 OR (summary LIKE %s OR object_title LIKE %s OR user_login LIKE %s OR user_display LIKE %s OR action LIKE %s)) ORDER BY CASE WHEN %d = 1 THEN id END ASC, CASE WHEN %d = 1 THEN id END DESC, CASE WHEN %d = 1 THEN severity END ASC, CASE WHEN %d = 1 THEN severity END DESC, CASE WHEN %d = 1 THEN category END ASC, CASE WHEN %d = 1 THEN category END DESC, CASE WHEN %d = 1 THEN created_gmt END ASC, CASE WHEN %d = 1 THEN created_gmt END DESC, CASE WHEN %d = 1 THEN id END ASC, CASE WHEN %d = 1 THEN id END DESC LIMIT %d OFFSET %d',
 				...$list_values
 			),
 			ARRAY_A
@@ -120,15 +124,18 @@ class Query {
 	public static function stats( $scoped, array $categories ) {
 		global $wpdb;
 
-		$key    = 'srah_stats_' . get_current_blog_id() . ( $scoped ? '_view' : '_all' );
+		$scope = $categories;
+		sort( $scope );
+		// Editors and shop managers can see different categories, so each scope gets its own cache.
+		$key    = 'srah_stats_' . get_current_blog_id() . ( $scoped ? '_view_' . substr( md5( implode( ',', $scope ) ), 0, 10 ) : '_all' );
 		$cached = get_transient( $key );
 		if ( is_array( $cached ) ) {
 			return $cached;
 		}
 
-		$table   = Installer::table();
-		$blog    = get_current_blog_id();
-		$now     = time();
+		$table       = Installer::table();
+		$blog        = get_current_blog_id();
+		$now         = time();
 		$local_start = function_exists( 'current_time' ) ? current_time( 'Y-m-d 00:00:00' ) : gmdate( 'Y-m-d 00:00:00' );
 		$today       = function_exists( 'get_gmt_from_date' ) ? get_gmt_from_date( $local_start ) : gmdate( 'Y-m-d H:i:s', $now - ( $now % DAY_IN_SECONDS ) );
 		$week        = gmdate( 'Y-m-d H:i:s', $now - ( 7 * DAY_IN_SECONDS ) );
@@ -158,6 +165,7 @@ class Query {
 		$week_count  = self::count_since( $table, $blog, $week, $scope_flag, $scope_cats );
 		$failed      = 0;
 		if ( ! $scoped ) {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 			$failed = (int) $wpdb->get_var(
 				$wpdb->prepare(
 					'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND created_gmt >= %s AND action = %s',
@@ -169,6 +177,7 @@ class Query {
 			);
 		}
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$cats = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT category, COUNT(*) AS total FROM %i WHERE blog_id = %d AND created_gmt >= %s AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) GROUP BY category ORDER BY total DESC LIMIT 6',
@@ -188,6 +197,7 @@ class Query {
 			ARRAY_A
 		);
 
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		$users = $wpdb->get_results(
 			$wpdb->prepare(
 				'SELECT user_id, user_login, user_display, COUNT(*) AS total FROM %i WHERE blog_id = %d AND created_gmt >= %s AND user_id > 0 AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s)) GROUP BY user_id, user_login, user_display ORDER BY total DESC LIMIT 5',
@@ -208,11 +218,11 @@ class Query {
 		);
 
 		$stats = array(
-			'today'          => $today_count,
-			'week'           => $week_count,
-			'failed_logins'  => $failed,
-			'categories'     => is_array( $cats ) ? $cats : array(),
-			'users'          => is_array( $users ) ? $users : array(),
+			'today'         => $today_count,
+			'week'          => $week_count,
+			'failed_logins' => $failed,
+			'categories'    => is_array( $cats ) ? $cats : array(),
+			'users'         => is_array( $users ) ? $users : array(),
 		);
 		set_transient( $key, $stats, 2 * MINUTE_IN_SECONDS );
 		return $stats;
@@ -247,6 +257,7 @@ class Query {
 	 */
 	private static function count_since( $table, $blog, $since, $scope_flag, array $scope_cats ) {
 		global $wpdb;
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- the plugin's own events table has no WordPress API; journal reads must be live.
 		return (int) $wpdb->get_var(
 			$wpdb->prepare(
 				'SELECT COUNT(*) FROM %i WHERE blog_id = %d AND created_gmt >= %s AND (%d = 0 OR category IN (%s,%s,%s,%s,%s,%s,%s,%s))',
@@ -310,8 +321,8 @@ class Query {
 		if ( ! $before_on ) {
 			$before = '1970-01-01 00:00:00';
 		}
-		$search      = ! empty( $args['search'] ) ? Text::plain( $args['search'], 120 ) : '';
-		$like        = ( strlen( $search ) >= 2 ) ? '%' . $wpdb->esc_like( $search ) . '%' : '';
+		$search = ! empty( $args['search'] ) ? Text::plain( $args['search'], 120 ) : '';
+		$like   = ( strlen( $search ) >= 2 ) ? '%' . $wpdb->esc_like( $search ) . '%' : '';
 
 		return array(
 			'table'  => Installer::table(),
@@ -361,15 +372,15 @@ class Query {
 	}
 
 	/**
-	 * Eight sort switches. Exactly one is enabled.
+	 * Eight sort switches, exactly one enabled, then the ID tiebreaker pair in the same direction.
 	 *
 	 * @param string $column Whitelisted column.
 	 * @param string $direction ASC or DESC.
 	 * @return array
 	 */
 	private static function sort_flags( $column, $direction ) {
-		$flags = array( 0, 0, 0, 0, 0, 0, 0, 0 );
-		$map   = array(
+		$flags           = array( 0, 0, 0, 0, 0, 0, 0, 0 );
+		$map             = array(
 			'id|ASC'           => 0,
 			'id|DESC'          => 1,
 			'severity|ASC'     => 2,
@@ -379,9 +390,13 @@ class Query {
 			'created_gmt|ASC'  => 6,
 			'created_gmt|DESC' => 7,
 		);
-		$key   = $column . '|' . $direction;
-		$index = isset( $map[ $key ] ) ? $map[ $key ] : 7;
+		$key             = $column . '|' . $direction;
+		$index           = isset( $map[ $key ] ) ? $map[ $key ] : 7;
 		$flags[ $index ] = 1;
+		// Many events share a second, so ties need a stable order or pages repeat and skip rows.
+		$ascending = ( 0 === $index % 2 );
+		$flags[]   = $ascending ? 1 : 0;
+		$flags[]   = $ascending ? 0 : 1;
 		return $flags;
 	}
 

@@ -33,7 +33,7 @@ class Notifications {
 	 */
 	public static function register() {
 		add_filter( 'cron_schedules', array( __CLASS__, 'schedules' ) );
-		add_action( self::DIGEST, array( __CLASS__, 'send_digest' ) );
+		add_action( self::DIGEST, array( __CLASS__, 'scheduled_digest' ), 10, 0 );
 		add_action( 'srah_logged', array( __CLASS__, 'on_logged' ), 10, 2 );
 		add_action( 'init', array( __CLASS__, 'ensure_scheduled' ) );
 	}
@@ -90,6 +90,13 @@ class Notifications {
 	}
 
 	/**
+	 * Cron callback for the digest.
+	 */
+	public static function scheduled_digest() {
+		self::send_digest();
+	}
+
+	/**
 	 * Send the digest email.
 	 *
 	 * @return bool
@@ -100,8 +107,8 @@ class Notifications {
 			return false;
 		}
 
-		$since = 'daily' === $settings['email_digest'] ? DAY_IN_SECONDS : WEEK_IN_SECONDS;
-		$after = gmdate( 'Y-m-d H:i:s', time() - $since );
+		$since  = 'daily' === $settings['email_digest'] ? DAY_IN_SECONDS : WEEK_IN_SECONDS;
+		$after  = gmdate( 'Y-m-d H:i:s', time() - $since );
 		$result = Query::search(
 			array(
 				'after'          => $after,
@@ -151,11 +158,11 @@ class Notifications {
 	 * @param array $row      Stored row.
 	 */
 	public static function on_logged( $event_id, $row ) {
-		unset( $event_id );
 		if ( self::$sending || ! is_array( $row ) ) {
 			return;
 		}
 
+		$row['id'] = (int) $event_id;
 		self::maybe_webhook( $row );
 
 		if ( 'critical' !== $row['severity'] ) {

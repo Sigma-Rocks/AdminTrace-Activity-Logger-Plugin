@@ -1,0 +1,21 @@
+includes:
+	- %rootDir%/../../szepeviktor/phpstan-wordpress/extension.neon
+
+parameters:
+	level: 5
+	paths:
+		- admintrace-activity-logger.php
+		- uninstall.php
+		- includes
+	bootstrapFiles:
+		- tests/phpstan/bootstrap.php
+	scanFiles:
+		- %rootDir%/../../php-stubs/wp-cli-stubs/wp-cli-stubs.php
+		- %rootDir%/../../php-stubs/woocommerce-stubs/woocommerce-stubs.php
+	dynamicConstantNames:
+		- SRAH_VERSION
+		- SRAH_DB_VERSION
+		- SRAH_FILE
+		- SRAH_PATH
+		- SRAH_URL
+		- WP_CLI

@@ -59,7 +59,7 @@ class Theme_Logger extends Logger {
 	/**
 	 * Theme switched.
 	 *
-	 * @param string        $new_name  New theme name.
+	 * @param string          $new_name  New theme name.
 	 * @param \WP_Theme|mixed $new_theme New theme.
 	 * @param \WP_Theme|mixed $old_theme Previous theme.
 	 */
@@ -113,35 +113,35 @@ class Theme_Logger extends Logger {
 	 * Auto-update list changed on this site.
 	 *
 	 * @param mixed $old Previous theme stylesheets.
-	 * @param mixed $new New theme stylesheets.
+	 * @param mixed $new_value New theme stylesheets.
 	 */
-	public function on_auto_update( $old, $new ) {
-		$this->diff_auto_updates( $old, $new );
+	public function on_auto_update( $old, $new_value ) {
+		$this->diff_auto_updates( $old, $new_value );
 	}
 
 	/**
 	 * Auto-update list changed for the network.
 	 *
 	 * @param mixed $option Ignored option name.
-	 * @param mixed $new    New theme stylesheets.
+	 * @param mixed $new_value    New theme stylesheets.
 	 * @param mixed $old    Previous theme stylesheets.
 	 */
-	public function on_site_auto_update( $option, $new, $old ) {
+	public function on_site_auto_update( $option, $new_value, $old ) {
 		unset( $option );
-		$this->diff_auto_updates( $old, $new );
+		$this->diff_auto_updates( $old, $new_value );
 	}
 
 	/**
 	 * Record themes whose auto-update flag flipped.
 	 *
 	 * @param mixed $old Previous stylesheets.
-	 * @param mixed $new New stylesheets.
+	 * @param mixed $new_value New stylesheets.
 	 */
-	private function diff_auto_updates( $old, $new ) {
-		$old = is_array( $old ) ? $old : array();
-		$new = is_array( $new ) ? $new : array();
-		$enabled  = array_values( array_diff( $new, $old ) );
-		$disabled = array_values( array_diff( $old, $new ) );
+	private function diff_auto_updates( $old, $new_value ) {
+		$old       = is_array( $old ) ? $old : array();
+		$new_value = is_array( $new_value ) ? $new_value : array();
+		$enabled   = array_values( array_diff( $new_value, $old ) );
+		$disabled  = array_values( array_diff( $old, $new_value ) );
 		if ( count( $enabled ) + count( $disabled ) > 12 ) {
 			$this->log(
 				array(
@@ -208,7 +208,6 @@ class Theme_Logger extends Logger {
 	 * @param array  $extra    Hook data.
 	 */
 	public function on_upgrader( $upgrader, $extra ) {
-		unset( $upgrader );
 		if ( empty( $extra['type'] ) || 'theme' !== $extra['type'] ) {
 			return;
 		}
@@ -218,6 +217,9 @@ class Theme_Logger extends Logger {
 			$themes = $extra['themes'];
 		} elseif ( ! empty( $extra['theme'] ) && is_string( $extra['theme'] ) ) {
 			$themes = array( $extra['theme'] );
+		} elseif ( is_object( $upgrader ) && ! empty( $upgrader->result['destination_name'] ) ) {
+			// Fresh installs only report the new folder through the upgrader result.
+			$themes = array( (string) $upgrader->result['destination_name'] );
 		}
 		foreach ( $themes as $stylesheet ) {
 			$theme = wp_get_theme( $stylesheet );
