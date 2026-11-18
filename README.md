@@ -17,6 +17,7 @@ Requires WordPress 6.2 or newer and PHP 7.4 or newer. Tested on WordPress 7.1.
 ## What is recorded
 
 - Logins, logouts, failed logins (wrong password or unknown username), password resets, application passwords, profile changes, role changes, and deleted accounts.
+- Optional Google reCAPTCHA v3 on the WordPress login, lost-password, and registration forms. Add site and secret keys under Settings, set a minimum score, and enable it. Blocked bot attempts are written to the journal. XML-RPC, REST, and application passwords are not challenged.
 - Two Factor sign-in, including the method name, and a rejected second-factor check. The one-time code is not stored.
 - Posts, pages, custom post types, site-editor templates, terms, comments, collaboration notes, and media. Content changes store field names and a short word summary, not the full post. Image edits name crop, rotate, flip, or scale. Menu saves include added and removed item titles.
 - Plugin and theme installs, updates, activation, switching, deletion, and automatic-update toggles.
@@ -39,10 +40,11 @@ Logging is wrapped so a failure is dropped instead of interrupting WordPress.
 - Roles or user IDs whose routine info events are skipped. Notices, warnings, and security events are still stored.
 - Dashboard widget, admin-bar list, menu location, and timeline or table view.
 - Plain-text daily or weekly digest, a failed-login threshold email, and an optional HTTPS webhook.
+- Google reCAPTCHA v3 (off until you add keys and enable it). Failed-login alert emails mention when reCAPTCHA is still off.
 - A private RSS feed that is off until you enable it. The address is a secret.
 - Delete the journal on uninstall, on by default.
 
-The webhook is the only place event data leaves the site, and only after an administrator saves an `https://` URL. Private and loopback addresses are rejected. Webhook payloads omit network addresses.
+The webhook is the only place event data leaves the site, and only after an administrator saves an `https://` URL. Private and loopback addresses are rejected. Webhook payloads omit network addresses. When reCAPTCHA is enabled, login forms load Google’s script and the server verifies tokens with Google.
 
 ## Read the journal
 

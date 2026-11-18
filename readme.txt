@@ -1,6 +1,6 @@
 === AdminTrace Activity Logger ===
 Contributors: sigmarocks
-Tags: activity-log, audit-log, user-activity, security, woocommerce
+Tags: activity-log, audit-log, user-activity, security, recaptcha, woocommerce
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -9,7 +9,7 @@ License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/paypalme/sigmarocks
 
-WordPress activity log and audit trail. See who changed content, users, plugins, themes, settings, and WooCommerce orders. Optional email log.
+WordPress activity log and audit trail. See who changed content, users, plugins, themes, settings, and WooCommerce orders. Optional email log and Google reCAPTCHA v3.
 
 == Description ==
 
@@ -22,6 +22,7 @@ If you find an issue, or want another feature, please [open a support ticket](ht
 = Security and user activity =
 
 * Logins, logouts, and failed logins. A failed login says whether the password was wrong or the username does not exist.
+* Optional Google reCAPTCHA v3 on the WordPress login, lost-password, and registration forms. Add your site and secret keys in Settings, choose a minimum score, and turn it on. There is no checkbox: v3 scores the request in the background. Attempts blocked by reCAPTCHA are written to the journal (for example, a bot login blocked for a username). XML-RPC, REST, and application passwords are not challenged. Failed-login alert emails mention when reCAPTCHA is still off, so you can enable it.
 * Second-factor sign-in when the Two Factor plugin accepts a code, including the method name. Rejected second-factor checks are recorded without the code.
 * Password resets, role changes, deleted accounts, and application passwords. The secret itself is never stored. Ending the other login sessions for an account is recorded.
 * On a multisite network: sites created, deleted, or archived, and users added to or removed from a site.
@@ -93,7 +94,7 @@ Multisite keeps a separate journal on each site.
 
 = Privacy =
 
-The journal stays on this site. Profile marks are initials drawn by the plugin. Profile photos from Gravatar stay off until you turn them on under Display. Each event stores the acting user’s role and the time to the millisecond. It does not set a tracking cookie or call an analytics service. The email digest and the HTTPS webhook stay off until an administrator turns them on. Two emails are on by default and go to the site administration address, or to the alert address you set: one when failed logins cross the threshold (this can be turned off), and one for each critical event. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
+The journal stays on this site. Profile marks are initials drawn by the plugin. Profile photos from Gravatar stay off until you turn them on under Display. Each event stores the acting user’s role and the time to the millisecond. It does not set a tracking cookie or call an analytics service. The email digest and the HTTPS webhook stay off until an administrator turns them on. Two emails are on by default and go to the site administration address, or to the alert address you set: one when failed logins cross the threshold (this can be turned off), and one for each critical event. Google reCAPTCHA v3 stays off until you add keys and enable it; then the login forms load Google’s script and the server verifies tokens with Google. Suggested wording is added under Settings → Privacy, and the personal-data exporter and eraser include rows tied to that account.
 
 = What this activity log does not do =
 
@@ -131,6 +132,10 @@ Yes, by default. There is a setting to keep the journal instead. Deactivation do
 
 The journal stays on this site. The email digest and the webhook are off until an administrator turns them on. Failed-login alerts email the site administrator until that alert is turned off. Critical events are also emailed to the alert address. The private feed is off until it is enabled. Gravatar photos stay off until Display is changed. The plugin does not look up addresses or call an analytics service.
 
+= Does it include Google reCAPTCHA? =
+
+Yes, as an optional setting. Create reCAPTCHA v3 keys for your domain at [google.com/recaptcha/admin](https://www.google.com/recaptcha/admin), then paste the site key and secret key under AdminTrace → Settings → Google reCAPTCHA and enable it. The challenge is invisible. When Google cannot be reached or the keys are invalid, login is not locked out. Blocked bot attempts are recorded in the activity journal.
+
 = Does it load profile images from Gravatar? =
 
 Not unless you turn that on under Display. The default is an initial drawn on the site, with no request to Gravatar.
@@ -163,10 +168,12 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 4. Individual event switches. A whole recorder can still be turned off from Settings.
 5. File and database scan settings, with recent added, changed, and deleted files.
 6. The email log, with search, result filters, and saved outgoing messages. Open a subject to preview the rich email or the HTML source.
+7. Google reCAPTCHA v3 settings: enable the challenge, add site and secret keys, and set a minimum score.
 
 == Changelog ==
 
 = Unreleased =
+* Optional Google reCAPTCHA v3 for the WordPress login, lost-password, and registration forms. Site and secret keys and a minimum score are set under Settings. Blocked bot attempts are logged, and failed-login alert emails note when reCAPTCHA is still off.
 * Email log is a separate screen and table. It stays off until an administrator enables it, and it saves outgoing mail apart from the activity journal. A subject opens a preview of the rich email or the HTML source, and that message can be resent.
 * A Donate link on the Plugins screen and on AdminTrace pages uses the same PayPal link as this readme.
 * The description asks people to open a support ticket for an issue or a feature request.
