@@ -174,6 +174,11 @@ class Notifications {
 			return;
 		}
 
+		$body = Text::plain( $row['summary'], 500 ) . "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger' );
+		if ( 'security.login_threshold' === $action ) {
+			$body .= self::recaptcha_tip();
+		}
+
 		self::mail(
 			self::recipient( $settings['alert_email'] ),
 			sprintf(
@@ -181,7 +186,7 @@ class Notifications {
 				__( '[%s] Critical activity', 'admintrace-activity-logger' ),
 				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 			),
-			Text::plain( $row['summary'], 500 ) . "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger' )
+			$body
 		);
 	}
 
@@ -196,6 +201,14 @@ class Notifications {
 			return;
 		}
 
+		$body = sprintf(
+			/* translators: %d: number of failed logins. */
+			__( '%d failed logins were recorded in the last 15 minutes.', 'admintrace-activity-logger' ),
+			(int) $count
+		);
+		$body .= "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger&category=security' );
+		$body .= self::recaptcha_tip();
+
 		self::mail(
 			self::recipient( $settings['alert_email'] ),
 			sprintf(
@@ -203,12 +216,24 @@ class Notifications {
 				__( '[%s] Repeated failed logins', 'admintrace-activity-logger' ),
 				wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES )
 			),
-			sprintf(
-				/* translators: %d: number of failed logins. */
-				__( '%d failed logins were recorded in the last 15 minutes.', 'admintrace-activity-logger' ),
-				(int) $count
-			) . "\n\n" . admin_url( 'admin.php?page=admintrace-activity-logger&category=security' )
+			$body
 		);
+	}
+
+	/**
+	 * Extra line for failed-login alerts when reCAPTCHA is off.
+	 *
+	 * @return string
+	 */
+	private static function recaptcha_tip() {
+		if ( Recaptcha::is_active() ) {
+			return '';
+		}
+
+		return "\n\n"
+			. __( 'Google reCAPTCHA v3 is not enabled on this site. Enable it in AdminTrace settings to help block automated login attempts.', 'admintrace-activity-logger' )
+			. "\n"
+			. admin_url( 'admin.php?page=admintrace-activity-logger-settings' );
 	}
 
 	/**

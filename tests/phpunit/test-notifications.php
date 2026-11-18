@@ -117,6 +117,22 @@ class Test_Notifications extends Srah_Test_Case {
 		$sent = $this->sent();
 		$this->assertCount( 1, $sent );
 		$this->assertStringContainsString( '7 failed logins', $sent[0]['body'] );
+		$this->assertStringContainsString( 'Google reCAPTCHA v3 is not enabled', $sent[0]['body'] );
+	}
+
+	public function test_failed_login_alerts_omit_recaptcha_tip_when_active() {
+		$this->settings(
+			array(
+				'alert_failed_logins'  => 1,
+				'recaptcha_enabled'    => 1,
+				'recaptcha_site_key'   => 'site-key-example',
+				'recaptcha_secret_key' => 'secret-key-example',
+			)
+		);
+		Notifications::alert_failed_logins( 7 );
+		$sent = $this->sent();
+		$this->assertCount( 1, $sent );
+		$this->assertStringNotContainsString( 'Google reCAPTCHA v3 is not enabled', $sent[0]['body'] );
 	}
 
 	public function test_the_webhook_receives_the_event_id_without_addresses() {
