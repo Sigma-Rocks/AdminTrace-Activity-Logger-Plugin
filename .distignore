@@ -8,6 +8,10 @@ phpcs.xml.dist
 phpstan.neon.dist
 phpunit.xml.dist
 phpunit-multisite.xml.dist
+docs/FEATURE-COMPARISON.md
+docs/TESTING.md
+docs/how-to-enable-google-recaptcha.md
+*.zip
 
 # Directory page files. Upload these to the SVN assets directory after approval.
 assets/banner-772x250.png

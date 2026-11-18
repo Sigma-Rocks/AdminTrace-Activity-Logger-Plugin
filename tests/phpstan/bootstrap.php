@@ -5,7 +5,7 @@
  * @package AdvanceHistory
  */
 
-define( 'SRAH_VERSION', '1.0.6' );
+define( 'SRAH_VERSION', '1.0.7' );
 define( 'SRAH_DB_VERSION', '4' );
 define( 'SRAH_FILE', dirname( __DIR__, 2 ) . '/admintrace-activity-logger.php' );
 define( 'SRAH_PATH', dirname( __DIR__, 2 ) . '/' );

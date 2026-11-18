@@ -4,7 +4,7 @@ Tags: activity-log, audit-log, user-activity, security, recaptcha, woocommerce
 Requires at least: 6.2
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 Donate link: https://www.paypal.com/paypalme/sigmarocks
@@ -172,8 +172,8 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 
 == Changelog ==
 
-= Unreleased =
-* Optional Google reCAPTCHA v3 for the WordPress login, lost-password, and registration forms. Site and secret keys and a minimum score are set under Settings. Blocked bot attempts are logged, and failed-login alert emails note when reCAPTCHA is still off.
+= 1.0.7 =
+* Optional Google reCAPTCHA v3 for the WordPress login, lost-password, and registration forms. Add site and secret keys and a minimum score under Settings. Blocked bot attempts are logged. Failed-login alert emails note when reCAPTCHA is still off. Settings link to the setup guide on sigmarocks.com.
 * Email log is a separate screen and table. It stays off until an administrator enables it, and it saves outgoing mail apart from the activity journal. A subject opens a preview of the rich email or the HTML source, and that message can be resent.
 * A Donate link on the Plugins screen and on AdminTrace pages uses the same PayPal link as this readme.
 * The description asks people to open a support ticket for an issue or a feature request.
@@ -187,7 +187,7 @@ Recording runs when someone changes the site, mostly in wp-admin. A logging fail
 * Saving an unrelated settings section no longer moves the next digest.
 * REST list responses include X-WP-TotalPages.
 * Events recorded in the same second keep their order, so journal pages no longer repeat or skip them.
-* The readme describes the file scan, alert emails, and command palette accurately.
+* The readme describes the file scan, alert emails, command palette, and reCAPTCHA accurately.
 
 = 1.0.6 =
 * Ending another user’s login sessions is recorded.

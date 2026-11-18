@@ -145,9 +145,9 @@ class Settings_Screen {
 								<?php
 								echo wp_kses(
 									sprintf(
-										/* translators: %s: setup guide URL */
-										__( 'Protect the WordPress login, lost-password, and registration forms with invisible reCAPTCHA v3 (no checkbox). Create fresh v3 keys for this domain at %s. Keys from a deleted Google project will not work.', 'admintrace-activity-logger' ),
-										'<a href="https://sigmarocks.com/blog/how-to-enable-google-recaptcha-v3-in-admintrace-activity-logger" target="_blank" rel="noopener noreferrer">sigmarocks.com/blog/how-to-enable-google-recaptcha-v3-in-admintrace-activity-logger</a>'
+										/* translators: %s: link to the reCAPTCHA setup guide */
+										__( 'Protect the WordPress login, lost-password, and registration forms with invisible reCAPTCHA v3 (no checkbox). Create fresh v3 keys for this domain — see the %s. Keys from a deleted Google project will not work.', 'admintrace-activity-logger' ),
+										'<a href="https://sigmarocks.com/blog/how-to-enable-google-recaptcha-v3-in-admintrace-activity-logger" target="_blank" rel="noopener noreferrer">' . esc_html__( 'setup guide', 'admintrace-activity-logger' ) . '</a>'
 									),
 									array(
 										'a' => array(
