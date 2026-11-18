@@ -37,6 +37,7 @@ class Events {
 				'user.app_password_created'     => __( 'Application password created', 'admintrace-activity-logger' ),
 				'user.app_password_deleted'     => __( 'Application password deleted', 'admintrace-activity-logger' ),
 				'security.login_threshold'      => __( 'Failed login threshold', 'admintrace-activity-logger' ),
+				'security.recaptcha_blocked'    => __( 'Bot blocked by reCAPTCHA', 'admintrace-activity-logger' ),
 			),
 			__( 'Content', 'admintrace-activity-logger' ) => array(
 				'content.created'   => __( 'Content created', 'admintrace-activity-logger' ),

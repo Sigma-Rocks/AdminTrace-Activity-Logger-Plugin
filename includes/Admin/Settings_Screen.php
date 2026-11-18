@@ -146,7 +146,7 @@ class Settings_Screen {
 								echo wp_kses(
 									sprintf(
 										/* translators: %s: Google reCAPTCHA admin URL */
-										__( 'Protect the WordPress login, lost-password, and registration forms with invisible reCAPTCHA v3. Create v3 keys at %s.', 'admintrace-activity-logger' ),
+										__( 'Protect the WordPress login, lost-password, and registration forms with invisible reCAPTCHA v3 (no checkbox). Create fresh v3 keys for this domain at %s. Keys from a deleted Google project will not work.', 'admintrace-activity-logger' ),
 										'<a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer">google.com/recaptcha/admin</a>'
 									),
 									array(

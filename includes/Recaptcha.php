@@ -7,6 +7,8 @@
 
 namespace SigmaRocks\AdvanceHistory;
 
+use SigmaRocks\AdvanceHistory\Support\Text;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -26,7 +28,7 @@ class Recaptcha {
 		add_action( 'login_form', array( __CLASS__, 'render' ) );
 		add_action( 'lostpassword_form', array( __CLASS__, 'render' ) );
 		add_action( 'register_form', array( __CLASS__, 'render' ) );
-		add_filter( 'wp_authenticate_user', array( __CLASS__, 'verify_login' ), 20, 2 );
+		add_filter( 'authenticate', array( __CLASS__, 'verify_authenticate' ), 100, 3 );
 		add_action( 'lostpassword_post', array( __CLASS__, 'verify_lostpassword' ), 10, 1 );
 		add_filter( 'registration_errors', array( __CLASS__, 'verify_registration' ), 10, 3 );
 	}
@@ -60,11 +62,13 @@ class Recaptcha {
 			true
 		);
 
+		// v3 is invisible: get a token on submit, then post the form.
 		$js = '(function(){var siteKey=' . wp_json_encode( $site_key ) . ';'
 			. 'function bind(form,action){if(!form){return;}var busy=false;form.addEventListener("submit",function(e){if(busy){return;}e.preventDefault();'
 			. 'var input=form.querySelector(".srah-recaptcha-token");if(!input){input=document.createElement("input");input.type="hidden";input.name="g-recaptcha-response";input.className="srah-recaptcha-token";form.appendChild(input);}'
-			. 'if(typeof grecaptcha==="undefined"){busy=true;HTMLFormElement.prototype.submit.call(form);return;}'
-			. 'grecaptcha.ready(function(){grecaptcha.execute(siteKey,{action:action}).then(function(token){input.value=token;busy=true;HTMLFormElement.prototype.submit.call(form);});});});}'
+			. 'var go=function(token){input.value=token||"";if(!input.value){busy=false;window.alert("reCAPTCHA could not run. Check that your v3 keys are valid for this domain.");return;}busy=true;HTMLFormElement.prototype.submit.call(form);};'
+			. 'if(typeof grecaptcha==="undefined"){go("");return;}'
+			. 'grecaptcha.ready(function(){grecaptcha.execute(siteKey,{action:action}).then(go).catch(function(){go("");});});});}'
 			. 'bind(document.getElementById("loginform"),"login");'
 			. 'bind(document.getElementById("lostpasswordform"),"lostpassword");'
 			. 'bind(document.getElementById("registerform"),"register");})();';
@@ -105,23 +109,37 @@ class Recaptcha {
 	}
 
 	/**
-	 * Block password login when the challenge fails.
+	 * Block interactive logins when the reCAPTCHA check fails.
 	 *
-	 * @param \WP_User|\WP_Error $user     Authenticated user or error.
-	 * @param string            $password Submitted password.
-	 * @return \WP_User|\WP_Error
+	 * Runs late so every login POST is checked, including wrong passwords.
+	 * A failed check becomes a journal entry via wp_login_failed.
+	 *
+	 * @param \WP_User|\WP_Error|null $user     Authentication result so far.
+	 * @param string                  $username Submitted username.
+	 * @param string                  $password Submitted password.
+	 * @return \WP_User|\WP_Error|null
 	 */
-	public static function verify_login( $user, $password ) {
+	public static function verify_authenticate( $user, $username, $password ) {
 		unset( $password );
-		if ( is_wp_error( $user ) || ! self::is_active() || ! self::is_wp_login_post() ) {
+		if ( ! self::is_active() || ! self::is_wp_login_post() ) {
 			return $user;
 		}
-		if ( self::request_ok( 'login' ) ) {
+		if ( $user instanceof \WP_Error ) {
+			$codes = $user->get_error_codes();
+			if ( in_array( 'empty_username', $codes, true ) || in_array( 'empty_password', $codes, true ) ) {
+				return $user;
+			}
+		}
+
+		$result = self::verify( 'login' );
+		if ( 'fail' !== $result ) {
 			return $user;
 		}
+
 		return new \WP_Error(
 			'srah_recaptcha',
-			__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' )
+			__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' ),
+			array( 'username' => (string) $username )
 		);
 	}
 
@@ -134,12 +152,15 @@ class Recaptcha {
 		if ( ! self::is_active() || ! is_wp_error( $errors ) ) {
 			return;
 		}
-		if ( ! self::request_ok( 'lostpassword' ) ) {
-			$errors->add(
-				'srah_recaptcha',
-				__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' )
-			);
+		if ( 'fail' !== self::verify( 'lostpassword' ) ) {
+			return;
 		}
+		$errors->add(
+			'srah_recaptcha',
+			__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' )
+		);
+		$username = isset( $_POST['user_login'] ) ? sanitize_text_field( wp_unslash( $_POST['user_login'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- auth form; captcha is the gate.
+		self::log_block( $username, 'lostpassword' );
 	}
 
 	/**
@@ -151,17 +172,71 @@ class Recaptcha {
 	 * @return \WP_Error
 	 */
 	public static function verify_registration( $errors, $sanitized_user_login, $user_email ) {
-		unset( $sanitized_user_login, $user_email );
+		unset( $user_email );
 		if ( ! self::is_active() || ! is_wp_error( $errors ) ) {
 			return $errors;
 		}
-		if ( ! self::request_ok( 'register' ) ) {
-			$errors->add(
-				'srah_recaptcha',
-				__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' )
+		if ( 'fail' !== self::verify( 'register' ) ) {
+			return $errors;
+		}
+		$errors->add(
+			'srah_recaptcha',
+			__( '<strong>Error:</strong> reCAPTCHA verification failed. Please try again.', 'admintrace-activity-logger' )
+		);
+		self::log_block( (string) $sanitized_user_login, 'register' );
+		return $errors;
+	}
+
+	/**
+	 * Record a non-login form blocked by reCAPTCHA.
+	 *
+	 * Login blocks are logged from User_Logger via wp_login_failed.
+	 *
+	 * @param string $username Attempted username.
+	 * @param string $form     lostpassword|register.
+	 */
+	private static function log_block( $username, $form ) {
+		if ( empty( Settings::all()['log_failed_logins'] ) ) {
+			return;
+		}
+
+		$username = Text::plain( $username, 60 );
+		if ( '' === $username ) {
+			$username = __( '(none)', 'admintrace-activity-logger' );
+		}
+
+		if ( 'register' === $form ) {
+			$summary = sprintf(
+				/* translators: %s: username. */
+				__( 'Bot registration attempt for "%s" was blocked by reCAPTCHA.', 'admintrace-activity-logger' ),
+				$username
+			);
+		} else {
+			$summary = sprintf(
+				/* translators: %s: username. */
+				__( 'Bot password-reset attempt for "%s" was blocked by reCAPTCHA.', 'admintrace-activity-logger' ),
+				$username
 			);
 		}
-		return $errors;
+
+		$agent = isset( $_SERVER['HTTP_USER_AGENT'] ) ? Text::plain( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 180 ) : '';
+		Recorder::log(
+			array(
+				'summary'    => $summary,
+				'category'   => 'security',
+				'action'     => 'security.recaptcha_blocked',
+				'severity'   => 'warning',
+				'user_id'    => 0,
+				'user_login' => $username,
+				'initiator'  => 'anonymous',
+				'logger'     => 'user',
+				'context'    => array(
+					'reason'     => 'recaptcha',
+					'form'       => $form,
+					'user_agent' => $agent,
+				),
+			)
+		);
 	}
 
 	/**
@@ -186,12 +261,13 @@ class Recaptcha {
 	 * Verify the submitted reCAPTCHA v3 token with Google.
 	 *
 	 * @param string $expected_action Action name passed to grecaptcha.execute().
-	 * @return bool
+	 * @return string pass|fail|skip  skip = network/config problem (do not lock users out).
 	 */
-	private static function request_ok( $expected_action ) {
-		$token = isset( $_POST['g-recaptcha-response'] ) ? sanitize_text_field( wp_unslash( $_POST['g-recaptcha-response'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing -- form token verified via Google API.
-		if ( '' === $token ) {
-			return false;
+	private static function verify( $expected_action ) {
+		$token = isset( $_POST['g-recaptcha-response'] ) ? (string) wp_unslash( $_POST['g-recaptcha-response'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- token is opaque; verified by Google.
+		$token = preg_replace( '/[^A-Za-z0-9_-]/', '', $token );
+		if ( ! is_string( $token ) || '' === $token ) {
+			return 'fail';
 		}
 
 		$settings = Settings::all();
@@ -207,33 +283,57 @@ class Recaptcha {
 		$response = wp_remote_post(
 			self::VERIFY_URL,
 			array(
-				'timeout' => 10,
+				'timeout' => 15,
 				'body'    => $body,
 			)
 		);
 
 		if ( is_wp_error( $response ) ) {
-			return false;
+			return 'skip';
 		}
 
 		$code = (int) wp_remote_retrieve_response_code( $response );
 		if ( 200 !== $code ) {
-			return false;
+			return 'skip';
 		}
 
 		$data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $data ) || empty( $data['success'] ) ) {
-			return false;
+		if ( ! is_array( $data ) ) {
+			return 'skip';
+		}
+
+		if ( empty( $data['success'] ) ) {
+			$errors = isset( $data['error-codes'] ) && is_array( $data['error-codes'] ) ? $data['error-codes'] : array();
+			return self::is_config_error( $errors ) ? 'skip' : 'fail';
 		}
 
 		$action = isset( $data['action'] ) ? (string) $data['action'] : '';
 		if ( $expected_action !== $action ) {
-			return false;
+			return 'fail';
 		}
 
 		$score     = isset( $data['score'] ) ? (float) $data['score'] : 0.0;
 		$threshold = isset( $settings['recaptcha_score'] ) ? (float) $settings['recaptcha_score'] : 0.5;
-		return $score >= $threshold;
+		return ( $score >= $threshold ) ? 'pass' : 'fail';
+	}
+
+	/**
+	 * Whether Google returned a key/project problem rather than a bot signal.
+	 *
+	 * @param array $errors Google error-codes list.
+	 * @return bool
+	 */
+	private static function is_config_error( array $errors ) {
+		foreach ( $errors as $error ) {
+			$error = strtolower( (string) $error );
+			if ( 'invalid-input-secret' === $error || 'bad-request' === $error ) {
+				return true;
+			}
+			if ( false !== strpos( $error, 'project' ) || false !== strpos( $error, 'not found' ) || false !== strpos( $error, 'deleted' ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

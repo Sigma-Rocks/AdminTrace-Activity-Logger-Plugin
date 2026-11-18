@@ -198,16 +198,26 @@ class User_Logger extends Logger {
 
 		$username = Text::plain( $username, 60 );
 		$code     = 'unknown';
+		$action   = 'user.login_failed';
 		if ( $error instanceof \WP_Error ) {
 			$codes = $error->get_error_codes();
-			if ( in_array( 'incorrect_password', $codes, true ) ) {
+			if ( in_array( 'srah_recaptcha', $codes, true ) ) {
+				$code   = 'recaptcha';
+				$action = 'security.recaptcha_blocked';
+			} elseif ( in_array( 'incorrect_password', $codes, true ) ) {
 				$code = 'bad_password';
 			} elseif ( in_array( 'invalid_username', $codes, true ) || in_array( 'invalid_email', $codes, true ) ) {
 				$code = 'unknown_user';
 			}
 		}
 
-		if ( 'bad_password' === $code ) {
+		if ( 'recaptcha' === $code ) {
+			$summary = sprintf(
+				/* translators: %s: username. */
+				__( 'Bot attack blocked by reCAPTCHA for username "%s".', 'admintrace-activity-logger' ),
+				$username
+			);
+		} elseif ( 'bad_password' === $code ) {
 			$summary = sprintf(
 				/* translators: %s: username. */
 				__( 'Failed login for "%s" because the password was incorrect.', 'admintrace-activity-logger' ),
@@ -231,7 +241,7 @@ class User_Logger extends Logger {
 				array(
 					'summary'    => $summary,
 					'category'   => 'security',
-					'action'     => 'user.login_failed',
+					'action'     => $action,
 					'severity'   => 'warning',
 					'user_id'    => 0,
 					'user_login' => $username,
