@@ -140,6 +140,51 @@ class Settings_Screen {
 
 					<section class="srah-panel">
 						<header class="srah-panel-head">
+							<h2><?php esc_html_e( 'Google reCAPTCHA', 'admintrace-activity-logger' ); ?></h2>
+							<p>
+								<?php
+								echo wp_kses(
+									sprintf(
+										/* translators: %s: Google reCAPTCHA admin URL */
+										__( 'Protect the WordPress login, lost-password, and registration forms with invisible reCAPTCHA v3. Create v3 keys at %s.', 'admintrace-activity-logger' ),
+										'<a href="https://www.google.com/recaptcha/admin" target="_blank" rel="noopener noreferrer">google.com/recaptcha/admin</a>'
+									),
+									array(
+										'a' => array(
+											'href'   => true,
+											'target' => true,
+											'rel'    => true,
+										),
+									)
+								);
+								?>
+							</p>
+						</header>
+						<div class="srah-toggles">
+							<label class="srah-toggle"><input type="checkbox" name="recaptcha_enabled" value="1" <?php checked( $settings['recaptcha_enabled'] ); ?>> <span><strong><?php esc_html_e( 'Enable Google reCAPTCHA v3', 'admintrace-activity-logger' ); ?></strong><span class="description"><?php esc_html_e( 'Requires v3 site and secret keys. XML-RPC, REST, and application passwords are not challenged.', 'admintrace-activity-logger' ); ?></span></span></label>
+						</div>
+						<div class="srah-fields srah-fields-2">
+							<p class="srah-field">
+								<label for="srah-recaptcha-site"><?php esc_html_e( 'Site key', 'admintrace-activity-logger' ); ?></label>
+								<input id="srah-recaptcha-site" type="text" name="recaptcha_site_key" value="<?php echo esc_attr( $settings['recaptcha_site_key'] ); ?>" autocomplete="off" spellcheck="false">
+							</p>
+							<p class="srah-field">
+								<label for="srah-recaptcha-secret"><?php esc_html_e( 'Secret key', 'admintrace-activity-logger' ); ?></label>
+								<input id="srah-recaptcha-secret" type="password" name="recaptcha_secret_key" value="" autocomplete="new-password" spellcheck="false" placeholder="<?php echo $settings['recaptcha_secret_key'] ? esc_attr__( 'Saved — leave blank to keep', 'admintrace-activity-logger' ) : ''; ?>">
+								<?php if ( $settings['recaptcha_secret_key'] ) : ?>
+									<span class="description"><?php esc_html_e( 'A secret is already saved. Leave this blank to keep it, or enter a new key to replace it.', 'admintrace-activity-logger' ); ?></span>
+								<?php endif; ?>
+							</p>
+							<p class="srah-field">
+								<label for="srah-recaptcha-score"><?php esc_html_e( 'Minimum score', 'admintrace-activity-logger' ); ?></label>
+								<input id="srah-recaptcha-score" type="number" name="recaptcha_score" min="0.1" max="1" step="0.1" value="<?php echo esc_attr( (string) $settings['recaptcha_score'] ); ?>">
+								<span class="description"><?php esc_html_e( 'Google scores requests from 0.0 (bot) to 1.0 (human). 0.5 is a common starting point.', 'admintrace-activity-logger' ); ?></span>
+							</p>
+						</div>
+					</section>
+
+					<section class="srah-panel">
+						<header class="srah-panel-head">
 							<h2><?php esc_html_e( 'Email and webhook', 'admintrace-activity-logger' ); ?></h2>
 							<p><?php esc_html_e( 'Nothing leaves the site until you add a recipient or an HTTPS webhook. The email log is a separate page and stays off until you turn it on.', 'admintrace-activity-logger' ); ?> <a href="<?php echo esc_url( admin_url( 'admin.php?page=admintrace-activity-logger-email' ) ); ?>"><?php esc_html_e( 'Open the email log', 'admintrace-activity-logger' ); ?></a></p>
 						</header>

@@ -167,7 +167,7 @@ class Menu {
 
 		$changed = array();
 		foreach ( $clean as $key => $value ) {
-			if ( in_array( $key, array( 'feed_token', 'webhook_url' ), true ) ) {
+			if ( in_array( $key, array( 'feed_token', 'webhook_url', 'recaptcha_secret_key' ), true ) ) {
 				if ( (string) $before[ $key ] !== (string) $value ) {
 					$changed[] = $key;
 				}

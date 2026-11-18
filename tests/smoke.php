@@ -198,6 +198,25 @@ srah_assert( 'off' === $settings['email_digest'], 'unknown digest values are rej
 srah_assert( array( 'user' ) === $settings['disabled_loggers'], 'logger ids are sanitized' );
 srah_assert( 'abc123' === $settings['feed_token'], 'feed secret is preserved' );
 
+$recaptcha = Settings::sanitize(
+	array(
+		'settings_section'     => 'general',
+		'recaptcha_enabled'    => '1',
+		'recaptcha_site_key'   => '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI',
+		'recaptcha_secret_key' => '',
+		'recaptcha_score'      => '0.7',
+		'retention_days'       => 90,
+	),
+	array(
+		'recaptcha_secret_key' => '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe',
+		'feed_token'           => 'abc123',
+	)
+);
+srah_assert( 1 === (int) $recaptcha['recaptcha_enabled'], 'reCAPTCHA can be enabled' );
+srah_assert( '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI' === $recaptcha['recaptcha_site_key'], 'reCAPTCHA site key is kept' );
+srah_assert( '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe' === $recaptcha['recaptcha_secret_key'], 'blank reCAPTCHA secret keeps the saved value' );
+srah_assert( 0.7 === (float) $recaptcha['recaptcha_score'], 'reCAPTCHA v3 score threshold is kept' );
+
 $order = Query::order_parts( 'created_gmt; DROP TABLE wp_users', 'DESC; DELETE' );
 srah_assert( 'created_gmt' === $order['column'] && 'DESC' === $order['direction'], 'ordering is whitelisted' );
 

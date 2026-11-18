@@ -62,6 +62,10 @@ class Settings {
 			'feed_enabled'             => 0,
 			'email_log_enabled'        => 0,
 			'feed_token'               => '',
+			'recaptcha_enabled'        => 0,
+			'recaptcha_site_key'       => '',
+			'recaptcha_secret_key'     => '',
+			'recaptcha_score'          => 0.5,
 			'delete_data_on_uninstall' => 1,
 			'menu_location'            => 'toplevel',
 			'default_view'             => 'timeline',
@@ -179,6 +183,19 @@ class Settings {
 		$clean['alert_failed_logins']      = empty( $input['alert_failed_logins'] ) ? 0 : 1;
 		$clean['delete_data_on_uninstall'] = empty( $input['delete_data_on_uninstall'] ) ? 0 : 1;
 		$clean['feed_enabled']             = empty( $input['feed_enabled'] ) ? 0 : 1;
+		$clean['recaptcha_enabled'] = empty( $input['recaptcha_enabled'] ) ? 0 : 1;
+
+		$clean['recaptcha_site_key'] = self::recaptcha_key( isset( $input['recaptcha_site_key'] ) ? $input['recaptcha_site_key'] : '' );
+
+		$secret_submitted = isset( $input['recaptcha_secret_key'] ) ? self::recaptcha_key( $input['recaptcha_secret_key'] ) : '';
+		if ( '' !== $secret_submitted ) {
+			$clean['recaptcha_secret_key'] = $secret_submitted;
+		} else {
+			$clean['recaptcha_secret_key'] = isset( $current['recaptcha_secret_key'] ) ? self::recaptcha_key( $current['recaptcha_secret_key'] ) : '';
+		}
+
+		$score                    = isset( $input['recaptcha_score'] ) ? (float) $input['recaptcha_score'] : 0.5;
+		$clean['recaptcha_score'] = round( min( 1.0, max( 0.1, $score ) ), 1 );
 
 		$threshold                = isset( $input['alert_threshold'] ) ? (int) $input['alert_threshold'] : 5;
 		$clean['alert_threshold'] = min( 50, max( 3, $threshold ) );
@@ -225,6 +242,20 @@ class Settings {
 	public static function update( array $clean ) {
 		update_option( self::OPTION, $clean, true );
 		self::flush();
+	}
+
+	/**
+	 * Sanitize a Google reCAPTCHA site or secret key.
+	 *
+	 * @param mixed $key Raw key.
+	 * @return string
+	 */
+	private static function recaptcha_key( $key ) {
+		$key = preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $key );
+		if ( ! is_string( $key ) ) {
+			return '';
+		}
+		return substr( $key, 0, 200 );
 	}
 
 	/**

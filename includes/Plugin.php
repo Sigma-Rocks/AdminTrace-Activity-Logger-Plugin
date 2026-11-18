@@ -40,6 +40,7 @@ class Plugin {
 		Notifications::register();
 		Privacy::register();
 		Feed::register();
+		Recaptcha::register();
 		Rest_Controller::register();
 		Logger_Registry::boot();
 
